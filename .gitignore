@@ -1,0 +1,32 @@
+# ===== 系统与编辑器 =====
+.DS_Store
+Thumbs.db
+*.swp
+*~
+.idea/
+.vscode/
+
+# ===== Python =====
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+.venv/
+venv/
+env/
+
+# ===== 密钥与环境变量（绝不提交）=====
+.env
+.env.*
+*.key
+secrets.*
+
+# ===== 本地构建/截图/临时产物 =====
+*.png
+screenshots/
+_site/
+dist/
+build/
+
+# ===== 日志 =====
+*.log
