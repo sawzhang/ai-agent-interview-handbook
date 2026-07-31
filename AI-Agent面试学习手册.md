@@ -22,6 +22,7 @@
 11. 第 10 章 · 工程化与生产部署
 12. 第 11 章 · 前沿论文与研究热点
 13. 第 12 章 · 系统设计题与综合实战
+14. 第 13 章 · Agent 工程分层架构与 Harness Engineering
 
 ---
 
@@ -61,7 +62,7 @@
   │           │
   │           ▼  依赖
   │
-Ⅱ 认知层 Cognition       单智能体的"大脑"如何思考
+Ⅱ 认知层 Cognition       单智能体的"大脑"如何思考    ◄──┐
   │   ├─ 2. Prompt Engineering 与上下文工程  ◄── 最廉价的杠杆
   │   ├─ 3. Agent 核心架构与推理范式
   │   │      （ReAct / Plan-and-Execute / Reflexion /
@@ -72,7 +73,7 @@
   │           │
   │           ▼  依赖
   │
-Ⅲ 行动与协作层 Action    大脑如何作用于外部世界
+Ⅲ 行动与协作层 Action    大脑如何作用于外部世界      ◄──┤ Harness 元框架
   │   ├─ 5. Tool Use / Function Calling / MCP
   │   │      （Schema 设计 / 调用协议 / 错误恢复）
   │   └─ 6. Multi-Agent 系统与协作
@@ -81,7 +82,7 @@
   │           │
   │           ▼  支撑
   │
-Ⅳ 工程层 Engineering     从 Demo 到生产的鸿沟
+Ⅳ 工程层 Engineering     从 Demo 到生产的鸿沟        ◄──┘
   │   ├─ 7. 主流框架与工程生态
   │   │      （LangGraph / LlamaIndex / Agent SDK / 自研取舍）
   │   ├─ 8. Agent 评估与可观测性
@@ -99,6 +100,11 @@
       │       推理时计算 / Agent RL）
       └─ 12. 系统设计题与综合实战
              （Ⅰ–Ⅳ 的总动员，面试的终极题型）
+
+  ⟂ 横切 Ⅱ–Ⅳ 的元框架（第 13 章）：Agent Harness Engineering / ETCLOVG 七层
+     ——把模型调用变成"有界、有状态、经工具中介的任务执行"的工程化包裹层
+     C 上下文→第2/4章 · T 工具→第5章 · L 生命周期/编排→第3/6章
+     E 执行/沙箱→第10章 · O 可观测→第8章 · V 验证/评估→第8章 · G 治理/安全→第9章
 ```
 
 **关键依赖关系（决定学习顺序）：**
@@ -106,6 +112,7 @@
 - **1 是一切的前提**：不理解上下文窗口和采样，就讲不清 RAG 为什么要分块、Agent 为什么会「忘记」目标。
 - **3 是枢纽**：推理范式决定了 2（提示怎么写）、4（记忆怎么注入）、5（工具何时调用）、6（角色如何分工）的具体形态。
 - **8 和 9 横切所有层**：评估与安全不是最后一步，而是从第一天就要埋的桩。
+- **harness 视角（第 13 章）把 Ⅱ–Ⅳ 串起来**：ETCLOVG 七层把分散的可靠性关切（上下文、工具、编排、沙箱、观测、评估、治理）统一为控制系统——harness 应被读作一张依赖结构图，而非可拆的组件清单。
 - **12 是 Ⅰ–Ⅳ 的综合应用**，没有捷径，只能靠前面的积累自然长出来。
 - **11 相对独立**，适合碎片时间追踪，但面试中它是「这人有没有技术品味」的信号灯。
 
@@ -173,7 +180,7 @@
 | 周五 | 第 5 章：Function Calling 机制、Schema 设计、MCP | 重写一份「好 vs 坏」的工具定义对照 |
 | 周末 | 动手：给 Week 1 的 Agent 加 RAG + 记忆 + 3 个工具；用 trace 工具观察一次真实运行 | 一条完整 trace 的分析笔记 |
 
-### Week 3：工程周（第 6、7、8、9、10 章）—— 目标：建立生产视角
+### Week 3：工程周（第 6、7、8、9、10、13 章）—— 目标：建立生产视角
 
 | 日 | 内容 | 产出 |
 |---|---|---|
@@ -182,7 +189,8 @@
 | 周三 | 第 8 章：评估——评估集构建、LLM-as-Judge 偏差校正 | 为 Week 2 的 Agent 设计 20 条评估用例 |
 | 周四 | 第 9 章：注入攻击与 Guardrails 分层防御 | 分层防御架构图 |
 | 周五 | 第 10 章：成本/延迟/可靠性——缓存、路由、降级、灰度 | 列出你过往项目的 3 个可优化点 |
-| 周末 | 第 8–10 章习题 + 项目复盘：把自己做过的项目用「指标 + 权衡 + 如果重来」重写一遍 | 2 个 STAR 故事初稿 |
+| 周六 | 第 13 章：Agent 工程分层架构与 Harness Engineering（ETCLOVG 七层 / 三阶段演进 / 三大跨层权衡） | 一张 ETCLOVG→本手册章节的映射图 |
+| 周日 | 第 8–10 章习题 + 项目复盘：把自己做过的项目用「指标 + 权衡 + 如果重来」重写一遍 | 2 个 STAR 故事初稿 |
 
 ### Week 4：冲刺周（第 11、12 章 + 模拟面试）—— 目标：把知识转化为得分
 
@@ -1070,6 +1078,22 @@ Agent 跑几十上百步后，上下文必然撞墙（主流旗舰模型普遍 1
 - **截图回路与 grounding**：computer-use 类 Agent 以截图作为"工具返回"进入上下文——截图是多模态上下文的最大吞噬者之一，应降采样、裁剪感兴趣区域、以坐标文本替代重复截图。
 - 面试提示：图像中藏指令属于多模态注入，是 2.8 分类的自然延伸；谈 VLM 时顺手点一句攻击面，体现安全意识。
 
+#### 2.11 上下文工程的生产细则（Harness 综述视角）
+
+2026 年的综述《Agent Harness Engineering: A Survey》（TMLR under review, anonymous, 2026；64 页，映射 170+ 开源项目）把长程 Agent 的工程实践按 **ETCLOVG 七层**（Execution 执行环境/沙箱、Tooling 工具接口/协议、Context 上下文管理、Lifecycle 生命周期/编排、Observability 可观测、Verification 验证/评估、Governance 治理/安全）做了系统梳理，并把 harness 定义为"把模型调用转成**有界、有状态、经工具中介的任务执行**的工程化包裹层"——分析单元是让长程 Agent 行为可控、可检查、可恢复的基础设施，而非模型或提示本身；综述据此描绘了 **Prompt Engineering → Context Engineering → Harness Engineering** 的三阶段演进（图 1 / §2，并配四层心智模型与推理/运维工程清单两张架构图）。以下是其 Context 层的生产级细则，与前文的理论互为表里：
+
+**① Progressive disclosure / JIT（渐进披露、按需供给）**。不把知识一次性塞进上下文，而是维护一组**轻量标识符（路径 / 查询 / 链接）**，由 Agent 按需加载。Claude Code 是典型混合形态：**启动只加载 CLAUDE.md，代码库靠 glob/grep 按需探索**——同时规避了预建索引的 stale-indexing 成本与一次性大预载的 prefill 成本。这是 2.5 节"Preloading vs JIT"取舍的生产落地：高频稳定材料前置，长尾留给按需检索。
+
+**② Token-efficient tool design**。综述直接引用的原则："**prefer fewer, more expressive tools；若人类工程师都说不清何时用哪个工具，模型更做不到**。"工具描述本身进入上下文、占用注意力预算（呼应易错点 13）；工具集应随任务收敛，而不是暴露一个大而平的 API 列表。
+
+**③ System prompt 找到 right altitude**。过具体＝脆弱难维护（if-else 堆多了必在边界崩溃），过模糊＝无指引。综述给出的迭代路径是：**先用最小 prompt 配最好的模型，实证观察真实失败模式，再针对性补指令**，而不是预先穷举所有边缘情况——预先穷举只会让 prompt 膨胀，并不带来可度量的可靠性提升（见易错点 22）。这与 2.2 的 altitude 论一脉相承，但给出了可执行的工作流。
+
+**④ KV-cache-aware 三规则**。综述引用 Manus 的判断："**KV-cache 命中率是生产级 AI agent 最重要的单一指标**"——账目非常直观：Sonnet 缓存命中约 **$0.30/MTok**，未缓存约 **$3.00/MTok**，差一个数量级（与 2.7 节"命中约原价 1/10"口径一致）。稳住命中率要守三条规则：①**保持 prompt 前缀稳定**（system + 工具定义固定在最前）；②**上下文 append-only**（只在末尾追加，不在中段插入或改写）；③**确定性序列化**（同一内容的序列化结果逐字节稳定，缓存键不因字段顺序、随机空白而漂移）。一个易踩的细节：工具可用性随状态变化时，**Manus 用掩码 logits 在解码层屏蔽不可用工具，而非运行时修改工具列表**——改工具列表即改前缀，整段缓存作废（见易错点 21）。API 层面，Anthropic 的 `cache_control` 断点（最多 4 个，见 2.7）是落地这三条规则的标准手段。
+
+**⑤ short / mid / long 三分法的术语对齐**。综述以短 / 中 / 长期记忆作为 Context 层的标准术语，与 LangChain 的分类学（2.6）对齐：短期＝窗口内的会话 scratchpad；**中期＝结构化笔记（NOTES.md / todo.md 等），是 Agent 跨 compaction 边界续命的手段**；长期＝跨会话记忆库。中期记忆的关键是"结构化而非自由文本"——笔记写给机器和人重读，固定字段（目标 / 已确认 / TODO / 未决）让压缩后的重新注入损耗最低。
+
+**面试信号**：该综述还强调 harness 设计应被读作"**依赖结构**"而非可拆组件清单（§10），任何 harness 改动要按"**系统变更**"来测试（§11.3）。系统设计题里把"缓存命中率"作为可观测指标纳入设计目标，比单纯说"加缓存"更成熟。
+
 ---
 
 ### 3. 面试高频考点
@@ -1240,6 +1264,18 @@ Agent 跑几十上百步后，上下文必然撞墙（主流旗舰模型普遍 1
 - 适用：多阶段 pipeline、指标稳定、需要频繁换模型或做系统级优化的团队。
 - 行业信号：prompt engineering 正在变成 eval-driven 的工程学科；答出"没有 eval 集的 prompt 调优是玄学"即达到高级候选人水准。
 
+#### 题 14（进阶/系统设计）：如何为长程 Agent 设计 KV-cache 友好的上下文结构？
+
+**答题思路**：先点明优化对象（前缀缓存命中率同时决定成本与延迟），再给三条结构规则，再列最容易破坏缓存的细节与 API 落地，最后收口到可观测闭环。
+
+**参考答案要点**：
+- 为什么缓存是主矛盾：长程 Agent 每轮都要为"全部历史"重新 prefill，未缓存时输入成本与 TTFT 随轨迹长度线性增长。Manus 的判断（Harness 综述引用）：**KV-cache 命中率是生产级 AI agent 最重要的单一指标**——Sonnet 缓存命中约 $0.30/MTok、未缓存约 $3.00/MTok，差一个数量级；命中率是同时决定账单与首 token 延迟的变量。
+- 三条结构规则（综述 C 层生产细则）：①**前缀稳定**——system prompt + 工具定义固定在上下文最前，顺序与措辞不随意改动；②**append-only**——新信息只追加到末尾（用户轮次、工具返回、assistant 输出天然 append-only），不在中段插入或改写；compaction 用"摘要重启"显式重建一段新的稳定前缀，而不是在历史中段动手术；③**确定性序列化**——同一内容每轮序列化逐字节一致：JSON 字段顺序固定、前缀中不掺入时间戳/随机 ID，否则缓存键漂移、命中率无声崩塌。
+- 最易破坏缓存的细节（加分）：工具可用性随状态变化时，**用掩码 logits 在解码层屏蔽不可用工具，而不是运行时增删工具列表**（Manus 做法）——改工具列表即改前缀，整段缓存作废；动态检索内容追加在尾部，不插入 system 段；多 Agent 场景共享同一份稳定前缀模板，最大化跨轮次、跨会话复用。
+- API 落地：Anthropic 显式缓存最多 4 个 `cache_control` 断点（最小可缓存前缀 Sonnet/Opus 级 ≥1024 tokens、Haiku 级 2048 tokens；TTL 5 分钟/1 小时），命中约原价 1/10、写入 1.25×–2×；OpenAI 自动缓存、命中约 5 折、无需配置。断点打在"稳定性边界"上：system 之后、tools 之后、few-shot 之后、长文档之后。
+- 与可观测性闭环：把命中率纳入指标体系（综述的推理/运维工程清单明确要求为延迟/token/错误/成本建可观测性）；compaction 策略或 prompt 改版时按"系统变更"对待，回归验证命中率与任务成功率——harness 各层耦合，局部"清理"可能正在悄悄击穿缓存。
+- 一句话收束：稳定前缀钉死、动态尾部追加、序列化字节对齐、工具掩码而非移除、命中率当一等指标。
+
 ---
 
 ### 5. 易错点·反直觉点
@@ -1264,6 +1300,8 @@ Agent 跑几十上百步后，上下文必然撞墙（主流旗舰模型普遍 1
 18. **把 prefill 当成 Claude 现行通用手段**。Claude 4.6+ 预填最后一个 assistant 回合直接返回 400；当前格式控制应走结构化输出或指令。拿 2024 年的技巧写 2026 年的代码会当场报错。
 19. **长上下文只谈容量、不谈攻击面**。窗口越长，many-shot jailbreaking 可用的有害示例越多，攻击强度随长度与模型规模增长——谈 1M 窗口必须同时谈攻击面等比例扩大。
 20. **MCP 只谈红利、不谈安全**。工具描述本身是进入上下文的不可信文本（投毒 CVE-2025-54136），server 定义可被 rug-pull，sampling 可被反向利用；第三方 MCP server 要按供应链风险管理。
+21. **运行时增删工具会击穿前缀缓存**。"状态变了就把不可用工具从工具列表里拿掉"这一直觉会修改 prompt 前缀，使整段 KV cache 失效——按 Manus 的口径（缓存命中约 $0.30/MTok vs 未缓存约 $3.00/MTok，差一个数量级），这等于直接扔掉了生产级 agent 最重要的单一指标（KV-cache 命中率）。正确做法是工具列表保持稳定、**用掩码 logits 在解码层屏蔽不可用工具**：模型可见的工具集不变、前缀不变、缓存不丢。同源原则：任何"动态改前缀"的操作（中途插入 system 补丁、重排工具顺序）都是缓存杀手，动态内容只许 append 到末尾。
+22. **在 system prompt 里预先穷举边缘情况，只带来膨胀、不带来可靠性**。if-else 分支越多 prompt 越脆（边界上互相冲突），且指令块本身占用注意力预算；未经实证验证的边缘指令往往从未被真正触发过。生产做法相反：**先用最小 prompt 配最好的模型，从 eval/线上 trace 观察真实失败模式，再逐条补指令**——每条指令都应有"事故出处"。"预先穷举"是把 prompt 当规格说明书而非可优化制品的典型症状（呼应第 16 条）。
 
 ---
 
@@ -5540,6 +5578,28 @@ Agent 相比普通 LLM 应用新增了四块攻击面：**工具（能改变世�
 
 **面试视角**：治理框架不是"安全"，而是"安全的可问责外壳"。把 EU AI Act/NIST/ISO 当作**合规要求来源**，把 OWASP 当作**威胁清单**，把 evals 当作**度量手段**——三者各司其职，别把"过了 ISO 认证"误当"系统抗注入"。
 
+#### 2.11 治理作为一等层与工具循环四 hook 点（Harness 综述视角）
+
+前面 2.1–2.10 按"攻击面 → 防御 → 对齐 → 合规"展开，本节补一个**架构治理视角**：来自《Agent Harness Engineering: A Survey》（TMLR under review，匿名，2026，64 页，映射 170+ 开源项目）的 **ETCLOVG 七层**心智模型——Execution 执行环境/沙箱、Tooling 工具接口/协议、Context 上下文管理、Lifecycle 生命周期/编排、Observability 可观测、Verification 验证/评估、**Governance 治理/安全**。它相对旧的"六组件"框架做了一个关键升级：**把 Observability 与 Governance 提升为一等层**，而非散落在生命周期里的副作用；状态管理归入 L（Lifecycle），而 hooks/策略执行明确归入 G（Governance）。harness 的定义正是：把模型调用转成"**有界、有状态、经工具中介的任务执行**"的工程化包裹层——分析单元是让长程 agent 行为**可控、可检查、可恢复**的基础设施，而非模型或提示本身。对安全章的意义在于：它给"纵深防御"提供了一个**可落地的层位坐标**。
+
+**（1）治理是三子层，不是一个开关。** G 层内部再分三个子层，恰好与本章既有防御清单对位：
+
+- **model-level（模型层）**：guardrails、输入/输出过滤器——对应 2.2 的 Constitutional Classifiers、2.4 的安全分类模型。
+- **system-level（系统层）**：网关、代理、权限模型——对应 2.5 的最小权限/Confused Deputy 治理、2.6 的 Dual LLM/CaMeL 架构。
+- **organizational-level（组织层）**：审计、合规、HITL——对应 2.7 的 HITL 风险路由、2.10 的 EU AI Act/NIST/ISO。
+
+要点是**三层必须同时存在**：注入防御只放在模型层（guardrails/过滤器）而忽略 system 层的权限模型与 org 层的审计/HITL，就是本章最常见的结构性缺口。
+
+**（2）工具循环的【四 hook 点】（Fig 14）：治理的执行抓手。** 综述沿**一次 tool-use 周期**标出四个策略注入点——**调用前校验**（参数 schema、越权/scope 检查、风险分级）、**调用后审计**（落审计日志、留 provenance）、**结果过滤**（拦截外传 URL/密钥/PII、对工具返回内容做不可信标注）、**越权拦截**（capability/权限凭证校验、命中即熔断）。这四点是**治理从"写在策略文档里"变成"运行时强制"**的落点：2.4 讲的框架内置护栏（Claude Code 的 PreToolUse/PostToolUse hooks、OpenAI Agents SDK 的 tripwire、LangGraph 的 interrupt）本质就是这四个 hook 点的产品化。**hook 不是可选项，而是 G 层在 T/E 层上的执行抓手**——MCP/ACP/A2A 这类标准化把跨系统的责任（保留 provenance/权限/成本/失败证据）进一步转移给 G+O，越标准化，hook 越关键。
+
+**（3）capability-control 是【设计轴】，不是安全附加项（§11.2）。** 综述的一条核心论断：**更多能力 = 更大控制问题 = 更大爆炸半径**。控制不是事后"加个 guardrail"，而是一条**贯穿始终的设计轴**，连接六件事：tool schema（fewer, more expressive tools）／上下文策略／运行时权限／身份／可审计／人工批准。这与 2.5 的"权限控制是 Agent 安全的最高杠杆"、2.6 的 Lethal Trifecta 同根——能力维度的每一次扩张（新工具、新记忆、新对外通道）都必须沿这条轴同步扩张控制，否则就是 2.13 节意义上"被合法能力滥用"（capability abuse，CaMeL 2025.7 被绕过的机制）的温床。
+
+**（4）回扣执行环境：沙箱是安全边界（E 层）。** **SandboxEscapeBench（Marchand et al. 2026）** 的实证结论值得记住：**前沿模型确实可利用沙箱弱点，且现实中的防御高度碎片化**。这把 2.9 的"意外代码执行（ASI05）/沙箱逃逸"从理论威胁升级为有基准支撑的实测风险，也说明**执行环境（E 层）本身就是一道安全边界**——隔离（gVisor/Firecracker/E2B/WASM）、资源限额、默认拒绝的出网策略，与上层的 hook 同等重要，而非"运维细节"。
+
+**（5）治理覆盖普遍稀疏 → 必须前置（Table 4）。** 综述对 170+ 项目的观测是：**治理覆盖普遍稀疏**，治理常常沦为**事后补丁**（对应 §11.4：平台化阶段问题从"如何造一个 agent"变为"如何运维一支行为可审查、可回滚的 agent 舰队"）。工程结论：治理（hook、权限、审计、HITL、可观测）应与 T/C/L 各层**同期设计、同期测试**，而不是上线出事后补。综述 §10 的金句同样适用于安全设计——"**harness 设计应被读作依赖结构，而非可拆组件清单**"：治理不是可独立拆装的模块，它依附于其它每一层。
+
+**面试一句话**：谈 Agent 安全时，能把"纵深防御"落到 **ETCLOVG 的层位坐标**（治理是三子层一等层 + 工具循环四 hook 点 + capability-control 设计轴 + E 层沙箱边界），比泛泛列举防御手段更显结构化纵深。
+
 ---
 
 ### 三、面试高频考点
@@ -5716,6 +5776,24 @@ Agent 相比普通 LLM 应用新增了四块攻击面：**工具（能改变世�
 - **对设计的具体影响**：①**文档与可追溯**——模型/能力卡片、数据来源与版权政策、决策审计日志成为一等公民；②**评估制度化**——上线前系统性风险评估 + 对抗红队 + 可重复 eval（ASR、误杀率、能力回归）并留证；③**风险分级落地**——按 EU AI Act 判定用例是否属高风险（如信贷、招聘场景），高风险需符合性评估、人工监督、数据治理；④**事件响应与披露**——严重事件报告流程；⑤**组织层**——AIMS 明确 AI 治理职责、变更管理（呼应 MCP Rug Pull 的重审批）。
 - **边界（关键）**：这些是**合规与问责外壳，不是技术防线**。过了 ISO 认证或满足 GPAI 文档要求，不等于系统抗 prompt injection；反过来，技术上安全也需要合规证据才能进入受监管市场。正确做法：以 OWASP（LLM/Agentic Top 10）为威胁清单、以 evals 为度量、以治理框架为问责与准入要求，三层叠加。
 
+#### Q14【系统设计】用"治理三子层 + 四 hook 点"为一个会调用外部工具的 agent 设计分层防御。（Harness 综述视角）
+
+**答题思路**：先用一句话框定坐标系（ETCLOVG 七层中 G 是一等层、hook 是其执行抓手），再按**三子层 × 四 hook 点**交叉铺满，最后落到 capability-control 设计轴与 E 层沙箱边界，收尾点出"治理要前置、读作依赖结构"。
+
+**参考答案要点**：
+- **坐标系（30 秒铺垫）**：依据 Harness 综述（2026，ETCLOVG 七层），把治理当作**一等层**而非生命周期副作用；G 层内分 model/system/organizational 三子层，工具循环有四个 hook 点作为运行时执行抓手；能力越多控制问题越大（capability-control 是设计轴）。
+- **三子层各自部署什么**：
+  - **model-level**：输入/输出 guardrails 与过滤器（注入分类器前置、输出扫描拦截 URL/密钥/PII），只当"抬高门槛的一层"。
+  - **system-level**：统一工具网关 + 权限模型——最小权限、scope 精确到本次任务、凭据放应用侧绝不入上下文、Confused Deputy 按请求来源信任等级降权。
+  - **organizational-level**：全量审计留痕、合规对齐（EU AI Act/NIST/ISO 42001）、HITL 按风险分级审批（不可逆/涉钱/对外强制人工），并治理审批疲劳。
+- **四 hook 点如何嵌入一次 tool-use 周期**：
+  - **调用前校验**：schema/参数合法性、越权与 scope 检查、风险分级（只读放行/写操作确认/不可逆 HITL）。
+  - **越权拦截**：capability/权限凭证校验，命中即熔断（tripwire/interrupt），切断"不可信内容→特权动作"。
+  - **结果过滤**：对工具返回内容做不可信标注与清洗（Spotlighting）、拦截外传模式，结果回灌前过护栏。
+  - **调用后审计**：记录 provenance/权限/成本/失败证据，供对账、回归与事故复盘（标准化协议 MCP/A2A 把这部分责任进一步压给 G+O）。
+- **两条贯穿性约束**：①**capability-control 作为设计轴**——新增任何工具/记忆/对外通道，都要沿 tool schema/上下文策略/运行时权限/身份/可审计/人工批准六处同步加控制，而非事后"补个 guardrail"；②**E 层沙箱是安全边界**——代码执行强制隔离（gVisor/Firecracker/E2B）+ 资源限额 + 默认拒绝出网，呼应 SandboxEscapeBench（Marchand et al. 2026）"前沿模型可利用沙箱弱点、防御碎片化"的实测结论。
+- **收尾**：治理要与 T/C/L 各层**同期设计、同期测试**（综述观测治理覆盖普遍稀疏、常沦为事后补丁）；harness 应被读作**依赖结构**而非可拆组件清单——三子层 + 四 hook 点彼此依赖，缺任何一格都不是完整防御。
+
 ---
 
 ### 五、易错点·反直觉点
@@ -5738,6 +5816,8 @@ Agent 相比普通 LLM 应用新增了四块攻击面：**工具（能改变世�
 16. **引用 OWASP 旧编号**——2025 版已重排：LLM02=敏感信息泄露、LLM05=不安全输出处理（旧 LLM02）、LLM06=过度代理。把"输出处理"说成 LLM02 会显得知识停留在 2023 版。
 17. **"Guardrail 免费且只防攻击"**——护栏本身是 **DoS/成本攻击（denial-of-wallet）** 的对象：攻击者刻意构造触发高成本路径（NeMo 的多次 LLM 调用、L3 judge 复核、reask 循环）的输入，把你的账单与延迟打爆；防御要靠速率限制、结果缓存、每租户预算与熔断。同理，judge 与重答若形成互相强化的循环，护栏层自己就是放大点。
 18. **"CaMeL/Dual LLM 等设计级方案 = 完全解"**——CaMeL 2025.7 即被 capability-abuse 攻击部分绕过（不劫持控制流，用计划内合法授予的能力执行外传等恶意动作）。任何架构模式都有其威胁模型假设（Dual LLM 牺牲灵活性、Plan-Then-Execute 不适合强交互）；永恒的是"叠加 + 最小权限 + 持续 eval"，不是任何单一银弹。
+19. **"注入防御放在模型层（guardrails/过滤器）就够了"**——治理是三子层一等层：只有 model-level 而缺 system-level（网关/权限模型）与 organizational-level（审计/合规/HITL），以及工具循环的四个 hook 点（调用前校验/调用后审计/结果过滤/越权拦截）作为运行时执行抓手，模型层护栏一旦被绕过就再无第二道墙。把注入防御只放模型层，是 Harness 综述观测到的最常见结构性缺口（Table 4：治理覆盖普遍稀疏，常沦为事后补丁）。
+20. **"capability-control 就是'加个 guardrail'"**——反直觉：它是贯穿 tool schema/上下文策略/运行时权限/身份/可审计/人工批准的**设计轴**，不是安全附加项（§11.2）。更多能力=更大控制问题=更大爆炸半径；每扩一个工具/记忆/对外通道，都要沿这条轴同步扩控制，否则就是 capability abuse 的温床。把它当成上线前"补一个 guardrail"，恰好是治理沦为事后补丁的典型形态。
 
 ---
 
@@ -6155,6 +6235,55 @@ Agent 相比普通 LLM 应用新增了四块攻击面：**工具（能改变世�
 - **Guardrails**：输入侧（prompt injection 检测、PII 脱敏）、输出侧（JSON schema 强制、越界拦截、幻觉自检）。**结构化输出/约束解码**把"解析失败"这一整类故障消灭：provider 侧用 structured outputs / strict tool use 保证 schema 精确匹配，自托管侧用 xgrammar / outlines / guidance 等做 grammar-constrained decoding，从解码层面只允许产出合法 token；
 - **确定性治理**：prompt、模型版本、参数全部版本化；新模型先走影子流量对比，再金丝雀放量——provider 静默更新模型快照是真实的回归来源。
 
+#### 16. 推理与运维工程清单（MLOps for LLM Serving）
+
+**出处与定位。** 《Agent Harness Engineering: A Survey》（TMLR under review, anonymous, 2026，64 页，映射 170+ 开源项目）提出 harness 工程的三阶段演进（Prompt Engineering → Context Engineering → Harness Engineering）与 ETCLOVG 七层心智模型（Execution 执行环境/沙箱、Tooling 工具接口/协议、Context 上下文管理、Lifecycle 生命周期/编排、Observability 可观测、Verification 验证/评估、Governance 治理/安全——其中 O 与 G 被升为**一等层**，状态管理归 L，hooks/策略执行归 G）。该综述把 harness 定义为"把模型调用转成有界、有状态、经工具中介的任务执行的工程化包裹层"，其图 2 给出一份**推理/运维工程清单**——即本节主题。它与本章前 15 节的关系是：前述各节讲清单里每一项"怎么工作"，本节讲"这份完整清单长什么样、每项何时上场"，并收口于综述 §10 的金句：**harness 设计应被读作依赖结构，而非可拆组件清单**——下面 17 项彼此耦合，任何一项的改动都应按系统变更测试（综述 §11.3），而非局部优化。
+
+**清单逐条（是什么 / 何时用）：**
+
+1. **vLLM + SGLang 高吞吐引擎**：开源 serving 引擎事实标准（机制对比见 §9）。何时用：自托管、要高并发吞吐、需要 day-0 模型支持与 prefix caching；二选一即可，按负载特征定（前缀复用密集偏 SGLang，通用与二次开发资料偏 vLLM）。
+2. **分页注意力（PagedAttention）服务管道**：KV cache 分块 + 块表 + 按需分配，消灭 60–80% 显存浪费（见 §2）。何时用：所有自托管 serving 的默认底座——它已是引擎内置件，不是可选项。
+3. **长上下文 KV 驱逐策略**：prefix cache 的 LRU/引用计数驱逐、抢占时的 swap/recompute（见 §2、§9）。何时用：长上下文或多轮负载下 KV 显存吃紧时；驱逐策略直接决定尾延迟与命中率，是长上下文运维的核心旋钮。
+4. **投机解码 + 草稿模型切换**：draft-verify 换 2–3x 延迟加速（见 §7）。何时用：低 batch、交互式、TPOT 敏感场景，高并发批处理下应关闭。"草稿模型切换"指按领域接受率 α 动态选择或停用 draft（MTP 原生头 vs 独立 draft vs n-gram），接受率随领域偏移下降时切走。
+5. **量化取舍 INT4 / FP8 / AWQ / GPTQ**：见 §6 速查表。何时用：FP8 是 H100 一代近乎无损的生产默认；AWQ/GPTQ（W4A16）用于显存硬约束（如 70B 塞单卡）；INT4 KV 慎碰。共同纪律：任何降比特都必须在自己任务上做精度回归。
+6. **按成本/延迟/质量自建模型路由器**：以三维目标把请求分发给不同模型/档位（路由/级联机制见 §10，思维档位路由见 §8）。何时用：流量难度分布宽、单模型"一刀切"单位经济明显不划算时；本课程 lab08（缓存与路由实验）即该能力的最小可运行实现。
+7. **每请求 token 预算系统**：预计数 + 原子扣减 + 事后对账的预算/配额机制（见 §12 TPM 实现、§14 预算与终止条件）。何时用：任何多租户或有成本红线的系统——它是防止单请求/单用户烧穿账单的最后防线，且必须把思维 token 计入。
+8. **边缘部署 ONNX / TensorRT / WebLLM**：模型导出 ONNX、TensorRT 编译优化、或以 WebLLM 在浏览器端经 WebGPU 推理。何时用：离线可用、隐私不出端、云端成本/延迟不可接受时；代价是模型规模受限，精度与更新同步需单独治理。
+9. **Ollama / LM Studio / LiteLLM 本地栈**：Ollama/LM Studio 一键本地跑开源模型（开发调试、离线演示、eval 零 API 成本）；LiteLLM 作 LLM 网关统一多 provider（见 §10 治理层）。何时用：本地联调与低成本压测走 Ollama/LM Studio，生产多 provider 统一入口与成本归因走 LiteLLM——三者分工不同，勿混为一谈。
+10. **连续批处理 + 请求队列管理**：iteration-level scheduling（见 §2）+ 有界队列 + `503/429 + Retry-After` 快速失败（见 §12 背压）。何时用：永远开启；队列管理是被低估的一环——无界队列下"系统没崩但所有请求都超 SLO"是典型事故。
+11. **为延迟 / token / 错误 / 成本建可观测性**：四个维度缺一不可（见 §15），以 OTel GenAI conventions 打点、Langfuse 类工具落盘，思维 token 单列（见 §8）。何时用：第一优先级，先于任何优化——看不见的维度无法治理。
+12. **1000+ 并发压测**：用真实 prompt 长度/输出长度分布做高并发压测，读出抢占触发点、goodput 拐点与尾延迟。何时用：上线前与每次引擎/并行配置变更后；单请求 demo 永远发现不了 preempt-recompute 抖动。
+13. **Kubernetes 承载 AI 负载（HPA / pod 自动扩缩）**：以队列深度、在途请求数、SLO 违约率等**推理专属自定义指标**驱动 HPA/KEDA，配 warm pool 对冲分钟级冷启动（见 §9 弹性扩缩容）。何时用：多实例生产部署；切忌用 CPU/内存利用率触发扩容。
+14. **Grafana + Prometheus 推理仪表板**：标准化指标看板——TTFT/TPOT P99、goodput、队列深度、KV 命中率、每请求成本、思维 token 占比。何时用：与第 11 项配套；仪表板的存在本身定义了团队的 SLO 语言。
+15. **构建优化推理服务并公开基准**：把服务构建与基准化当成一项工程产出（方法对齐 CMU/UCSD LLM Systems 课程，见推荐资源）。何时用：团队选型与对外可信度——没有可复现基准的"我们更快"只是轶事。
+16. **读推理研究而非模型发布新闻**：serving 研究的演进（PagedAttention → 分离架构 → MLA/MTP → FP4）决定 12–18 个月后的架构选项；模型发布新闻只影响当天的模型选择。何时用：作为持续学习的默认姿态——这是资深与初级的知识分界线。
+17. **搞懂推理成本如何击穿单位经济**：推理不是"基础设施账单科目"，而是产品单位经济（unit economics）的一阶变量——每请求成本 × 调用模式决定功能能否盈利。何时用：永远。成本模型漏掉思维 token、漏掉缓存命中率、漏掉抢占导致的 SLO 违约，定价与容量决策就全部失真。
+
+**KV-cache 命中率：清单中最重要的单一指标。** Manus（生产级 agent 团队）的判断是："**KV-cache 命中率是生产级 AI agent 最重要的单一指标**"。价格直观说明原因：Claude Sonnet 的**缓存读取 $0.30/MTok，未缓存输入 $3.00/MTok——恰好 10x 价差**（与 §5 "缓存读取 −90%" 的定价杠杆同口径）。对 agent 循环这种"每步重发全量历史、前缀占比极高"的负载，命中率的几个百分点波动就决定单位经济是否成立。Manus 的三条经验规则恰好直接翻译为 serving 侧 prefix cache（vLLM APC / SGLang RadixAttention，见 §5）的工程约束：
+
+| Manus 规则 | 对 serving prefix cache 的直接含义 |
+|---|---|
+| ① 保持 prompt 前缀稳定 | 前缀哈希/基数树命中的前提是**字节级前缀匹配**（见 §5）：任何前部动态字段（时间戳、请求 ID、工具列表重排）都会击穿其后全部缓存；动态内容一律后置，中途指令追加到消息序列而非改写顶层 system |
+| ② 上下文 append-only | 只追加、不改写历史消息，第 t 步的 KV 才能被第 t+1 步整段复用；任何对已缓存区间的就地编辑（含重新格式化）等于全量 re-prefill |
+| ③ 确定性序列化 | 同一语义内容每次必须序列化为**完全相同的字节**（字段顺序、空格、浮点格式化固定）——非确定性序列化会让"内容没变、哈希变了"，缓存形同虚设；Manus 宁可用掩码 logits 控制工具可用性也不在运行时增删工具列表，正是为此 |
+
+三条规则的共同本质：**缓存命中率是 prompt 工程的函数，不是部署参数**——它在上游（上下文组装代码）被决定，在下游（serving 引擎）被兑现。
+
+#### 17. cost–quality–speed 三角的工程落地
+
+**三角不是等边三角形。** 综述 §11.1 指出：在 harness 系统中，**更强的 V（Verification 验证/评估）、G（Governance 治理）、O（Observability 可观测）、E（Execution 执行环境/沙箱）都会直接提高成本与延迟**——每多一道校验、多一层沙箱、多一条 trace，都是真实的 token、毫秒与美元。因此工程问题从来不是"三角都要"，而是**显式决定取舍**：哪些质量保障必须同步内联（进关键路径、加延迟），哪些可以异步旁路（不挡用户、事后出结果），哪些放进回归套件（离线批跑、只在变更时触发），哪些遥测值得采（采了有人看、有人据此行动），哪些不值得（采了只是存着）。这条决策线与本章既有机制一一对应：guardrails/结构化输出是同步检查（§15），线上采样评估与 judge 校准是异步/回归（§15），"trace 元数据全量 + 内容抽样"是"遥测值不值得采"的标准答案（§14），思维档位与模型路由则是 speed/cost 一侧的旋钮（§8、§10）。
+
+**质量不是标量（最易错的一步）。** 质量无法压成单一数字：同一回答在正确性、格式合规、安全性、延迟体感上可能得分互斥。把质量当标量，就会做出"质量分 0.91 > 0.89 所以新模型更好"这类伪决策。工程上必须把质量拆成**分维度的 eval 向量**（任务成功率、schema 通过率、注入防御通过率、人工校准一致率……），三角取舍在每一维上分别定价。这也意味着 V 层（评估）的结果必须**回流改进 harness 本身**（综述对 V 层的定义）：eval 不是上线前的闸门，而是持续校准三角配比的传感器。
+
+**落地为四类决策（面试得分点）：**
+
+1. **同步 vs 异步**：阻塞用户的检查（schema 合法性、越权工具调用、PII 脱敏/注入拦截）必须同步；代价高但非即时的检查（LLM-as-judge 质量评估、跨会话漂移检测）异步化，结果回写看板而非挡在请求路径上；
+2. **在线 vs 回归**：变更敏感的重评估（judge 校准、全量 golden set）进 CI 回归套件按需触发，不在每请求上重复支付；
+3. **遥测取舍**：每条指标都要有消费者——P99 TTFT/TPOT、goodput、KV 命中率、每请求成本（含思维 token）值得全量采；trace 全量内容只值得抽样，元数据全量（见 §15）；
+4. **档位与路由联动**：三角配比最终物化为按任务类型的配置矩阵——简单任务走低思维档 + 小模型 + 轻校验，高风险任务走高思维档 + 强模型 + 全套同步护栏，由 §10 的路由层统一执行。
+
+**与本清单的关系。** 三角框架是 §16 清单的"选择逻辑"：清单回答"有哪些组件"，三角回答"为什么不全开"。综述 §11.4 的收口判断是：随着框架演化为平台（托管沙箱、身份、计费、可观测、治理、人工交接，跨多 run 多用户），问题已从"如何造一个 agent"变为"**如何运维一支行为可审查、可回滚的 agent 舰队**"——舰队级的成本与延迟是三角取舍的乘数，任何单项检查的开销都会被规模放大成战略问题。
+
 ---
 
 ### 面试高频考点
@@ -6353,6 +6482,19 @@ Agent 相比普通 LLM 应用新增了四块攻击面：**工具（能改变世�
 - 演进加分点：FA2 减少非 matmul 操作再快约 2x；FA3 在 Hopper 上用 warp specialization + TMA 做 matmul/softmax 异步重叠、支持 FP8 attention；FlashInfer 面向 serving（Paged KV、变长、cascade），是 SGLang 默认 backend；FlashDecoding 沿 KV 维分片解决长上下文 decode 的 GPU 不饱和。
 - 关系收口：FA 是 kernel 层 IO 优化，PagedAttention 是 KV 管理层优化，两者正交可叠加；陷阱题"FA 是不是有损"——答：精确无损。
 
+#### 题 15（系统设计，2024–2026 新增）：为一个日活百万的 agent 服务做容量与成本设计。列出你会建的运维/可观测/扩缩组件与关键权衡。
+
+**答题思路**：先给容量账的算法（不是背组件），再按"serving → 成本 → 可观测 → 扩缩 → 可靠性"五层列组件与权衡，最后以单位经济和"舰队运维"视角收口。展示的是把《Agent Harness Engineering: A Survey》图 2 清单落成一套依赖结构的能力，而非罗列工具名。
+
+**参考答案要点**：
+- **容量账先行**：日活百万 → 估峰值并发（按日活的 5–10% 同时在线、每会话数十步 LLM 调用扇出）；"平均输出长度"必须**含思维 token**（见 §8）；KV 显存余量决定单实例并发上限（见 §1）；实例数 = 峰值 goodput 需求 ÷ 单实例满足 SLO 的 goodput，再留 warm pool 余量。
+- **Serving 层**：自托管走 vLLM/SGLang + FP8 + prefix caching + continuous batching，节点内 TP、跨机 PP（见 §9）；1000+ 并发压测找抢占触发点与 goodput 拐点，以 goodput 而非裸吞吐验收。权衡：分离架构（DistServe/Mooncake 系 + NIXL/LMCache）仅在 SLO 严格、规模够大时引入，否则单机 chunked prefill 运维成本低得多。
+- **成本层（单位经济是架构约束）**：每请求成本拆到功能模块并**单列思维 token**；模型路由器按成本/延迟/质量分流（RouteLLM 级联 + 思维档位路由，见 §10、§8）；每请求 token 预算（预计数 + Redis 原子扣减 + 对账，见 §12）；**KV-cache 命中率作为头号指标**（Manus：缓存 $0.30 vs 未缓存 $3.00/MTok，10x 价差），靠三规则保住——稳定前缀、append-only 上下文、确定性序列化（见 §16）；延迟不敏感任务下沉 Batch API。
+- **可观测层**：OTel GenAI conventions 全链路 trace（run → step → LLM/tool span），Grafana + Prometheus 四维度仪表板——P99 TTFT/TPOT、每请求成本、错误分类、KV 命中率 + 思维 token 占比；trace 元数据全量、内容抽样；eval 回归（含 judge 偏置规避与人工一致率校准，见 §15）作为质量维度的持续传感器。
+- **扩缩层**：Kubernetes + HPA/KEDA，由**队列深度、在途请求数、SLO 违约率**驱动而非 CPU；warm pool + 权重预热对冲分钟级冷启动（见 §9）；扩容必须与流量侧 load shedding 联动，否则扩容完成的瞬间被流量冲垮。
+- **可靠性与治理**：超时/重试（保守、计费感知）/按模型独立熔断/fallback 链；RPM+TPM 双维限流 + 有界队列快速失败；工具按只读/写/不可逆分级授权、高风险工具前 HITL interrupt；O 与 G 按一等层建设而非事后补丁（综述 ETCLOVG 七层）。
+- **权衡收口**：每个组件都是 cost–quality–speed 三角上的显式选择——同步护栏 vs 异步评估、命中率 vs 前缀灵活性、warm pool 常驻成本 vs 弹性；验收标准不是"组件齐全"，而是**单位经济成立且行为可审查、可回滚**：问题已从"造一个 agent"变为"运维一支 agent 舰队"（综述 §11.4）。
+
 ---
 
 ### 易错点·反直觉点
@@ -6376,6 +6518,8 @@ Agent 相比普通 LLM 应用新增了四块攻击面：**工具（能改变世�
 17. **TP 跨节点是常见事故。** TP 的 all-reduce 每层每步都要付、且位于 TPOT 关键路径，一旦跨出 NVLink domain（通常 8 卡），TPOT 急剧恶化；跨机扩容应优先 PP。"32 卡一把 TP32"几乎总是错误答案。
 18. **MoE 激活参数小 ≠ 部署便宜。** 671B 的 MoE 激活只有 37B，但全部 expert 必须驻留显存，显存 sizing 看总参；"算力便宜"只意味着每请求 FLOPs 少，不意味着所需卡数少。
 19. **LLM 扩容不是秒级的。** 权重加载动辄分钟级冷启动，靠 CPU 利用率触发的 HPA 根本追不上流量崩塌——必须用队列深度/SLO 违约率等推理专属指标，并配 warm pool 或权重预热。
+20. **只优化单请求延迟，忽视吞吐/并发/队列。** 单请求 P50 漂亮 ≠ 系统能扛并发：continuous batching 的甜点、KV 显存上限下的抢占抖动（见 §2）、无界队列下"服务没崩但全部超 SLO"的排队崩塌（见 §12），都是纯延迟视角看不见的。生产指标必须同时约束 TTFT/TPOT、goodput 与队列深度；投机解码这类"延迟优化"在高并发下甚至负优化（见 §7）。
+21. **把单位经济当财务问题而非架构约束。** 每请求成本 × 调用模式决定功能能否盈利——推理成本是**架构设计轴**而非账单科目：KV-cache 命中率（缓存 $0.30 vs 未缓存 $3.00/MTok，10x 价差）、思维 token 归因、路由档位、前缀稳定性全是架构决策（见 §16、§17）。把它交给财务月底对账的团队，会在定价、模型选择与功能边界上持续做出事后看来错误的决定。
 
 ---
 
@@ -7611,6 +7755,30 @@ Lead Agent（强推理模型 + extended thinking）
 
 合规侧先记三条：① **EU AI Act**——2026.8.2 起 Annex III 高风险义务适用，高风险系统负有日志留存与人类监督的可追溯义务，agent 的全链路 trace 不只是工程需要也是合规需要；② **中国《人工智能生成合成内容标识办法》**（2025.9.1 施行）要求显式 + 隐式双标识，生成式 AI 服务需备案——国内上线必遇；③ GDPR 被遗忘权对记忆与用户数据仍然有效（呼应 Q15）。整体时间表仍在变动，引用前核实最新状态。
 
+#### 2.12 系统设计的三个跨层权衡（Harness 综述升华）
+
+2.1–2.11 是按模块拆解的"知识点视图"；本节把它们升维成**跨层权衡视图**——这是系统设计题从"画得出架构图"进阶到"讲得出设计哲学"的分水岭。素材出自综述《Agent Harness Engineering: A Survey》（TMLR 在审、匿名，2026；64 页，映射 170+ 开源项目，配套两张架构图：四层心智模型 + 推理/运维工程清单）。综述给 harness 下的定义本身就是一道设计题的破题句：**harness 是把模型调用转成"有界、有状态、经工具中介的任务执行"的工程化包裹层**，其分析单元不是模型、不是提示，而是"让长程 agent 行为可控、可检查、可恢复的基础设施"。综述还给出了一条三阶段演进线（图 1/§2）：**Prompt Engineering → Context Engineering → Harness Engineering**——面试中用它一句话交代"agent 工程的关注点是怎么逐代上移的"，比罗列技术名词更显体系感。
+
+**ETCLOVG 七层：系统设计题的分层底稿。** 综述用七个一等层切分 harness，可直接当设计题的架构图骨架：**E**xecution（执行环境/沙箱）、**T**ooling（工具接口/协议）、**C**ontext（上下文管理）、**L**ifecycle（生命周期/编排）、**O**bservability（可观测）、**V**erification（验证/评估）、**G**overnance（治理/安全）。相对旧式"模型/工具/记忆/规划/评估/安全"六组件框架，它的关键升格有两处：**把 O 与 G 升为一等层**（不再是事后补丁），并把状态管理归入 L、把 hooks/策略执行归入 G。逐层的综述论据可与本章前文互引：
+
+- **E 层**：沙箱不是"加个容器"就完事——SandboxEscapeBench（Marchand et al. 2026）显示前沿模型可利用沙箱弱点逃逸，而业界防御碎片化；长程平台的执行环境硬化本身是开放问题（§12）。
+- **T 层**：Table 1 按"集成边界"排列工具/接口标准；设计原则是"**prefer fewer, more expressive tools**——若人类工程师都说不清何时用哪个工具，模型更做不到"（呼应本章易错点 #7）。MCP/ACP/A2A 的标准化不是免费午餐：它把责任转移给 G+O——跨系统调用必须保留 provenance、权限、成本与失败证据。
+- **C 层**：短期/中期/长期三分。短期 system prompt 要找"**right altitude**"（过具体 = 脆弱难维护，过模糊 = 无指引）；token-efficient tool design；progressive disclosure / JIT（Claude Code：CLAUDE.md 启动加载 + glob/grep 按需，即 2.6(2)）；**KV-cache-aware 设计**——Manus 称"KV-cache 命中率是生产级 AI agent 最重要的单一指标"：Sonnet 缓存价 $0.30/MTok vs 未缓存 $3.00/MTok（10×），三条规则 = ① 保持 prompt 前缀稳定 ② 上下文 append-only ③ 确定性序列化（正是 2.7 缓存杠杆的底层机理）；Manus 用掩码 logits 而非运行时改工具列表来收束动作空间，配合 Anthropic cache_control 断点使用。中期靠结构化笔记（NOTES.md/todo.md）外置。
+- **O 层**：Langfuse + OpenTelemetry 组合（呼应 2.9 的 OTel GenAI 约定）。**V 层**：评估结果必须回流改进 harness，eval 即 CI 的闭环。
+- **G 层**：三子层——model-level（guardrails/过滤器）/ system-level（网关/代理/权限模型）/ organizational-level（审计/合规/HITL）；工具循环有**四个 hook 点**（Fig 14，策略在 hook 上执行而非写进 prompt）；风险 taxonomy 见 Kim et al. 2026（Table 3），而覆盖普遍稀疏（Table 4）——**治理在实践中常沦为事后补丁，这正是它被升为一等层的原因**。
+
+综述的四层心智模型（图 1）自底向上：**L1 原子能力**（LLM/Tools/Augmented LLM/MCP/Skills）→ **L2 运行底座**（Prompt→Context→Harness Engineering 三代叠加，含 8 子能力：Model Invocation/Tool Dispatch、Runtime Inner Loop、Context Assembly/Compaction、Sandbox/Permission/Secrets、Session State/Checkpoint/Resume、Retry/Timeout/Concurrency/Queue、Hooks/Tracing/Logging/Monitoring、Token/Latency/Cost Control）→ **L3 控制流**（Loop Engineering 的 Plan·Act·Observe·Reflect ↔ Graph Engineering，谱系为 Code-driven ↔ LLM-driven ↔ Hybrid）→ **L4 系统形态**（Single-Agent[集中式：main+sub/manager/supervisor] → Agentic Workflow[去中心化：handoff/swarm/group chat/network] → Agent Team/MAS[混合：hierarchical/hybrid]）。面试中被问"你的系统长什么样"，答 L3 谱系上的位置 + L4 形态选择，比背框架名有力得多。
+
+**升华一：cost–quality–speed 三角——系统设计题的默认权衡语言（§11.1）。** 任何架构选择都要说清它在这个三角上的取舍与切换条件：更强的 V/G/O/E（更多验证、治理、观测、沙箱硬化）直接提高成本与延迟；质量不是标量目标——必须决定**哪些检查同步执行、哪些异步或进回归套件、哪些遥测值得采**。面试表达模板："这一步我选 quality 优先，代价是延迟 +X，切换条件是 Y（错误代价超过阈值时）"——把权衡说出**可观测的切换条件**，才是资深答法。
+
+**升华二：capability–control 设计轴——把"给 agent 多少自主权"当一等设计变量（§11.2）。** 核心命题：**更多能力 = 更大控制问题**。控制不是最后补上的安全层，而是贯穿各层的**设计轴**，一头连着 tool schema（工具粒度即授权粒度）、上下文策略（agent 看到什么才能决定什么）、运行时权限、身份（以谁的名义行动）、可审计性，另一头连着人工批准（HITL 挂在 G 层哪个 hook 上）。答写操作/高权限 agent 题（Q9、Q12）时，用这条轴统一你的权限分层、确认闸门与审计设计，而不是把安全当 checklist 最后一项。
+
+**升华三：harness coupling——局部优化脆弱，改动按系统变更测（§11.3）。** 七层互相耦合，改 C 层的压缩策略可能打穿 V 层的 eval、改 T 层的工具签名可能击穿 G 层的白名单——所以 harness 改动必须按**系统变更**测试（全量回归 eval，即 2.8 的"eval 即 CI"）。更狠的是**评测归因**问题：闭环框架下，agent 分数**不能脱离控制器（harness）归因于模型**（Bölük 2026b）——所以系统设计题里谈评估时必须说明"评测的是模型还是整套 harness"，跨系统比跑分前先看 harness 是否一致（呼应 Q14 的 harness 敏感性）。
+
+**升华四：frameworks → platforms——设计题的终局问题（§11.4）。** 平台化增加 durable workspaces、托管沙箱、身份、计费、可观测、评估、治理与人工交接，且全部要**跨多 run、多用户**成立。于是设计问题从"**如何造一个 agent**"升格为"**如何运维一支行为可审查、可回滚的 agent 舰队**"——新增的设计变量是 tenancy（多租户隔离）、合规（trace 留存即 EU AI Act 义务）、容错（舰队级降级而非单会话重试）、trace 留存策略、组织归属（agent 以哪个团队/角色身份行动）。综合设计题（见 Q20）的收尾必须落到这一层。
+
+**升华五：依赖结构而非清单 + 五缺口 checklist 升级版（§10）。** 综述的金句："**harness 设计应被读作依赖结构，而非可拆组件清单**"——七个模块不是摆积木，改一处要沿依赖追全链路影响。综述同时给出五个跨层反复出现的缺口，直接作为设计题 checklist 的升级版：**cross-tool 互操作**（跨工具语义与凭证如何打通）、**cost 归因**（一次任务的 token 账算到哪个工具/哪步）、**failure 恢复**（从哪一级断点 resume）、**multi-repo 编排**（跨仓库修改的一致性）、**human–agent 交接**（什么状态交给人、带什么上下文）。§12 的五个开放问题（执行环境硬化与扩展、可靠状态维护、从 trace 诊断失败、标准化交接、模型能力变化时保持 harness 有用）则是"未来 1–2 年这类系统会先在哪里出事"的预判清单，面试收尾谈扩展方向时点名即显前瞻。
+
 ### 三、面试高频考点
 
 | 考点 | 高频度 | 典型问法 |
@@ -7867,6 +8035,24 @@ Lead Agent（强推理模型 + extended thinking）
 - 指标：handoff rate、转接后 CSAT（不低于纯人工基线）、转接后解决率——而不只是 containment；
 - 多智能体架构里 escalation 同样是子代理失败的通用原语：worker 重试耗尽应上交而不是编造结果（呼应 MAST 的验证与终止失败类）。
 
+#### Q20 ⭐⭐⭐【综合设计】用 ETCLOVG 七层 + 三个跨层权衡，设计一个长程、多用户、可审计的 coding/research agent 平台，说明每层的关键决策与跨层耦合点（思路 + 要点）
+
+**答题思路**：这是本章的"会师题"——先用 2.12 的综述定义破题（平台 = 让长程 agent 行为可控/可检查/可恢复的基础设施，问题从"造一个 agent"升级为"运维一支可审查、可回滚的舰队"），再以 ETCLOVG 七层为架构骨架逐层给关键决策，用三权衡（cost–quality–speed / capability–control / harness coupling）串联跨层耦合点，最后落到五缺口 checklist 与五个开放问题。澄清环节照 2.1 六段式：并发会话数、任务时长量级（分钟/小时/天）、错误代价、审计留存期、是否需要多租户与组织归属。
+
+**参考答案要点**：
+
+- **破题与定位**：harness 是把模型调用转成"有界、有状态、经工具中介的任务执行"的包裹层；本题的分析单元是基础设施而非模型——长程、多用户、可审计三个约束分别压到 L（状态与恢复）、G+O（身份与 trace）、全层（fleet 级运维）；演进叙事一句带过：Prompt → Context → Harness Engineering。
+- **E 层（Execution）**：每会话独立沙箱/容器 + 独立 git worktree，网络出口默认受限、白名单放行；长程任务用 durable workspace（跨 run 存活）。耦合点：沙箱硬化（SandboxEscapeBench：前沿模型会利用沙箱弱点、防御碎片化）是 E↔G 的持续军备竞赛，不能"加个容器"了事。
+- **T 层（Tooling）**：fewer, more expressive tools——"人类工程师说不清何时用哪个，模型更做不到"；MCP server 作工具域隔离单元 + tool search 按需加载 + programmatic calling 压往返；标准化把责任转给 G+O：跨系统调用必须保留 provenance/权限/成本/失败证据。耦合点：T↔C（工具定义吃前缀缓存与上下文预算）、T↔G（工具粒度即授权粒度，tool annotations 驱动策略）。
+- **C 层（Context）**：短/中/长期三分——system prompt 找 right altitude（过具体脆弱、过模糊无指引）；CLAUDE.md/AGENTS.md 启动加载 + grep/glob JIT（progressive disclosure）；接近上限 compaction（先保召回再裁剪）；KV-cache-aware 三规则（前缀稳定/append-only/确定性序列化），缓存命中 $0.30 vs 未缓存 $3.00/MTok 是单位经济的命门；动作空间收束用掩码 logits 而非运行时改工具表；中期 NOTES.md/todo.md 外置。耦合点：C↔V（压缩丢关键事实会静默打穿 eval，改动按系统变更测）。
+- **L 层（Lifecycle）**：控制流选谱系位置——coding 走单线程主干 + 只读 sub-agent 探索（动作即决策，不并行改码）；research 走 orchestrator-workers（读多写少可并行）；session state/checkpoint/resume 全归本层，从失败点续跑而非整体重跑；并发/队列/超时/重试托管给 durable execution。耦合点：L↔E（断点续跑依赖持久化 workspace）、L↔O（每条分支决策进 trace）。
+- **O 层（一等层）**：OpenTelemetry GenAI 语义约定 + Langfuse 一类后端；trace 每次决策/工具调用/分支结构与成本；多用户场景 trace 按 tenancy 隔离与留存（留存期 = 合规参数：EU AI Act 高风险系统负有日志留存与人类监督的可追溯义务）。耦合点：O↔G 共享同一套 span（审计就是查 trace）；O↔V（线上 trace 回流离线 eval 集）。
+- **V 层（一等层）**：组件级（工具选择/参数正确率）+ 端到端（pass^k 承诺生产可靠性，不信 pass^1）+ trajectory 只评关键检查点；eval 结果回流改进 harness 形成闭环；明确声明"评的是整套 harness 还是裸模型"——闭环框架下分数不能脱离控制器归因于模型。耦合点：V↔全部层——任何一层的改动都触发全量回归（harness coupling 的操作化）。
+- **G 层（一等层）**：三子层落地——model-level（guardrails/注入分类器）/ system-level（LLM 网关、权限模型、四 hook 点挂策略执行而非写 prompt）/ organizational-level（审计、合规、HITL 审批队列）；风险按 taxonomy（Kim et al. 2026）覆盖，警惕 Table 4 揭示的"覆盖稀疏 → 治理沦为事后补丁"。耦合点：G↔T（policy as code 写进工具层与策略引擎）、G↔L（人工批准是生命周期里的显式状态）。
+- **三权衡如何贯穿**：① cost–quality–speed——更强的 V/G/O/E 抬成本与延迟，质量非标量：决定哪些检查同步、哪些异步进回归、哪些遥测值得采；每个决策给出切换条件；② capability–control——"给多少自主权"是一等设计轴而非安全附加项，连接 tool schema/上下文/权限/身份/审计/HITL；③ harness coupling——层间耦合使局部优化脆弱，改动按系统变更测，评测先分清归因对象。
+- **fleet 运维收束（frameworks → platforms）**：tenancy 隔离、计费（cost 归因到工具/会话/团队）、容错（舰队级降级）、trace 留存与组织归属（agent 以哪个团队身份行动）；北极星指标 = 每任务解决成本 + 人工介入率 + 可回滚率。
+- **checklist 升级版收尾**：按"依赖结构而非清单"自查五缺口——cross-tool 互操作、cost 归因、failure 恢复、multi-repo 编排、human–agent 交接；并点名五个开放问题（沙箱硬化与扩展、可靠状态、从 trace 诊断失败、标准化交接、模型代际变化时保持 harness 有用）作为路线图。
+
 #### 附：45 分钟系统设计完整范文与模拟追问（以 Q1 电商客服 Agent 为例）
 
 提纲人人会写，范文才教人如何组织语言与节奏。以下按 2.1 的六段时间轴示范完整流程，括号内为面试官大概率追问与应对。
@@ -7948,6 +8134,339 @@ Lead Agent（强推理模型 + extended thinking）
 11. **辅助**：[Tech Interview Handbook — Behavioral Interview](https://www.techinterviewhandbook.org/behavioral-interview/)（STAR 方法与高频行为题清单，配合 2.10 使用）；[OpenAI — Introducing deep research](https://openai.com/index/introducing-deep-research/)（端到端 RL 训练 browsing/reasoning 的产品视角，HLE 26.6%、GAIA 约 67.4% 的基准数据可作为谈资）；[LongMemEval](https://arxiv.org/abs/2410.10813)（长期记忆评估，配合 Q15）。
 
 12. **新一代基准集群（后饱和时代）**：[SWE-bench Pro](https://arxiv.org/abs/2509.16941)（Scale AI，大型商业仓库长程任务）、Terminal-Bench（终端操作）、[SWE-Lancer](https://arxiv.org/abs/2502.12115)（OpenAI，工程任务商业价值）、[GAIA-2](https://arxiv.org/abs/2509.17158)（Meta FAIR，agent 模拟环境）、Vending-Bench 2（长时程商业运营）、[AgentDojo](https://arxiv.org/abs/2406.13352)（注入攻防联合评测）——答 Q7/Q14 的"评估往哪走"时，能点名这组 2025 年新基准，是"跟进了社区"与"只知道 SWE-bench"的分界线。
+
+
+---
+
+
+# 第 13 章 · Agent 工程分层架构与 Harness Engineering
+
+第 1–12 章分别讲了提示词、记忆、工具、多智能体、评估、安全、部署——但在真实系统里，这些从来不是"独立模块"，而是同一个**包裹层（harness）**的不同切面：它们在运行时彼此耦合，共同决定一个长程 agent 是否可控、可检查、可恢复。本章是全书的"统一元框架"：以 2026 年的综述《Agent Harness Engineering: A Survey》（TMLR under review，anonymous，64 页，映射 170+ 开源项目，配两张架构图：四层心智模型 + 推理/运维工程清单）为主干，把散落在各章的 harness 关切串成一个**控制系统视角**——模型是被控对象，harness 是控制器 C_H，评估分数是闭环系统的联合属性。面试中，能把"我用了 LangGraph + 加了 guardrail"上升为"我在 ETCLOVG 的每一层做了什么决策、承担了什么代价"的人，才是资深岗想要的候选人。
+
+### 一、知识图谱
+
+```
+Agent Harness Engineering（统一元框架）
+│
+├── 0. 核心命题：绑定约束论
+│   └── 生产可靠性更多取决于"包裹模型的那层工程"而非模型本身
+│       · 分析单元 = 让长程 agent 行为可控/可检查/可恢复的基础设施，
+│         而非模型或提示本身
+│       · 同一模型 + 不同 harness → 基准分数与账单差异巨大
+│         （SWE-bench 的 harness 敏感性 / Manus 的 KV-cache 单一指标论）
+│
+├── 1. 三阶段演进（图 1 / §2）—— 是包含关系，不是替代关系
+│   ├── Prompt Engineering（2022–2023）：单轮指令设计
+│   ├── Context Engineering（2024–2025）：上下文内信息管线
+│   │     （compaction / JIT / 结构化笔记 / KV-cache 感知）
+│   └── Harness Engineering（2025–2026）：有界·有状态·工具中介的工程化包裹层
+│         （prompt 与 context 工程被降级为 harness 的子组件）
+│
+├── 2. 四层心智模型（图 1）× ETCLOVG 七层 —— 对应关系树
+│   │
+│   ├── L1 原子能力层 .......................... 〔T 为主，E 部分〕
+│   │   └── LLM / Tools / Augmented / MCP / Skills
+│   │
+│   ├── L2 运行底座层（八子能力）.............. 〔C·E·G·O 主战场〕
+│   │   ├── Model Invocation / Tool Dispatch ......... E + T
+│   │   ├── Runtime Inner Loop ....................... L
+│   │   ├── Context Assembly / Compaction ............ C
+│   │   ├── Sandbox / Permission / Secrets ........... E + G
+│   │   ├── Session State / Checkpoint / Resume ...... L
+│   │   ├── Retry / Timeout / Concurrency / Queue .... L
+│   │   ├── Hooks / Tracing / Logging / Monitoring ... G + O
+│   │   └── Token / Latency / Cost Control ........... O（+ L）
+│   │
+│   ├── L3 控制流层 ............................ 〔L 生命周期/编排〕
+│   │   ├── Loop Engineering（Plan·Act·Observe·Reflect）↔ Graph Engineering
+│   │   └── 谱系：Code-driven ↔ LLM-driven ↔ Hybrid
+│   │
+│   └── L4 系统形态层 .......................... 〔L + G 跨层〕
+│       ├── Single-Agent（集中式：main+sub / manager / supervisor）
+│       ├── Agentic Workflow（去中心化：handoff / swarm / group chat / network）
+│       └── Agent Team / MAS（混合式：hierarchical / hybrid）
+│
+│   ⚠ 两套分层是不同视角，不可逐格 1:1 对读：
+│     · 四层图 = 结构视角（系统由什么搭成）；ETCLOVG = 职能视角（每层管什么关切）
+│     · O 与 G 横穿 L2（监控/hook 子能力）直至 L4（组织审计），不落在单一格
+│
+├── 3. ETCLOVG 七层（相对旧六组件框架的增量）
+│   ├── E Execution      执行环境 / 沙箱（SandboxEscapeBench：前沿模型可逃逸，防御碎片化）
+│   ├── T Tooling        工具接口 / 协议（Table 1 按"集成边界"排列）
+│   ├── C Context        上下文管理（short / mid / long；KV-cache 三规则）
+│   ├── L Lifecycle      生命周期 / 编排（★状态管理归 L）
+│   ├── O Observability  可观测（★升为一等层）
+│   ├── V Verification   验证 / 评估（评估结果回流改进 harness，闭环）
+│   └── G Governance     治理 / 安全（★升为一等层；★hooks/策略执行归 G）
+│
+├── 4. 治理的微观结构
+│   ├── 工具循环四 hook 点（Fig 14）：
+│   │   模型调用前 / 模型输出后（工具调用解析前）/ 工具执行前 / 工具结果回注前
+│   └── 治理三子层：model-level（guardrails/过滤器）
+│       / system-level（网关/代理/权限模型）/ organizational-level（审计/合规/HITL）
+│
+├── 5. 三大跨层权衡（§11）
+│   ├── §11.1 cost–quality–speed 三角：更强 V/G/O/E ⇒ 更贵更慢；质量非标量
+│   ├── §11.2 capability–control 设计轴：能力↑ ⇒ 控制问题↑；是设计轴，不是安全附加项
+│   └── §11.3 harness coupling：层间耦合使局部优化脆弱；
+│         改动须按"系统变更"测试；闭环下分数不能脱离控制器 C_H 归因模型（Bölük 2026b）
+│
+├── 6. 产业轨迹：frameworks → platforms（§11.4）
+│   └── 平台增加 durable workspaces / 托管沙箱 / 身份 / 计费 / 可观测 /
+│       评估 / 治理 / 人工交接（跨多 run·多用户）
+│       ⇒ 问题从"如何造一个 agent"变为
+│         "如何运维一支行为可审查、可回滚的 agent 舰队"
+│
+├── 7. §10 方法论金句与五缺口
+│   ├── 金句："harness 设计应被读作【依赖结构】，而非可拆组件清单"
+│   └── 五个跨层反复缺口：cross-tool 互操作 / cost 归因 / failure 恢复
+│       / multi-repo 编排 / human-agent 交接
+│
+└── 8. §12 五个开放问题
+    ├── ① 硬化与扩展执行环境
+    ├── ② 维护可靠状态
+    ├── ③ 从 trace 诊断失败
+    ├── ④ 标准化交接
+    └── ⑤ 在模型能力变化时保持 harness 有用
+```
+
+附（图 2 · 推理/运维工程清单，harness 之下的"底座之底座"，详见 2.7）：vLLM+SGLang 服务栈、分页注意力服务管线、长上下文 KV 驱逐策略、投机解码与草稿模型切换、量化（INT4/FP8/AWQ/GPTQ）、自建模型路由器（按成本/延迟/质量）、每请求 token 预算系统、边缘部署（ONNX/TensorRT/WebLLM）、本地测试（Ollama/LM Studio/LiteLLM）、连续批处理与请求队列、延迟/token/错误/成本可观测性、1000+ 并发压测、Kubernetes 承载 AI 负载（HPA/pod 自动扩缩）、Grafana+Prometheus 推理仪表板。
+
+---
+
+### 二、核心概念精讲
+
+#### 2.1 为什么需要 harness 这一层：绑定约束论
+
+**harness 的定义。** 综述给出的工作定义：harness 是把模型调用转成"**有界、有状态、经工具中介的任务执行**"的工程化包裹层（engineering wrapper）。注意其**分析单元**的设定——综述研究的不是模型，也不是提示，而是"让长程（long-running）agent 行为变得**可控（controllable）、可检查（inspectable）、可恢复（recoverable）**的基础设施"。这三个形容词就是 harness 的验收标准：一个系统如果跑飞了停不下来（不可控）、出错了查不到原因（不可检查）、崩了只能从头再来（不可恢复），那么无论用了多强的模型，harness 都是不合格的。
+
+**绑定约束论（binding constraint）。** 为什么 2025–2026 年社区突然把工程重心从"换更大的模型"转向"造更好的 harness"？因为生产系统的可靠性**绑定约束**已经转移：模型能力在多数任务上不再是最短板，**包裹层才是**。三类证据：
+
+1. **基准的 harness 敏感性**：同一模型在不同 harness 下 SWE-bench 类分数可以相差几十个百分点（第 11 章 ACI 一节与 HAL 榜单已反复展示），说明"模型好不好"这个问题本身就隐含了"在哪个控制器下"。
+2. **单一指标的生产证言**：Manus 团队直言"KV-cache 命中率是生产级 AI agent 最重要的单一指标"——一个纯粹的 harness 层指标，决定了 10 倍的输入成本差（Sonnet 缓存 $0.30/MTok vs 未缓存 $3.00/MTok）。模型选型决定不了这个数量级的账。
+3. **失败的分布**：多智能体失败分类学（MAST，第 12 章）显示规格类/编排类失败远多于"模型智力不足"类失败——系统不是输在推理，而是输在包裹。
+
+**一句话给面试官**：模型给出能力的**上限**，harness 给出可靠性的**上限**；前者由实验室决定，后者由你的工程决定，而生产事故几乎全部发生在后者的责任区内。
+
+#### 2.2 三阶段演进：prompt → context → harness
+
+综述图 1/§2 把 agent 工程方法论刻画为三个阶段的递进：
+
+| 阶段 | 时期 | 设计对象 | 代表手段 | 典型失效 |
+|---|---|---|---|---|
+| Prompt Engineering | 2022–2023 | 单轮指令文本 | few-shot、CoT、角色扮演 | 提示脆弱、不可维护 |
+| Context Engineering | 2024–2025 | 上下文窗口内的信息管线 | compaction、JIT 检索、结构化笔记、KV-cache 感知 | 上下文腐烂（context rot）、长程状态丢失 |
+| Harness Engineering | 2025–2026 | 整个执行包裹层 | ETCLOVG 全部七层的协同设计 | 层间耦合导致的"按下葫芦浮起瓢" |
+
+**关键理解：这是包含关系（nesting），不是替代关系。** Prompt engineering 没有消失，它成为 context engineering 的一个子问题（system prompt 怎么写是上下文装配的一环）；context engineering 又成为 harness engineering 的一个子层（C 层）。每一阶段都把上一阶段的对象"降维"成自己的一个组件，同时引入新的主矛盾：context 阶段的主矛盾是"有限窗口装什么"，harness 阶段的主矛盾是"整个控制闭环怎么稳"。面试中若把三者说成"后者淘汰前者"，会立刻暴露对演进逻辑的误解。
+
+#### 2.3 ETCLOVG 逐层精讲
+
+ETCLOVG 是综述提出的七层职能框架：**E**xecution、**T**ooling、**C**ontext、**L**ifecycle、**O**bservability、**V**erification、**G**overnance。它相对旧六组件框架的两处结构性增量必须记住：
+
+- **O 与 G 升为一等层（first-class）**：旧框架把可观测与治理当作"附件"或横切注释，ETCLOVG 把它们提升到与执行、工具平级的层——理由是长程 agent 的不可观测即不可运维，无治理即不可上线。
+- **两处归属重划**：状态管理（session state / checkpoint / resume）归 **L**（它是生命周期问题，不是上下文问题）；hooks 与策略执行归 **G**（hook 是治理的手和脚，不是编排的装饰）。
+
+**E — Execution（执行环境/沙箱）。** agent 的代码执行、文件操作、网络访问都发生在执行环境中；E 层的核心关切是**隔离与硬化**：沙箱边界、权限收缩、密钥注入方式。反直觉的证据来自 SandboxEscapeBench（Marchand et al. 2026）：**前沿模型本身就能发现并利用沙箱实现的弱点**，而当前防御是碎片化的（每家框架自己糊一层，无统一安全基线）。这意味着"模型越强、E 层越危险"——能力与控制问题同步增长（与 2.6 的 capability–control 轴呼应）。**交叉引用：本书第 9 章（沙箱安全、权限最小化）与第 10 章（隔离部署、密钥管理）。** 执行环境之下还有"底座之底座"——图 2 的推理/运维工程清单（vLLM+SGLang、分页注意力、KV 驱逐、投机解码、量化 INT4/FP8/AWQ/GPTQ、自建模型路由器、每请求 token 预算、连续批处理与队列、Kubernetes HPA、Grafana+Prometheus 仪表板、1000+ 并发压测、边缘部署 ONNX/TensorRT/WebLLM、本地测试 Ollama/LM Studio/LiteLLM）：harness 假设底层推理服务是稳定的，而这份清单就是让该假设成立的运维工程。
+
+**T — Tooling（工具接口/协议）。** 综述 Table 1 按**集成边界**（in-process function → SDK → HTTP API → 协议化生态）排列工具与接口标准，给出两条设计铁律：① **prefer fewer, more expressive tools**——工具表不是越全越好；② "**如果人类工程师都说不清何时用哪个工具，模型更做不到**"——工具选择的歧义性直接转化为调用错误率。2025–2026 的 MCP/ACP/A2A 标准化浪潮把工具集成从"写胶水代码"变成"接协议"，但综述点明了一个被忽视的后果：**标准化把责任转移给了 G+O 层**——一旦工具跨系统、跨组织，你就必须在系统边界之外继续保留 provenance（来源）、权限决策、成本与失败证据，否则"即插即用"就是"即插即失控"。**交叉引用：本书第 5 章（Function Calling、MCP 规范演进、tool poisoning、ACI 工具设计）。**
+
+**C — Context（上下文管理）。** 综述按时间尺度三分：**短期**（单次调用窗口）、**中期**（会话内跨轮）、**长期**（跨会话）。短期设计有四块硬内容：① system prompt 要找"**right altitude**"（合适海拔）——过具体则脆弱难维护，过模糊则无指引；② **token-efficient tool design**（工具 schema 与返回值的字节预算）；③ **progressive disclosure / JIT**（Claude Code 范式：CLAUDE.md 启动加载 + glob/grep 按需检索，而非把整个仓库塞进窗口）；④ **KV-cache-aware 设计**——Manus 称 KV-cache 命中率是生产级 agent 最重要的单一指标，机制是缓存前缀复用（Sonnet 缓存 $0.30/MTok vs 未缓存 $3.00/MTok），**三条规则**：保持 prompt 前缀稳定、上下文 append-only、确定性序列化；配套技巧是 Anthropic 的 `cache_control` 断点标记，以及 Manus 的关键抉择——**用掩码 logits 屏蔽不可用工具，而非在运行时修改工具列表**（后者会改动前缀、击穿缓存）。中期靠**结构化笔记**（NOTES.md / todo.md）把状态外化到文件系统，绕开窗口限制。**交叉引用：本书第 2 章（上下文工程）与第 4 章（记忆系统与外化存储）。**
+
+**L — Lifecycle（生命周期/编排）。** L 层管 agent 从启动到终止的全过程：inner loop 的调度、会话状态、checkpoint/resume、retry/timeout/concurrency/queue。综述的归属裁决值得强调：**状态管理属于 L 而非 C**——checkpoint 里保存的是"执行到哪一步、哪些副作用已发生、从哪恢复"，这是生命周期语义，不是上下文内容；把二者混为一谈，就会设计出"压缩上下文时顺手丢掉恢复点"的系统。**交叉引用：本书第 3 章（推理范式与内循环）、第 6 章（多智能体编排）、第 7 章（LangGraph 等框架的状态机/图执行原语）。**
+
+**O — Observability（可观测）。** 一等层意味着：trace 不是"加个日志"，而是与执行、工具同级的一层基础设施。综述的参考技术栈是 **Langfuse + OpenTelemetry**（OTel GenAI 语义约定），覆盖 token、延迟、错误、成本四类信号的采集与关联。O 层的存在理由直接对应 §12 开放问题③"从 trace 诊断失败"：没有结构化 trace，长程 agent 的失败就是黑箱。**交叉引用：本书第 8 章（评估与可观测性、OTel 约定、平台选型）。**
+
+**V — Verification（验证/评估）。** V 层的一等公民化带来一个闭环命题：**评估结果必须回流（feed back）改进 harness 本身**——offline eval 发现的回归、online eval 发现的漂移，都要能落到具体的层和具体的 hook 上，否则评估就只是发榜。这也引出 2.6 的 coupling 问题：回流之前先搞清楚分数变了是模型的功劳还是控制器的功劳。**交叉引用：本书第 8 章（offline/online 评估、trajectory eval、pass^k）。**
+
+**G — Governance（治理/安全）。** G 层分**三个子层**：**model-level**（guardrails、输入输出过滤器）、**system-level**（LLM 网关、代理、运行时权限模型）、**organizational-level**（审计、合规、HITL 人工批准）。G 层的"手脚"是工具循环的**四个 hook 点**（见 2.5）。综述用两份表格给出冷酷的现实检查：风险 taxonomy（Kim et al. 2026，Table 3）很全，但各开源项目对风险的**覆盖普遍稀疏**（Table 4）——结论是**治理在实践中常沦为事后补丁**，而非设计之初的架构决策。**交叉引用：本书第 9 章（guardrails 三层、权限模型、HITL 的审批疲劳）。**
+
+#### 2.4 控制流谱系：Loop vs Graph，Code/LLM/Hybrid，三种系统形态
+
+四层心智模型的 L3 是整个 harness 的"控制论核心"，它有两个正交维度：
+
+**维度一：Loop Engineering ↔ Graph Engineering。**
+
+| | Loop（循环） | Graph（图） |
+|---|---|---|
+| 结构 | Plan·Act·Observe·Reflect 的开放循环 | 节点 + 边 + 条件分支的显式拓扑 |
+| 控制感 | 弱：下一步由模型即时决定 | 强：可达状态空间被图限定 |
+| 擅长 | 开放-ended 任务（"修好这个 bug"） | 流程明确任务（退款工单的固定管线） |
+| 失效 | 死循环、漫游、不可预测成本 | 分支爆炸、图外的情况无处安放 |
+| 可恢复性 | 依赖 checkpoint 约定 | 天然可按节点 checkpoint/resume |
+
+**维度二：Code-driven ↔ LLM-driven ↔ Hybrid 谱系。** 控制流由谁决定？Code-driven（纯代码状态机，模型只填空）在谱系左端，确定、可审计但不灵活；LLM-driven（模型自主决定每一步）在右端，灵活但不可预测；**生产系统的收敛点在 Hybrid**——用代码锁定"必须确定的骨架"（权限闸门、重试策略、终止条件、审计点），把"需要判断的关节"交给模型（选哪个工具、怎么措辞、要不要再查一次）。第 12 章"单线程主干 + 只读子代理"的 2026 收敛形态，本质上就是 Hybrid 谱系的一个具体坐标。
+
+**L4 系统形态是 L3 的放大。** 三种形态对应控制流的三种拓扑：**Single-Agent**（集中式：main+sub / manager / supervisor，控制流是一棵树）、**Agentic Workflow**（去中心化：handoff / swarm / group chat / network，控制流是一张网）、**Agent Team / MAS**（混合式：hierarchical / hybrid）。形态升级不是免费的：每多一个 agent，G 层多一条要审计的委托链，O 层多一条要关联的 trace，L 层多一个要同步的 checkpoint——这正是 2.6 三大权衡在系统形态维度的投影。**交叉引用：第 3/6/7 章。**
+
+#### 2.5 工具循环四 hook 点 + 治理三子层
+
+**四 hook 点（Fig 14）。** 工具循环每转一圈，会经过四个可插策略的切面：
+
+| Hook 点 | 时机 | 典型策略 |
+|---|---|---|
+| ① 模型调用前 | 装配上下文、发起 inference 之前 | token 预算检查、上下文装配审计、敏感任务的路由决策 |
+| ② 模型输出后 | 解析出工具调用、执行之前 | 参数 schema 校验、allowlist/权限裁决、危险动作拦截或转 HITL |
+| ③ 工具执行前 | 进入沙箱/外部系统之前 | 密钥注入、速率限制、provenance 打标、副作用预登记 |
+| ④ 工具结果回注前 | observation 写回上下文之前 | 输出过滤/脱敏、来源标注（防间接注入）、成本记账、失败证据留存 |
+
+这四个 hook 点就是 G 层三子层的**落点**：model-level 过滤器主要挂在 ①②（进出模型的内容），system-level 权限与网关主要挂在 ②③（动作裁决与执行边界），organizational-level 审计与合规则要求四个 hook 全部留证。**设计 harness 的治理部分，就是回答"这四个点上各放什么、谁来拥有它"——这是第 12 章系统设计题的标准展开方式。**
+
+**治理的现实检查。** 综述引 Kim et al.（2026）的 Table 3 给出风险 taxonomy，又用 Table 4 展示开源项目对这些风险的覆盖——**普遍稀疏**。原因不复杂：治理策略与业务逻辑耦合、与模型行为耦合、与组织结构耦合，是七层里最难"事后补"的一层，却最常被事后补。资深候选人的答法：承认稀疏是常态，然后给出你自己的优先级排序（先 ②③ 的硬闸门，再 ①④ 的软审计）。
+
+#### 2.6 跨层综合：三大权衡与 frameworks → platforms
+
+单个层的最佳实践在第 1–12 章都讲过了；harness engineering 的真问题是**层与层之间**。综述 §11 给出三个跨层权衡：
+
+**§11.1 cost–quality–speed 三角。** 更强的 V（更多验证）、G（更多闸门）、O（更细遥测）、E（更硬隔离）无一例外地**提高成本与延迟**——每一道同步检查都是关键路径上的一次等待。两个资深要点：① **质量不是标量目标**——"更安全"与"更有用"常互相冲突，必须分解成可度量的子目标分别定价；② **检查的时态分配**才是设计功力所在：决定哪些检查**同步**（挡在关键路径上）、哪些**异步**（旁路执行）、哪些进**回归套件**（离线跑）、哪些遥测**值得采**（采集本身也有成本）。把一切都同步化是初级工程师的标志。
+
+**§11.2 capability–control 是一条设计轴，不是安全子项。** 综述的提法极为犀利：每增加一分能力（新工具、新权限、新自主度），就**等量增加一分控制问题**。因此 capability 与 control 不是"功能 vs 安全"的对立两栏，而是**同一条设计轴的两端**——它贯穿 tool schema 设计、上下文策略、运行时权限、身份体系、可审计性、人工批准。把它当安全子项的团队，会在"加功能"和"补安全"之间永远追逐；把它当设计轴的团队，在引入任何新能力时同步交付对应的控制机制（新工具 = 新 hook 策略 + 新审计字段 + 新回滚路径）。这是区分"做过 agent"和"运维过 agent"的分水岭问题。
+
+**§11.3 harness coupling：耦合对评估的含义。** 七层彼此依赖，意味着**局部优化是脆弱的**：你优化了 C 层的 compaction，可能悄悄改变了 L 层恢复点的有效性、G 层 hook 看到的内容、V 层评测的口径。两条推论：① harness 的任何改动都必须按**系统变更**来测试（全链路 eval + 回归），不能按"我改了上下文模块"来做局部验证；② 在闭环框架下，**agent 分数不能脱离控制器 C_H 归因于模型**（Bölük et al. 2026b）：基准分数是耦合系统 (M, C_H) 的联合属性，换 harness 即换排名。"我们换了新模型涨了 8 个点"这句话，只有在新旧 harness 逐字节一致时才成立。
+
+**§11.4 frameworks → platforms。** 产业轨迹正在从"框架"走向"平台"：平台在框架之上增加 **durable workspaces、托管沙箱、身份、计费、可观测、评估、治理、人工交接**，并且面向**多 run、多用户**。这一转变改写了设计问题的题面：框架时代的问题是"**如何造一个 agent**"（单数、一次性、开发者自用），平台时代的问题是"**如何运维一支行为可审查、可回滚的 agent 舰队**"（复数、长生命周期、多租户）。面试中被问到"你会怎么设计 agent 平台"，题眼就是这句——舰队思维，不是单车思维。
+
+#### 2.7 依赖结构而非清单 + 五缺口 + 五开放问题
+
+**§10 金句：** "harness 设计应被读作**依赖结构（dependency structure）**，而非可拆组件清单。" 清单思维问"我集齐了 ETCLOVG 七层没有"，依赖结构思维问"这层坏了，哪些层会跟着失效；这层改了，哪些层的假设被打破"。前者产出 checklist 式架构师，后者产出系统设计题的高分答案。
+
+**五个跨层反复出现的缺口**（综述在 170+ 项目中反复观察到的未完成项）：
+
+1. **cross-tool 互操作**：工具生态标准化了，但跨工具的状态与 provenance 传递仍靠胶水；
+2. **cost 归因**：一张账单里，哪笔钱是哪个 agent、哪步决策、哪个子任务花的，多数系统答不出；
+3. **failure 恢复**：checkpoint 存了，但从任意失败点语义正确地恢复（尤其是副作用已部分发生时）仍是手工活；
+4. **multi-repo 编排**：跨仓库任务的依赖解析与原子性缺乏原语级支持；
+5. **human-agent 交接**：何时升级、交接包里装什么、人接手后 agent 如何退场，几乎没有成熟范式。
+
+**§12 五个开放问题**（研究前沿，也是博士级面试的谈资）：① **硬化与扩展执行环境**（SandboxEscapeBench 证明远未解决）；② **维护可靠状态**（长程状态的一致性与可恢复性）；③ **从 trace 诊断失败**（O 层数据有了，自动归因没有）；④ **标准化交接**（human-agent 与 agent-agent 交接的协议化）；⑤ **在模型能力变化时保持 harness 有用**（harness 为弥补弱模型而生的脚手架，会在模型变强后变成束缚——何时拆、怎么拆）。
+
+**附：图 2 推理/运维工程清单的位置感。** 图 2 列出 harness 之下的推理运维工程：服务栈（vLLM+SGLang）、分页注意力服务管线、长上下文 KV 驱逐策略、投机解码与草稿模型切换、量化（INT4/FP8/AWQ/GPTQ）、按成本/延迟/质量自建的模型路由器、每请求 token 预算系统、边缘部署（ONNX/TensorRT/WebLLM）、本地测试（Ollama/LM Studio/LiteLLM）、连续批处理与请求队列管理、为延迟/token/错误/成本建立可观测性、1000+ 并发压测、Kubernetes 承载 AI 负载（HPA/pod 自动扩缩）、Grafana+Prometheus 推理仪表板、构建优化过的推理服务并公开基准、读推理研究而非模型发布新闻、搞懂推理成本如何击穿单位经济。它与 C 层的 KV-cache 三规则形成有趣的呼应：**应用层拼命维持的前缀稳定，要靠服务层的分页注意力与缓存基础设施来兑现**——上下两层不匹配时，省下的钱会在另一层漏掉。
+
+---
+
+### 三、面试高频考点
+
+| 考点 | 高频度 | 说明 |
+|---|---|---|
+| ETCLOVG 七层框架及其相对旧六组件的增量（O/G 升一等层、状态归 L、hook 归 G） | ⭐⭐⭐ | 2026 年 agent 工程岗的"新八股"，能画出对应关系树即领先 |
+| harness engineering vs prompt/context engineering 的区别与演进关系 | ⭐⭐⭐ | 开场概念题，答"包含而非替代"是及格线 |
+| harness coupling 对"模型 vs 系统"评估归因的含义（分数是 (M, C_H) 联合属性） | ⭐⭐⭐ | 资深岗/评估岗的杀手题，直接区分是否读过闭环评估文献 |
+| cost–quality–speed 三角的落地（同步/异步/回归/遥测的时态分配） | ⭐⭐⭐ | 系统设计题必用，答"质量非标量"加分 |
+| capability–control 是设计轴而非安全附加项 | ⭐⭐⭐ | 安全 + 架构交叉题，2026 年最热论断之一 |
+| 工具循环四 hook 点及各点策略 | ⭐⭐ | "设计一个 harness"类题的标准骨架 |
+| frameworks → platforms 后设计问题的变化（舰队思维） | ⭐⭐ | 平台岗/基础架构岗题眼 |
+| KV-cache 三规则 + Manus 单一指标论 + 掩码 logits 而非改工具列表 | ⭐⭐ | 上下文工程的"深水区"细节，区分用过 vs 调过 |
+| 三阶段演进的内在逻辑（主矛盾转移） | ⭐⭐ | 概念题的纵深追问 |
+| Loop vs Graph 与 Code/LLM/Hybrid 谱系 | ⭐⭐ | 控制流选型，常接"你的系统为什么这么选" |
+| 四层心智模型与 ETCLOVG 的映射（及不可 1:1 的原因） | ⭐⭐ | 考框架内化程度，混淆映射是高频错误 |
+| 治理三子层 + Table 4 覆盖稀疏的现实 | ⭐ | 安全岗追问"为什么治理总滞后" |
+| §10 依赖结构论 + 五缺口 + §12 五开放问题 | ⭐ | 开放题/研究岗的弹药库 |
+
+---
+
+### 四、经典面试题与参考答案
+
+#### 题 1（基础）：什么是 harness engineering？它与 prompt engineering、context engineering 的区别是什么？
+
+**答题思路。** 先给定义（三个关键词：有界、有状态、工具中介），再给演进关系（包含而非替代），最后落到"分析单元"的差异——这是三者的根本分野。
+
+**参考答案要点。** harness 是把模型调用转成"有界、有状态、经工具中介的任务执行"的工程化包裹层；其分析单元不是模型也不是提示，而是让长程 agent 行为**可控、可检查、可恢复**的基础设施。三阶段演进是包含关系：prompt engineering（设计单轮指令）被收编为 context engineering 的子问题，context engineering（设计窗口内信息管线）又被收编为 harness engineering 的 C 层；每一阶段把上一阶段的对象降维成自己的一个组件，并引入新主矛盾——prompt 阶段是"措辞"，context 阶段是"有限窗口装什么"，harness 阶段是"整个控制闭环怎么稳"。判断一个团队是否进入 harness 阶段的信号：他们讨论的是 checkpoint、hook、权限模型、成本归因，而不只是提示词和检索。
+
+#### 题 2（进阶）：线上一个长程 coding agent 本周出现三个症状：任务成功率从 82% 掉到 71%，单任务平均成本翻倍，偶发"反复调用同一工具"的死循环。请用 ETCLOVG 做分层定位。
+
+**答题思路。** 展示"逐层排查 + 层间耦合意识"：先说每层查什么证据，再说为什么不能孤立看单层，最后给一个最可能的根因假设链。
+
+**参考答案要点。** 按层展开：**O 层先行**（一等层的价值就在此）——用 Langfuse/OTel trace 把三类症状关联到同一批 session：看 token 消耗分布、工具调用序列、每次调用的延迟。**C 层**：成本翻倍 + 成功率下降的经典组合是缓存击穿或上下文膨胀——查 KV-cache 命中率是否本周突变（有人改了 system prompt 前缀？加了动态时间戳？工具列表运行时变动？），命中率下降会同时解释贵和慢。**L 层**：死循环指向内循环缺少终止/重试预算——查 timeout 与最大步数配置是否被改动、checkpoint 是否可用。**T 层**：反复调用同一工具常是工具返回了模型读不懂的错误（schema/错误信息问题）——查工具健康上报。**G 层**：本周是否新上了 hook 策略误伤了正常路径（Table 4 式的稀疏覆盖 + 事后补丁的典型事故）。**V 层**：用 offline eval 重放故障 session 复现。层间耦合提示：成本翻倍（C）→ 触发预算熔断（G）→ 截断上下文（C）→ 模型丢失进度（L）→ 死循环（L），一条链解释三个症状。最可能根因假设：一次 prompt/工具列表改动击穿前缀缓存，叠加缺失的循环预算。
+
+#### 题 3（系统设计）：cost–quality–speed 三角如何在你的系统中落地？举具体决策。
+
+**答题思路。** 先破题（三者不可兼得是物理约束，设计 = 定价 + 分配），再给"时态分配"框架，最后落到一个具体系统的参数化决策。
+
+**参考答案要点。** ① 承认三角是硬约束：更强的 V/G/O/E 都增加成本与延迟，不存在免费午餐；② **质量不是标量**：把它拆成正确性、安全性、格式合规、延迟达标等子目标，分别定价（例如"安全类检查永不降级，格式类检查可异步"）；③ **时态分配四档**：同步关键路径只放"错了就不可逆"的检查（权限闸门、破坏性动作确认）；异步旁路放"错了可补偿"的检查（内容审计、PII 扫描）；回归套件放统计性验证（抽样 trajectory eval、pass^k）；遥测本身也要取舍（全量 trace 的成本 vs 采样 + 错误全采）；④ 举例：coding agent 的文件删除同步走 hook② 权限裁决 + HITL，而代码风格验证异步跑并回报；每请求 token 预算（图 2）作为硬熔断防止质量检查自己变成成本黑洞。资深收尾：三角的落点不是一次性设计，而是随模型降价和缓存命中率动态重调。
+
+#### 题 4（进阶）：为什么说 capability–control 是一条设计轴，而不是安全清单里的一个子项？
+
+**答题思路。** 用"导数关系"破题：控制问题是能力的函数；再展示这条轴如何贯穿七层；最后给出组织后果。
+
+**参考答案要点。** 核心论断：每增加一分能力（新工具/新权限/新自主度），控制问题**等量增长**——二者是同一变量的两面，不是两个独立栏目的此消彼长。作为设计轴，它贯穿 ETCLOVG：tool schema 的颗粒度（T）即权限的颗粒度，上下文里放什么凭证（C）即攻击面的大小，runtime 权限模型（G-system）是能力的运行时投影，身份与审计（G-org）是能力的可问责化，HITL 是能力的人工闸门。当安全子项做的团队：功能先上、安全后补、永远追逐（Table 4 的稀疏覆盖就是这么来的）；当设计轴做的团队：引入任何新能力的 PR 必须同步交付 hook 策略 + 审计字段 + 回滚路径，capability 与 control 同生共死。这也解释了 SandboxEscapeBench 的吊诡——模型能力越强，E 层逃逸风险越大，能力曲线和控制曲线必须一起画。
+
+#### 题 5（进阶）：harness coupling 对"模型 vs 系统"的评测归因意味着什么？如果老板说"换了新模型涨了 8 个点，模型团队功劳最大"，你怎么回应？
+
+**答题思路。** 先给形式化结论（分数是联合属性），再给实践推论（怎么测才算数），最后给管理语言的翻译。
+
+**参考答案要点。** 综述 §11.3 与 Bölük et al.（2026b）的闭环框架结论：agent 基准分数是耦合系统 (模型 M, 控制器/harness C_H) 的**联合属性**，不能脱离 C_H 归因于 M。换 harness 即换排名——SWE-bench 的 harness 敏感性已是公认事实。因此对老板的回应分三层：① 归因前提：只有在新旧 harness 逐字节一致（同 prompt、同工具表、同循环预算、同采样参数）时，8 个点才能记给模型；② 耦合风险：若换模型时顺带调了 prompt、改了工具描述或重试策略（实践中几乎总是顺带调），8 个点是 (M, C_H) 联合改进，无法切分；③ 正确姿势：做 ablation——固定 harness 比模型、固定模型比 harness，各自报价；harness 改动按**系统变更**走全链路 eval，而不是"我只改了上下文模块"式的局部验证。管理翻译：这不是抢功问题，是下次涨点还能不能复现的问题。
+
+#### 题 6（系统设计）：从零设计一个生产级 agent harness：四个 hook 点各放什么策略？治理三子层如何对应？
+
+**答题思路。** 以工具循环为骨架逐 hook 给策略，再映射三子层归属，最后补两个跨层约束（成本与耦合）。
+
+**参考答案要点。** 四 hook 策略：**①模型调用前**——token 预算检查与熔断、上下文装配的确定性序列化校验（守住 KV-cache 前缀稳定）、按任务风险等级的模型路由；**②模型输出后**——工具调用 schema 校验、allowlist 与权限裁决（最小权限）、破坏性/不可逆动作转 HITL、循环预算（同工具重复调用计数）；**③工具执行前**——短时密钥注入（不写进上下文）、速率限制与配额、provenance 打标、副作用预登记（为回滚留据）；**④结果回注前**——脱敏与输出过滤、外部内容来源标注（间接注入防线，配合 spotlighting）、成本记账（按 agent/任务归因，补五缺口之 cost 归因）、失败证据结构化留存。三子层映射：model-level 过滤器主挂 ①④，system-level 网关与权限主挂 ②③，organizational-level 审计要求四点全留证并接入 Grafana+Prometheus 仪表板。跨层约束：同步 hook 只放不可逆检查（题 3 的时态分配）；任何 hook 改动按系统变更回归（coupling）。收尾：这套设计读起来是清单，落地必须按依赖结构验证——③ 的 provenance 标若丢，④ 的注入防线和 G-org 的审计同时失效。
+
+#### 题 7（进阶）：Loop 和 Graph 何时选哪个？为什么生产系统收敛在 Hybrid？
+
+**答题思路。** 先给判据（任务的状态空间是否可枚举），再给谱系（谁决定控制流），最后解释 Hybrid 收敛的机制。
+
+**参考答案要点。** 判据：**任务流程可枚举、合规要求显式可审计 → Graph**（退款工单、审批流——可达状态被图限定，天然按节点 checkpoint/resume）；**开放-ended、下一步依赖即时观察 → Loop**（修 bug、deep research——Plan·Act·Observe·Reflect 的开放循环）。二者的失效模式相反：Loop 死于漫游与死循环（不可预测的成本），Graph 死于分支爆炸与图外情况无处安放。生产收敛在 Hybrid 的机制：用**代码锁定必须确定的骨架**（权限闸门、终止条件、重试/预算、审计 hook——这些绝不能交给模型即兴发挥），把**需要判断的关节交给模型**（选哪个工具、要不要再查、如何措辞）。这也解释了 2026 年"单线程主干（图/代码）+ 只读子代理（循环/LLM）"的主流形态：主干要可审计，子任务要灵活。选型追问的标准答法：先问"这个流程里哪些步骤错了是不可逆的"，那些步骤必须在代码侧，其余的才谈 Loop 还是 Graph。
+
+#### 题 8（开放/系统设计）：frameworks → platforms 之后，agent 的设计问题发生了什么变化？设计一个多租户 agent 平台要回答哪些新问题？
+
+**答题思路。** 先点题面变化（单车 → 舰队），再逐条列出平台新增的八个能力面，最后指出最难的两个。
+
+**参考答案要点。** 题面变化：框架时代问"如何造一个 agent"（单数、开发者自用、一次性 run），平台时代问"**如何运维一支行为可审查、可回滚的 agent 舰队**"（复数、多租户、长生命周期）。平台新增八面：durable workspaces（会话与工作区跨 run 持久化）、托管沙箱（E 层的池化与多租户隔离）、身份（每个 agent 有可审计的 service identity，而非共享一把 key）、计费（cost 归因到租户/项目/任务）、可观测（多租户 trace 隔离与配额）、评估（平台级 eval 即服务）、治理（策略即代码、统一下发）、人工交接（审批中心而非各业务自建 HITL）。最难的两条：① **cost 归因**（五缺口之一）——多租户下必须做到按 agent/任务/租户三维拆账，否则单位经济无从谈起（图 2 最后一项"搞懂推理成本如何击穿单位经济"）；② **回滚语义**——"可回滚的舰队"要求副作用预登记成为平台原语，而非每个业务自己实现。收尾：平台团队的 KPI 不是"造了多少 agent"，而是"舰队每 run 的可审查率与事故平均恢复时间"。
+
+#### 题 9（进阶）：KV-cache 三条规则如果被违反会怎样？Manus 为什么用掩码 logits 而不是运行时改工具列表？
+
+**答题思路。** 先讲机制（前缀复用），再逐条讲违反后果并报价，最后解释掩码 logits 的动机，点出跨层呼应。
+
+**参考答案要点。** 机制：推理服务缓存 prompt 前缀的 KV，后续请求只要前缀字节一致即可复用（Sonnet 缓存 $0.30/MTok vs 未缓存 $3.00/MTok，10 倍差），且省去 prefill 重算、改善 TTFT。三规则违反后果：**①前缀不稳定**（system prompt 里插当前时间、随机 session id、动态工具列表）→ 每次请求前缀都变 → 命中率归零 → 输入成本直接 ×10；**②非 append-only**（中途 compaction 重写历史、删除中间消息）→ 前缀从改动点起整体失效，越靠前的改动击穿面越大；**③非确定性序列化**（JSON 字段顺序不稳定、集合遍历顺序随运行时）→ 语义相同但字节漂移 → 静默地缓存失效，这类 bug 最难查因为功能完全正常只是账单翻倍。Manus 称命中率是生产级 agent 最重要的单一指标，故其抉择是：工具可用性变化时**不修改工具列表**（那会破坏前缀），而是保持列表与前缀稳定、用**掩码 logits** 在采样层屏蔽不可用工具——把"可用性"从前缀语义移到采样约束。配套：Anthropic `cache_control` 断点标记稳定前缀段（注意 TTL 与写入溢价）。跨层呼应：这是 C 层决策依赖 E/推理层（分页注意力、缓存基础设施，图 2）兑现的典型——上下两层必须对齐。
+
+#### 题 10（基础）：ETCLOVG 相对旧框架把哪两层升为一等层？状态管理和 hooks 分别归哪层？为什么这样划分？
+
+**答题思路。** 逐条给归属 + 一句理由，展示"职能视角"的内化。
+
+**参考答案要点。** 升为一等层的是 **O（Observability）与 G（Governance）**：长程 agent 不可观测即不可运维（故障无法定位，对应 §12 开放问题③），无治理即不可上线（合规与问责是硬门槛）——二者不再是"锦上添花的横切注释"。**状态管理归 L**：checkpoint/resume 保存的是"执行到第几步、哪些副作用已发生、从何处恢复"，是生命周期语义；若归 C，就会设计出"压缩上下文时顺手删掉恢复点"的系统。**hooks/策略执行归 G**：hook 是治理策略的运行时落点（四 hook 点即 G 的手脚），放在编排层会被当成"可选的回调装饰"而疏于审计。这组归属裁决本身就是面试题：它考的是你能否从"组件清单"思维切换到"关切与责任"思维。
+
+#### 题 11（开放/研究向）：综述 §12 的五个开放问题，选一个你最想攻的，说明难点与思路。
+
+**答题思路。** 选一个与岗位相关的，讲清"为什么难"（别人为什么没解决）与"切入点"（你能做什么），展示研究品味。
+
+**参考答案要点。** 示例选 **③从 trace 诊断失败**：O 层已普及（Langfuse+OTel 让数据采集不再是瓶颈），但长程 agent 的失败归因仍是手工活——难在三处：① 因果链跨层（C 层的压缩动作 → L 层的恢复失效 → G 层的 hook 误判），单点异常检测看不到链；② 反事实昂贵（"如果当时没压缩会怎样"需要可回放的确定性环境）；③ 标注稀缺（"这条 trace 为什么失败"本身就是难题）。思路：把 harness 的依赖结构（§10）显式建模成因果图，用 replay + 分层 ablation 自动生成反事实，再用 LLM-judge 在受限子空间内做归因假设排序——这恰好把 V 层的评估能力回流给 O 层的诊断能力，是七层闭环的自然延伸。收尾点题：五个开放问题彼此咬合（诊断失败需要可靠状态②与标准化交接④），这正是"harness 是依赖结构"的研究版注脚。
+
+---
+
+### 五、易错点 · 反直觉点
+
+1. **把 harness 当 checklist（"ETCLOVG 七层我都有了"）而非依赖结构。** 综述 §10 的靶子就是这种思维：齐备性不等于健壮性，真正的问题是"这层坏了哪些层跟着失效、这层改了哪些层的假设被打破"。面试中报菜名式列举七层只得基础分，能讲出层间失效链才是资深答案。
+2. **把 capability–control 当安全附加项。** 反直觉：控制问题不是独立于功能的安全栏，而是能力的**导数**——能力加一分，控制问题加一分。"先把功能做完再补安全"的团队永远在追逐；正确姿势是每条新能力同步交付 hook 策略 + 审计 + 回滚（设计轴思维）。
+3. **把 agent 分数全归模型。** 闭环框架下分数是 (M, C_H) 的联合属性（Bölük 2026b）：换 harness 即换排名。"换模型涨了 8 个点"只有在 harness 逐字节不变时才成立； coupled 系统里常见的顺带调参，会让归因彻底失效。同理，评测对手系统时，你比的常常是双方的 harness 而非双方的模型。
+4. **混淆四层心智模型（图 1）与 ETCLOVG 的层映射。** 二者是**结构视角 vs 职能视角**，不可逐格 1:1：O 与 G 横穿 L2 的监控/hook 子能力直到 L4 的组织审计，不落在单一格；L1 原子能力主要对应 T 但含 E 的一部分。把"ETCLOVG 的 L 层 = 四层图的 L3"这类错误对应说出口，是内化不足的直接信号。
+5. **运行时改工具列表来屏蔽不可用工具——击穿 KV-cache。** 直觉做法是动态增删 tools 数组，但这会改动 prompt 前缀、使缓存整体失效（成本可 ×10）。Manus 的正确解是**掩码 logits**：工具列表与前缀保持稳定，在采样层屏蔽不可用工具。同类错误还有：system prompt 里插时间戳、中途重写历史（违反 append-only）、JSON 序列化不确定。
+6. **把三阶段演进说成"后者淘汰前者"。** 是包含（nesting）不是替代：prompt engineering 活成 context 的子问题，context 活成 harness 的 C 层。说"harness 时代不用写 prompt 了"相当于"有了操作系统不用写代码了"。
+7. **把 O 层理解成"加个日志"。** 一等层意味着 trace 是与执行、工具同级的基础设施（Langfuse+OTel 全链路、token/延迟/错误/成本四类信号关联）；且 §12 明说"从 trace 诊断失败"仍是开放问题——数据采到 ≠ 能归因。
+8. **以为治理可以集中在一处或事后补。** Table 4 的现实是覆盖普遍稀疏、治理沦为事后补丁；但 G 层与业务逻辑、模型行为、组织结构三重耦合，是七层里**最贵的事后补丁**。正确排序：先 ②③ hook 的硬闸门（权限/破坏性动作），再 ①④ 的软审计。
+9. **"模型越强越不需要 harness"——方向反了。** 能力↑ ⇒ 控制问题↑（capability–control 轴）：SandboxEscapeBench 显示恰恰是前沿模型最会利用沙箱弱点。harness 不是给弱模型的拐杖，而是给强模型的缰绳；§12 开放问题⑤（模型变强时如何让脚手架不变成束缚）说的是另一个方向的难题——拆脚手架的时机，而非不需要缰绳。
+10. **把沙箱当作已解决问题。** E 层的防御至今碎片化（各框架各糊一层、无统一基线），且攻击者就是模型自己——把"跑在 Docker 里"等同于"安全"，在 2026 年的证据面前站不住脚。
+11. **把 checkpoint 存了等同于可恢复。** 存快照是 L 层的容易一半；难的一半是**语义正确的恢复**——副作用已部分发生时，从任意失败点恢复需要副作用预登记与补偿逻辑（五缺口之 failure 恢复）。"我们有 checkpoint"和"我们能回滚"之间隔着整个回滚语义设计。
+
+---
+
+### 六、推荐资源
+
+1. **《Agent Harness Engineering: A Survey》**（TMLR under review，anonymous，2026，64 页）：本章主干来源。映射 170+ 开源项目，提出 ETCLOVG 七层框架、四层心智模型（图 1）、推理/运维工程清单（图 2）、工具循环四 hook 点（Fig 14）、三大跨层权衡（§11）与五个开放问题（§12）。综述尚未正式刊出，引用时注明 under review 状态；面试中点出"2026 年已有综述级文献把 harness 作为独立工程学科来梳理"，本身就是跟进社区的信号。
+
+2. **Anthropic — [Effective harnesses for long-running agents](https://www.anthropic.com/engineering)**：与综述互为印证的工业界一手经验，讲长程 agent 的包裹层如何设计（循环控制、状态、恢复、边界），是"harness"一词从行话变成工程范畴的标志性文章之一。配合其 [Effective context engineering for AI agents](https://www.anthropic.com/engineering/effective-context-engineering-for-ai-agents)（2025.9）一起读：后者是 C 层的最佳单点教材（compaction、结构化笔记、sub-agent 隔离、JIT、context rot），前者把 C 层放回七层整体中——两篇合读才能理解"包含而非替代"的演进关系。
+
+3. **Manus — [Context Engineering for AI Agents: Lessons from Building Manus](https://manus.im/blog/Context-Engineering-for-AI-Agents-Lessons-from-Building-Manus)**：KV-cache 三规则、"命中率是最重要单一指标"、$0.30 vs $3.00/MTok、掩码 logits 而非改工具列表的原始出处。全文都是生产级 C 层细节，是题 9 的弹药库，也是"博客级工程经验如何倒逼出框架级原则"的范本。
+
+4. **[LangGraph 文档](https://langchain-ai.github.io/langgraph/)**：L 层（图编排、checkpoint/resume、HITL 断点）与 Hybrid 控制流的参考实现——读它的 checkpoint 与 interrupt 原语，能具体理解"状态管理为什么归 L"和"Graph 为什么天然可恢复"。
+
+5. **[OpenAI Agents SDK 文档](https://openai.github.io/openai-agents-python/)**：harness 原语标准化的样本（guardrails、handoff、session、tracing 内建），与 Claude Agent SDK 对读可看出 frameworks→platforms 途中各家把哪些层做进了 SDK、哪些留给了平台——答 frameworks→platforms 题的一手材料。
+
+6. **SandboxEscapeBench（Marchand et al., 2026）**：E 层的冷水——前沿模型可发现并利用沙箱实现弱点、防御碎片化的系统性证据。谈执行环境安全时引用它，等于承认"沙箱 ≠ 安全"这一 2026 年共识；配合第 9 章的 guardrails 文献，构成"能力越强越要硬化 E 层"的完整论据链。
+
+7. **Bölük et al.（2026b，闭环 agent 评估）与 Kim et al.（2026，Table 3/4 风险 taxonomy 与覆盖度）**：前者是"分数不能脱离 C_H 归因模型"的形式化来源，评估岗必引；后者是"治理覆盖普遍稀疏"的数据来源，安全岗必引。两篇都是综述的关键支撑文献，独立阅读可校准对 §11.3 与 G 层现实的理解。
+
+8. **可观测性技术栈**：[Langfuse](https://langfuse.com/) + [OpenTelemetry GenAI 语义约定](https://opentelemetry.io/docs/specs/semconv/gen-ai/)：综述点名的 O 层参考栈，也是图 2 中"为延迟/token/错误/成本建可观测性"与"Grafana+Prometheus 推理仪表板"的落地路径。配合第 8 章的评估方法论，构成 O→V 闭环（trace 数据如何回流改进 harness）的完整图景。
 
 
 ---

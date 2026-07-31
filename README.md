@@ -1,7 +1,7 @@
 # 📘 AI Agent 面试深度学习手册
 
 > 面向资深工程师 / 面试候选人的 **AI Agent 完整知识体系 + 备考作战手册**。
-> 12 大知识域 · 38 万字 · 结合 2024–2026 最新资料 · 含 9 个可运行动手实验 · 经多智能体对抗性评审与修订。
+> 12 大知识域 + Harness 元框架 · 56 万字 · 结合 2024–2026 最新资料 · 含 9 个可运行动手实验 · 经多智能体对抗性评审与修订。
 
 ---
 
@@ -10,17 +10,17 @@
 ```
 agent-interview/
 ├── index.html                     🌐 学习网站（双击打开，全文搜索/二级导航/暗黑/打印）
-├── AI-Agent面试学习手册.md          📄 完整手册（单文件，38 万字，便于全文检索/导入笔记）
+├── AI-Agent面试学习手册.md          📄 完整手册（单文件，56 万字，便于全文检索/导入笔记）
 ├── 考前速记表.md                    🎯 浓缩版（高频考点 TOP + 各章速记 + 答题框架）
-├── chapters/                      📂 按章拆分的 Markdown（13 个文件，便于精读）
+├── chapters/                      📂 按章拆分的 Markdown（14 个文件，便于精读）
 │   ├── 00-开篇导读.md               （知识全景图 / 面试考察地图 / 4 周学习路线 / 答题框架）
-│   └── 01 ~ 12 章 …
+│   └── 01 ~ 13 章 …
 ├── labs/                          🧪 动手实验（9 个，纯标准库可运行）
 │   ├── README.md
 │   ├── llm_client.py              （阿里云百炼真实 LLM 客户端，零依赖）
 │   └── lab01 ~ lab09 …
 └── flashcards/                    🎴 抽认卡
-    ├── anki_cards.txt             （158 张，制表符分隔，可直接导入 Anki）
+    ├── anki_cards.txt             （181 张，制表符分隔，可直接导入 Anki）
     └── qa_review.md               （Q&A 复习册）
 ```
 
@@ -35,7 +35,7 @@ agent-interview/
 | **刷题** | 把 `flashcards/anki_cards.txt` 导入 Anki（Basic 类型，制表符分隔） |
 | **考前冲刺** | 只看 `考前速记表.md` + 各章「易错点」 |
 
-## 🗺️ 知识体系（12 章 · 5 层）
+## 🗺️ 知识体系（12 域 + 1 元框架章）
 
 | 层 | 章节 |
 |---|---|
@@ -44,6 +44,7 @@ agent-interview/
 | 🤝 **行动协作层** | ⑤ Tool Use / Function Calling / MCP · ⑥ Multi-Agent 系统 |
 | 🛠️ **工程层** | ⑦ 主流框架生态 · ⑧ 评估与可观测性 · ⑨ 安全与 Guardrails · ⑩ 工程化与生产部署 |
 | 🚀 **前沿综合层** | ⑪ 前沿论文与热点 · ⑫ 系统设计题与综合实战 |
+| 🧩 **元框架层** | ⑬ Agent 工程分层架构与 Harness Engineering（ETCLOVG 七层 / 三阶段演进 / 三大跨层权衡）——横切 ②–⑩ 的元框架 |
 
 **每章固定 6 模块**：知识图谱 → 核心概念精讲 → 面试高频考点（⭐分级）→ 经典面试题与参考答案 → 易错点·反直觉点 → 推荐资源。
 
@@ -73,6 +74,10 @@ for f in lab*.py; do python3 "$f"; done   # 一次全跑，全部 ✅ 自检通�
 
 > ⚠️ **安全**：代码中的 LLM Key 一律从环境变量读取，绝不硬编码；`labs/.gitignore` 已忽略密钥文件。
 > 若曾在任何地方明文粘贴 Key，请立即在控制台重置。
+
+## 📚 方法论来源
+
+本手册的分层工程观参考《Agent Harness Engineering: A Survey》（TMLR under review, anonymous, 2026；64 页，映射 170+ 开源项目，配「四层心智模型 + 推理/运维工程清单」两张架构图）：第 13 章的 **ETCLOVG 七层分类**（Execution / Tooling / Context / Lifecycle / Observability / Verification / Governance）与 **Prompt Engineering → Context Engineering → Harness Engineering** 三阶段演进即源自该综述，用于把分散在各章的可靠性关切统一为一个可控、可检查、可恢复的系统。
 
 ## 📅 建议学习路径
 
