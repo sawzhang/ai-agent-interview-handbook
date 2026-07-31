@@ -9,9 +9,10 @@
 
 ```
 agent-interview/
-├── index.html                     🌐 学习网站（双击打开，全文搜索/二级导航/暗黑/打印）
+├── index.html                     🌐 学习网站（搜索/二级导航/暗黑/打印 · 第13章交互式 ETCLOVG 分层图）
 ├── AI-Agent面试学习手册.md          📄 完整手册（单文件，56 万字，便于全文检索/导入笔记）
 ├── 考前速记表.md                    🎯 浓缩版（高频考点 TOP + 各章速记 + 答题框架）
+├── 模拟面试追问链.md                🎤 10 条追问链 / 30 轮递进（强答要点 + 红旗 + 练习锚点）
 ├── chapters/                      📂 按章拆分的 Markdown（14 个文件，便于精读）
 │   ├── 00-开篇导读.md               （知识全景图 / 面试考察地图 / 4 周学习路线 / 答题框架）
 │   └── 01 ~ 13 章 …
@@ -33,7 +34,7 @@ agent-interview/
 | **动手做实验** | `cd labs && python3 lab01_react_agent.py`（详见 `labs/README.md`） |
 | **接入真实大模型** | `export DASHSCOPE_API_KEY='sk-sp-..'` 后跑 `labs/lab09_real_llm_react.py` |
 | **刷题** | 把 `flashcards/anki_cards.txt` 导入 Anki（Basic 类型，制表符分隔） |
-| **考前冲刺** | 只看 `考前速记表.md` + 各章「易错点」 |
+| **考前冲刺** | 只看 `考前速记表.md` + 各章「易错点」 + `模拟面试追问链.md` 自追问 |
 
 ## 🗺️ 知识体系（12 域 + 1 元框架章）
 
