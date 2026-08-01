@@ -25,7 +25,7 @@ LLM 调用是生产环境 AI 应用中最大的成本与延迟来源。本实验
   「级联 cascade：小模型先答，置信度不足再升级大模型」。
 
 ## 如何运行
-    python3 /Users/sawzhang/code/agent-interview/labs/lab08_cache_routing.py
+    cd labs && python3 lab08_cache_routing.py
 无第三方依赖、无网络、无 API key。所有「模型」均为确定性 MockLLM：
 相同输入永远得到相同输出，保证缓存复用的一致性与实验可复现。
 

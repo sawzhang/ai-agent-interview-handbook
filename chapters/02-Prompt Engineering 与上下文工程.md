@@ -290,7 +290,7 @@ Drew Breunig《How Long Contexts Fail》（2025-06）把长上下文的失效方
 
 #### 2.11 上下文工程的生产细则（Harness 综述视角）
 
-2026 年的综述《Agent Harness Engineering: A Survey》（TMLR under review, anonymous, 2026；64 页，映射 170+ 开源项目）把长程 Agent 的工程实践按 **ETCLOVG 七层**（Execution 执行环境/沙箱、Tooling 工具接口/协议、Context 上下文管理、Lifecycle 生命周期/编排、Observability 可观测、Verification 验证/评估、Governance 治理/安全）做了系统梳理，并把 harness 定义为"把模型调用转成**有界、有状态、经工具中介的任务执行**的工程化包裹层"——分析单元是让长程 Agent 行为可控、可检查、可恢复的基础设施，而非模型或提示本身；综述据此描绘了 **Prompt Engineering → Context Engineering → Harness Engineering** 的三阶段演进（图 1 / §2，并配四层心智模型与推理/运维工程清单两张架构图）。以下是其 Context 层的生产级细则，与前文的理论互为表里：
+2026 年的综述《Agent Harness Engineering: A Survey》（TMLR under review, 2026；覆盖 110+ 篇论文、分析 23+ 个已部署系统）把长程 Agent 的工程实践按 **ETCLOVG 七层**（Execution 执行环境/沙箱、Tooling 工具接口/协议、Context 上下文管理、Lifecycle 生命周期/编排、Observability 可观测、Verification 验证/评估、Governance 治理/安全）做了系统梳理，并把 harness 定义为"把模型调用转成**有界、有状态、经工具中介的任务执行**的工程化包裹层"——分析单元是让长程 Agent 行为可控、可检查、可恢复的基础设施，而非模型或提示本身；综述据此描绘了 **Prompt Engineering → Context Engineering → Harness Engineering** 的三阶段演进（图 1 / §2，并配四层心智模型与推理/运维工程清单两张架构图）。以下是其 Context 层的生产级细则，与前文的理论互为表里：
 
 **① Progressive disclosure / JIT（渐进披露、按需供给）**。不把知识一次性塞进上下文，而是维护一组**轻量标识符（路径 / 查询 / 链接）**，由 Agent 按需加载。Claude Code 是典型混合形态：**启动只加载 CLAUDE.md，代码库靠 glob/grep 按需探索**——同时规避了预建索引的 stale-indexing 成本与一次性大预载的 prefill 成本。这是 2.5 节"Preloading vs JIT"取舍的生产落地：高频稳定材料前置，长尾留给按需检索。
 

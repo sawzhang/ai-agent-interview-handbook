@@ -34,7 +34,7 @@ lab05_eval_harness.py — LLM-as-Judge 评估 Harness
       延迟、时间戳），生产环境对应 OpenTelemetry / LangSmith 等系统。
 
 【如何运行】
-    python3 /Users/sawzhang/code/agent-interview/labs/lab05_eval_harness.py
+    cd labs && python3 lab05_eval_harness.py
     （纯标准库，无需安装任何依赖，无需 API key）
 
 【思考题（面试延伸）】

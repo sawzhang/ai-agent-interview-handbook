@@ -27,7 +27,7 @@
   - MockLLM：确定性的模拟模型（基于规则），保证实验可复现、无需 API key。
 
 【如何运行】
-    python3 /Users/sawzhang/code/agent-interview/labs/lab07_multi_agent.py
+    cd labs && python3 lab07_multi_agent.py
 运行成功后会打印分步执行日志，并在结尾输出「✅ 自检通过」。
 
 【思考题（面试延伸）】

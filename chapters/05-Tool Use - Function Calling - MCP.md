@@ -275,7 +275,7 @@ Server 暴露三类 primitive，**控制主体不同**，这是高频考点：
 - **HTTP+SSE（已弃用）**：2024-11-05 版 spec 的远程方案，需要两个 endpoint（GET 开 SSE 长连接收消息 + 单独的 POST endpoint 发消息），且 SSE 连接必须先建立才能回传 POST 响应。**致命缺陷**：强状态、长连接黏性、无法部署在 serverless / 负载均衡之后、断线重连即丢上下文、难以水平扩展。
 - **Streamable HTTP（2025-03-26 版 spec 引入）**：单一 HTTP endpoint。客户端 POST 发 JSON-RPC 请求，服务端响应**既可以是普通 JSON（一问一答），也可以升级为 SSE 流**（服务端推送/长任务进度）；可选的 GET 流用于服务端主动通知；用 `Mcp-Session-Id` 头管理会话，`Last-Event-ID` 支持断线续传；2025-06-18 起后续 HTTP 请求还须携带 `MCP-Protocol-Version` 头声明协议版本。它同时兼容无状态 serverless 部署和有状态长会话，这就是取代 SSE 的根本原因。
 
-**长时任务与进度（"一个工具跑 10 分钟怎么办"——高频真题）。** MCP 提供三级递进的机制：
+**长时任务与进度（"一个工具跑 10 分钟怎么办"——高频面试题）。** MCP 提供三级递进的机制：
 
 1. **进度上报**：客户端在请求中附带 `progressToken`；长操作期间服务器以 `notifications/progress` 推送进度（progress / total）；客户端也可发 `ping` 心跳防止连接被中间设施超时掐断、并探活服务器；
 2. **取消**：客户端发送 `notifications/cancelled`（携带对应 `requestId`）终止进行中的操作，服务器应尽快停止工作并清理资源（这是通知语义，不保证硬中止）；

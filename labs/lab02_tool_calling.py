@@ -31,7 +31,7 @@ tool_calls），真正把事办成的是工程侧的"工具调度器"。本实�
 - 重试必须带预算（retry budget），否则会陷入死循环
 
 【如何运行】
-    python3 /Users/sawzhang/code/agent-interview/labs/lab02_tool_calling.py
+    cd labs && python3 lab02_tool_calling.py
 
 纯 Python 标准库实现，无需联网、无需安装依赖、无需 API key。
 

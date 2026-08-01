@@ -33,33 +33,35 @@ class Handler(SimpleHTTPRequestHandler):
         ".md": "text/markdown; charset=utf-8",
         ".txt": "text/plain; charset=utf-8",
     }
+    timeout = 15  # socket 读超时，避免半开连接长期占用线程
 
     def _is_blocked(self):
         """隐藏文件/目录（.env、.git 等）与越界路径一律 404。
 
         判断必须基于 translate_path() 解码并规范化后的真实路径：直接看
         self.path 会被 URL 编码绕过（%2Eenv 解码后就是 .env）。realpath
-        同时挡住经符号链接逃出 ROOT 的情况。
+        同时挡住经符号链接逃出 ROOT 的情况；任何解析异常都按拒绝处理。
         """
-        real = os.path.realpath(self.translate_path(self.path))
         try:
+            real = os.path.realpath(self.translate_path(self.path))
             rel = os.path.relpath(real, os.path.realpath(ROOT))
-        except ValueError:  # 跨盘符等无法比较的情况一律拒绝
+        except (ValueError, OSError):  # 空字节、跨盘符等一律拒绝
             return True
         if rel == ".." or rel.startswith(".." + os.sep):
             return True
         return any(seg.startswith(".") for seg in rel.split(os.sep) if seg not in ("", "."))
 
-    def do_HEAD(self):
-        if self._is_blocked():
-            self.send_error(404, "File not found")
-            return
-        super().do_HEAD()
+    def list_directory(self, path):
+        """不提供目录列表：避免向匿名访客枚举整棵目录树。"""
+        self.send_error(404, "File not found")
+        return None
 
-    def do_GET(self):
-        if self._is_blocked():
-            self.send_error(404, "File not found")
-            return
+    def _gzip_candidate(self):
+        """若本次请求该走 gzip 分支，返回 (磁盘路径, 扩展名)，否则 None。
+
+        do_GET 与 do_HEAD 共用，保证二者的响应头一致——HEAD 若绕过压缩
+        直接回未压缩的 Content-Length，缓存与代理会按错误大小预取。
+        """
         path = self.translate_path(self.path)
         if os.path.isdir(path) and self.path.endswith("/"):
             index = os.path.join(path, "index.html")
@@ -72,11 +74,30 @@ class Handler(SimpleHTTPRequestHandler):
             and os.path.isfile(path)
             and os.path.getsize(path) >= GZIP_MIN_BYTES
         ):
-            self._serve_gzipped(path, ext)
-        else:
-            super().do_GET()
+            return path, ext
+        return None
 
-    def _serve_gzipped(self, path, ext):
+    def do_HEAD(self):
+        if self._is_blocked():
+            self.send_error(404, "File not found")
+            return
+        target = self._gzip_candidate()
+        if target is None:
+            super().do_HEAD()
+        else:
+            self._serve_gzipped(*target, body=False)
+
+    def do_GET(self):
+        if self._is_blocked():
+            self.send_error(404, "File not found")
+            return
+        target = self._gzip_candidate()
+        if target is None:
+            super().do_GET()
+        else:
+            self._serve_gzipped(*target)
+
+    def _serve_gzipped(self, path, ext, body=True):
         mtime = os.path.getmtime(path)
         with _gz_lock:
             cached = _gz_cache.get(path)
@@ -95,6 +116,8 @@ class Handler(SimpleHTTPRequestHandler):
         if ext in (".html", ".htm"):
             self.send_header("Cache-Control", "no-cache")
         self.end_headers()
+        if not body:  # HEAD：头部与 GET 一致，但不发正文
+            return
         try:
             self.wfile.write(data)
         except (BrokenPipeError, ConnectionResetError):

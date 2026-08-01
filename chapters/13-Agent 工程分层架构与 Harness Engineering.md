@@ -1,8 +1,8 @@
 # 第 13 章 · Agent 工程分层架构与 Harness Engineering
 
-第 1–12 章分别讲了提示词、记忆、工具、多智能体、评估、安全、部署——但在真实系统里，这些从来不是"独立模块"，而是同一个**包裹层（harness）**的不同切面：它们在运行时彼此耦合，共同决定一个长程 agent 是否可控、可检查、可恢复。本章是全书的"统一元框架"：以 2026 年的综述《Agent Harness Engineering: A Survey》（TMLR under review，anonymous，64 页，映射 170+ 开源项目，配两张架构图：四层心智模型 + 推理/运维工程清单）为主干，把散落在各章的 harness 关切串成一个**控制系统视角**——模型是被控对象，harness 是控制器 C_H，评估分数是闭环系统的联合属性。面试中，能把"我用了 LangGraph + 加了 guardrail"上升为"我在 ETCLOVG 的每一层做了什么决策、承担了什么代价"的人，才是资深岗想要的候选人。
+第 1–12 章分别讲了提示词、记忆、工具、多智能体、评估、安全、部署——但在真实系统里，这些从来不是"独立模块"，而是同一个**包裹层（harness）**的不同切面：它们在运行时彼此耦合，共同决定一个长程 agent 是否可控、可检查、可恢复。本章是全书的"统一元框架"：以 2026 年的综述《Agent Harness Engineering: A Survey》（TMLR under review，预印本可在 OpenReview 获取；覆盖 110+ 篇论文、分析 23+ 个已部署系统，配两张架构图：四层心智模型 + 推理/运维工程清单）为主干，把散落在各章的 harness 关切串成一个**控制系统视角**——模型是被控对象，harness 是控制器 C_H，评估分数是闭环系统的联合属性。面试中，能把"我用了 LangGraph + 加了 guardrail"上升为"我在 ETCLOVG 的每一层做了什么决策、承担了什么代价"的人，才是资深岗想要的候选人。
 
-> ⚠️ **单一来源风险提示** — 本章框架主干出自《Agent Harness Engineering: A Survey》（TMLR under review、匿名投稿，外部暂不可检索），其中 SandboxEscapeBench、Bölük et al.、Kim et al. 等内部引用目前无法独立核实。面试中引用本章结论时，**落点放在工程逻辑本身**（分层为何如此划分、权衡为何成立），而非"某综述说"；数据类断言（如治理层覆盖普遍稀疏）请作为定性观察转述，不要当硬数据报出。
+> ⚠️ **单一来源风险提示** — 本章框架主干出自《Agent Harness Engineering: A Survey》。该综述目前是 **TMLR 在审稿件**，预印本公开可读（[OpenReview PDF](https://openreview.net/pdf?id=eONq7FdiHa)、[项目页](https://picrew.github.io/LLM-Harness/)），但**尚未经同行评议定稿**；ETCLOVG 是它新提出的术语体系，业界尚未广泛采用，不能当作通行行话使用。面试中引用本章结论时，**落点放在工程逻辑本身**（分层为何如此划分、权衡为何成立），而非"某综述说"；数据类断言（如治理层覆盖普遍稀疏）请作为定性观察转述，不要当硬数据报出。
 
 ### 一、知识图谱
 
@@ -146,7 +146,7 @@ ETCLOVG 是综述提出的七层职能框架：**E**xecution、**T**ooling、**C
 
 #### 把 ETCLOVG 翻译成通用工程语言
 
-ETCLOVG 是一篇匿名在审综述的私有术语，**外部面试官大概率没听过**。逐层翻译成业界通用词汇：
+ETCLOVG 是一篇仍在 TMLR 审稿中的综述所提出的术语体系，**外部面试官大概率没听过**。逐层翻译成业界通用词汇：
 
 | 层 | 综述术语 | 通用工程语言（面试首选） |
 |---|---|---|
@@ -158,7 +158,7 @@ ETCLOVG 是一篇匿名在审综述的私有术语，**外部面试官大概率�
 | V | Verification | 评估与验证 |
 | G | Governance | 权限与治理 |
 
-**面试策略三条：** ① **外部面试先用右列通用词汇作答**——被问"生产级 agent 要考虑什么"，直接说"沙箱隔离、工具接口、上下文管理、状态持久化与恢复、可观测性、评估验证、权限治理"七个方面，每个词面试官都能对上自己的知识体系；开口报"ETCLOVG"反而要先花时间解释缩写，且对方无从校验。② **把七层当成自己的检查清单，而非答题话术**——它的价值是帮你在脑内快速过一遍"哪层还没答到"，保证覆盖度与条理，而不是当术语抛出去镇场。③ **只有对方追问"你有没有系统化的框架"时再引出**，并如实注明出处是一篇匿名在审的综述（TMLR under review）——主动交代来源的不确定性，比让面试官事后搜不到这个词更显专业。最后一层保险：右列七个词各自对应本书第 9/10、5、2/4、3/7、8、8、9 章的成熟内容，就算全程不提 ETCLOVG，答案深度也不受影响——框架是组织答案的骨架，不是答案本身。
+**面试策略三条：** ① **外部面试先用右列通用词汇作答**——被问"生产级 agent 要考虑什么"，直接说"沙箱隔离、工具接口、上下文管理、状态持久化与恢复、可观测性、评估验证、权限治理"七个方面，每个词面试官都能对上自己的知识体系；开口报"ETCLOVG"反而要先花时间解释缩写，且对方在面试现场也难以校验。② **把七层当成自己的检查清单，而非答题话术**——它的价值是帮你在脑内快速过一遍"哪层还没答到"，保证覆盖度与条理，而不是当术语抛出去镇场。③ **只有对方追问"你有没有系统化的框架"时再引出**，并如实注明出处是一篇仍在 TMLR 审稿中的综述（预印本已在 OpenReview 公开）——主动交代来源的成熟度，比让面试官事后发现这是个尚未经同行评议的新术语更显专业。最后一层保险：右列七个词各自对应本书第 9/10、5、2/4、3/7、8、8、9 章的成熟内容，就算全程不提 ETCLOVG，答案深度也不受影响——框架是组织答案的骨架，不是答案本身。
 
 #### 2.4 控制流谱系：Loop vs Graph，Code/LLM/Hybrid，三种系统形态
 
@@ -209,7 +209,7 @@ ETCLOVG 是一篇匿名在审综述的私有术语，**外部面试官大概率�
 
 **§10 金句：** "harness 设计应被读作**依赖结构（dependency structure）**，而非可拆组件清单。" 清单思维问"我集齐了 ETCLOVG 七层没有"，依赖结构思维问"这层坏了，哪些层会跟着失效；这层改了，哪些层的假设被打破"。前者产出 checklist 式架构师，后者产出系统设计题的高分答案。
 
-**五个跨层反复出现的缺口**（综述在 170+ 项目中反复观察到的未完成项）：
+**五个跨层反复出现的缺口**（综述在百余篇论文与数十个已部署系统中反复观察到的未完成项）：
 
 1. **cross-tool 互操作**：工具生态标准化了，但跨工具的状态与 provenance 传递仍靠胶水；
 2. **cost 归因**：一张账单里，哪笔钱是哪个 agent、哪步决策、哪个子任务花的，多数系统答不出；
@@ -331,7 +331,7 @@ ETCLOVG 是一篇匿名在审综述的私有术语，**外部面试官大概率�
 
 ### 六、推荐资源
 
-1. **《Agent Harness Engineering: A Survey》**（TMLR under review，anonymous，2026，64 页）：本章主干来源。映射 170+ 开源项目，提出 ETCLOVG 七层框架、四层心智模型（图 1）、推理/运维工程清单（图 2）、工具循环四 hook 点（Fig 14）、三大跨层权衡（§11）与五个开放问题（§12）。综述尚未正式刊出，引用时注明 under review 状态；面试中点出"2026 年已有综述级文献把 harness 作为独立工程学科来梳理"，本身就是跟进社区的信号。
+1. **《Agent Harness Engineering: A Survey》**（TMLR under review，2026；预印本 [OpenReview PDF](https://openreview.net/pdf?id=eONq7FdiHa)，另有[项目页](https://picrew.github.io/LLM-Harness/)与配套 HuggingFace 数据集）：本章主干来源。覆盖 110+ 篇论文、分析 23+ 个已部署系统，提出 ETCLOVG 七层框架、四层心智模型（图 1）、推理/运维工程清单（图 2）、工具循环四 hook 点（Fig 14）、三大跨层权衡（§11）与五个开放问题（§12）。综述尚未正式刊出，引用时注明 under review 状态；面试中点出"2026 年已有综述级文献把 harness 作为独立工程学科来梳理"，本身就是跟进社区的信号。
 
 2. **Anthropic — [Effective harnesses for long-running agents](https://www.anthropic.com/engineering)**：与综述互为印证的工业界一手经验，讲长程 agent 的包裹层如何设计（循环控制、状态、恢复、边界），是"harness"一词从行话变成工程范畴的标志性文章之一。配合其 [Effective context engineering for AI agents](https://www.anthropic.com/engineering/effective-context-engineering-for-ai-agents)（2025.9）一起读：后者是 C 层的最佳单点教材（compaction、结构化笔记、sub-agent 隔离、JIT、context rot），前者把 C 层放回七层整体中——两篇合读才能理解"包含而非替代"的演进关系。
 
@@ -341,7 +341,7 @@ ETCLOVG 是一篇匿名在审综述的私有术语，**外部面试官大概率�
 
 5. **[OpenAI Agents SDK 文档](https://openai.github.io/openai-agents-python/)**：harness 原语标准化的样本（guardrails、handoff、session、tracing 内建），与 Claude Agent SDK 对读可看出 frameworks→platforms 途中各家把哪些层做进了 SDK、哪些留给了平台——答 frameworks→platforms 题的一手材料。
 
-6. **SandboxEscapeBench（Marchand et al., 2026）**：E 层的冷水——前沿模型可发现并利用沙箱实现弱点、防御碎片化的系统性证据。谈执行环境安全时引用它，等于承认"沙箱 ≠ 安全"这一 2026 年共识；配合第 9 章的 guardrails 文献，构成"能力越强越要硬化 E 层"的完整论据链。
+6. **SandboxEscapeBench（Marchand et al., 2026，《Quantifying Frontier LLM Capabilities for Container Sandbox Escape》，[arXiv:2603.02277](https://arxiv.org/abs/2603.02277)）**：E 层的冷水——前沿模型可发现并利用沙箱实现弱点、防御碎片化的系统性证据。谈执行环境安全时引用它，等于承认"沙箱 ≠ 安全"这一 2026 年共识；配合第 9 章的 guardrails 文献，构成"能力越强越要硬化 E 层"的完整论据链。
 
 7. **Bölük et al.（2026b，闭环 agent 评估）与 Kim et al.（2026，Table 3/4 风险 taxonomy 与覆盖度）**：前者是"分数不能脱离 C_H 归因模型"的形式化来源，评估岗必引；后者是"治理覆盖普遍稀疏"的数据来源，安全岗必引。两篇都是综述的关键支撑文献，独立阅读可校准对 §11.3 与 G 层现实的理解。
 

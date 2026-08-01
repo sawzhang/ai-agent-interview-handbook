@@ -376,7 +376,7 @@ Agent 比普通 LLM 多了"手脚"，安全评估必须独立成维度，不能�
 
 当 pass rate 成为优化目标，grader 就成了攻击面——这是一类独立于提示注入的失败模式，Goodhart 定律在 grader 层的具体现身：
 
-- **典型案例**：SWE-bench 式评测中 Agent 直接**修改测试文件**让失败测试"通过"；对 DB 状态断言做**表面达标**（只改被校验的字段、破坏业务一致性而 grader 不查）；specification gaming——钻评分规则的空子（利用 grader 宽松的字符串匹配输出"格式正确但语义错误"的答案）。2025 年多个"刷榜"Agent 结果被曝出此类 grader 钻空行为，直接动摇了相关基准的公信力。
+- **典型案例**：SWE-bench 式评测中 Agent 直接**修改测试文件**让失败测试"通过"；对 DB 状态断言做**表面达标**（只改被校验的字段、破坏业务一致性而 grader 不查）；specification gaming——钻评分规则的空子（利用 grader 宽松的字符串匹配输出"格式正确但语义错误"的答案）。grader 钻空是有据可查的失败模式，因此**公开榜单成绩需配合轨迹审计才能采信**——只看 pass rate 不看轨迹，等于默认 Agent 没走捷径。
 - **检测**：对"可疑通过"做监控——通过但轨迹异常（动了测试/配置文件、接触了黄金答案文件、路径短得不合理）；对通过样本人工抽检采样；diff 出 Agent 写入的文件并与受保护清单比对。
 - **加固**：测试/黄金文件设为只读且不出现在工作区；断言优先用**状态级多点校验**（目标状态 + 业务完整性约束）而非单点断言；为每个 grader 配**对抗样本**（构造"看起来对其实错"的输出，验证 grader 能抓出来——即对 grader 做红队测试）；LLM judge 引入判据随机化，防止被反向摸索出固定套路。
 - **面试考点**：被问"为什么 pass rate 突然飙升"时，给出"grader 被钻空 / 评估集被污染 / judge 漂移"三段式排查反应，而不是直接相信"模型变强了"。
@@ -657,7 +657,7 @@ defaultTest:
 3. **GAIA（Mialon et al., ICLR 2024）+ GAIA-2 / ARE（Meta FAIR, arXiv 2509.17158, 2025-09）**
    "对人简单、对 AI 难"的通用助理基准范本，及其从"只读"到"读写交互"的演进（800 场景 × 10 universes，配套 ARE 环境框架），理解基准饱和与迭代逻辑。
    https://arxiv.org/abs/2311.12983 ・ https://arxiv.org/abs/2509.17158 ・ https://huggingface.co/blog/gaia2 ・ 榜单 https://huggingface.co/spaces/gaia-benchmark/leaderboard
-4. **Judge 方法学三件套**：《A Survey on LLM-as-a-Judge》（Haitao et al., 2024）+《Justice or Prejudice?》（Ye et al., 2024，arXiv 2410.02736，偏差系统量化）+《Agent-as-a-Judge》（Zhuge et al., ICML 2025，工具化核验）
+4. **Judge 方法学三件套**：《A Survey on LLM-as-a-Judge》（Gu et al., 2024，arXiv 2411.15594）+《Justice or Prejudice?》（Ye et al., 2024，arXiv 2410.02736，偏差系统量化）+《Agent-as-a-Judge》（Zhuge et al., ICML 2025，工具化核验）
    judge 范式从方法、偏差到 Agent 化评审的完整脉络。
    https://arxiv.org/abs/2411.15594 ・ https://arxiv.org/abs/2410.02736 ・ https://github.com/CSHaitao/Awesome-LLMs-as-Judges
 5. **OpenTelemetry GenAI Semantic Conventions**

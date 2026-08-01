@@ -315,7 +315,7 @@ L_DPO = − E[ log σ( β·log π(y_w)/π_ref(y_w) − β·log π(y_l)/π_ref(y_
 **三代认知。**
 1. **Kaplan et al. (2020)**：损失随 N、D、C 呈幂律下降，指数上参数更"划算"，结论是堆参数（催生了 GPT-3 175B 只训 300B token、约 1.7 tokens/param 的"欠训练"做法）。
 2. **[Chinchilla](https://arxiv.org/abs/2203.15556) (Hoffmann et al., 2022)**：更严谨的实验证明**算力应在参数 N 与数据 D 间大致均分**——最优分配下 N、D 随计算预算近似按 0.5 次方同速增长，经验法则 **≈20 tokens/参数**。70B 的 chinchilla-optimal 训练量约 1.4T token。而 LLaMA-3-70B 训了 15T（≈214 tokens/param）——严重"超训"。
-3. **为何业界集体超训？** 因为 Chinchilla 只优化**训练算力**，而模型要服务海量请求。[Should We Prioritize Research on Small Language Models?（Sardar et al. 2024, arXiv:2401.00448）](https://arxiv.org/abs/2401.00448)（其 inference-aware scaling laws 一节）把推理成本纳入总账：总成本 = 训练 + 查询量×单 token 推理成本（∝ N），最优解偏向**更小、超训的模型**——同样的训练预算产出推理便宜得多的产品。这是"小模型+大数据"范式（Phi、Llama-3-8B、GPT-4o-mini）的理论依据。
+3. **为何业界集体超训？** 因为 Chinchilla 只优化**训练算力**，而模型要服务海量请求。[Beyond Chinchilla-Optimal: Accounting for Inference in Language Model Scaling Laws（Sardana et al. 2024, arXiv:2401.00448）](https://arxiv.org/abs/2401.00448)把推理成本纳入总账：总成本 = 训练 + 查询量×单 token 推理成本（∝ N），最优解偏向**更小、超训的模型**——同样的训练预算产出推理便宜得多的产品。这是"小模型+大数据"范式（Phi、Llama-3-8B、GPT-4o-mini）的理论依据。
 
 **边际收益、数据墙与"撞墙"论。** 按 Chinchilla 指数，训练算力翻倍仅换来**总损失约 5–6% 的相对改善**（指数口径约 5.7%；若看 excess loss，相对改善约 20%）；叠加 2.6 节的**数据墙**（高质量语料约 2026–2032 见底的外推值），2024 年起业界共识是**纯预训练 scaling 的边际曲线明显放缓**。
 
@@ -481,7 +481,7 @@ L_DPO = − E[ log σ( β·log π(y_w)/π_ref(y_w) − β·log π(y_l)/π_ref(y_
 **参考答案要点**：
 - Chinchilla：固定训练预算 C≈6ND，N 与 D 应同速扩展（≈20 tokens/param）；此前 GPT-3（约 1.7 tokens/param）严重欠训；
 - 但 Chinchilla **不计算服务成本**。模型上线后推理 FLOPs ∝ N × 查询量，通常远超训练成本；
-- 推理感知缩放（Sardar et al.《Should We Prioritize Research on Small Language Models?》, arXiv:2401.00448）：把推理纳入总账后，最优模型**更小、训得更久**——同等训练预算下，小模型的每 token 服务成本低得多，全生命周期更优；
+- 推理感知缩放（Sardana et al.《Beyond Chinchilla-Optimal: Accounting for Inference in Language Model Scaling Laws》, arXiv:2401.00448）：把推理纳入总账后，最优模型**更小、训得更久**——同等训练预算下，小模型的每 token 服务成本低得多，全生命周期更优；
 - 附加：超训还有产品价值（小模型能端侧/低成本部署）；数据层面多 epoch 收益递减（~4 epoch 内可接受），且高质量数据接近"数据墙"（Villalobos et al. 外推：高质量语料约 2026–2032 耗尽、中点约 2028，属趋势性外推、有争议）；
 - 现状：纯预训练 scaling 边际放缓（算力翻倍 ≈ 总损失相对降 5–6%），增量转向数据质量、后训练与**推理时计算**。
 
@@ -599,7 +599,7 @@ L_DPO = − E[ log σ( β·log π(y_w)/π_ref(y_w) − β·log π(y_l)/π_ref(y_
    [https://github.com/karpathy/nanoGPT](https://github.com/karpathy/nanoGPT)
 3. **DeepSeek-V3 Technical Report（arXiv:2412.19437）** — 一篇同时覆盖 MLA、MoE、无辅助损失负载均衡、FP8 训练的工业级报告，2024-2026 架构题的"标准答案出处"。
    [https://arxiv.org/abs/2412.19437](https://arxiv.org/abs/2412.19437)
-4. **Chinchilla 论文 + 推理感知缩放 follow-up** — 理解 scaling 争论的两篇对读材料：Hoffmann et al. 2022《Training Compute-Optimal Large Language Models》（arXiv:2203.15556）与 Sardar et al. 2024《Should We Prioritize Research on Small Language Models?》（[arXiv:2401.00448](https://arxiv.org/abs/2401.00448)）；再配 Villalobos et al. 的数据墙外推（[arXiv:2211.04325](https://arxiv.org/abs/2211.04325)，ICML 2024）理解"为何纯预训练 scaling 放缓"。
+4. **Chinchilla 论文 + 推理感知缩放 follow-up** — 理解 scaling 争论的两篇对读材料：Hoffmann et al. 2022《Training Compute-Optimal Large Language Models》（arXiv:2203.15556）与 Sardana et al. 2024《Beyond Chinchilla-Optimal: Accounting for Inference in Language Model Scaling Laws》（[arXiv:2401.00448](https://arxiv.org/abs/2401.00448)）；再配 Villalobos et al. 的数据墙外推（[arXiv:2211.04325](https://arxiv.org/abs/2211.04325)，ICML 2024）理解"为何纯预训练 scaling 放缓"。
 5. **FlashAttention 论文 + vLLM/PagedAttention 论文** — 训练侧与推理侧各一篇奠基工程论文：Dao et al. 2022（arXiv:2205.14135）、Kwon et al. SOSP'23（[arXiv:2309.06180](https://arxiv.org/abs/2309.06180)），配合 [vLLM 官方文档](https://docs.vllm.ai/en/latest/)动手跑一遍。
 6. **DeepSeek-R1（arXiv:2501.12948）+ PRM 综述** — 推理模型路线的一手材料：GRPO、可验证奖励、思维链涌现，配 [A Survey of Process Reward Models（arXiv:2510.08049）](https://arxiv.org/abs/2510.08049) 理解 PRM/ORM 的信用分配之争。
 7. **Stanford CS336: Language Modeling from Scratch（2025）/ Hugging Face LLM Course** — 2025 年最好的系统课程之一，从数据、训练到推理全链路手搓；HuggingFace 的[后训练算法指南](https://huggingface.co/blog/karina-zadorozhny/guide-to-llm-post-training-algorithms)是 PPO/DPO/GRPO 对比的高质量速读。

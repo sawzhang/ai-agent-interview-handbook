@@ -2,6 +2,8 @@
 
 > 面向资深工程师 / 面试候选人的 **AI Agent 完整知识体系 + 备考作战手册**。
 > 12 大知识域 + Harness 元框架 + 应用形态专题 · 56 万字 · 结合 2024–2026 最新资料 · 含 9 个可运行动手实验 · 经多智能体对抗性评审与修订。
+>
+> **内容基准日：2026-08** —— 技术与法规陈述均以此为时间基准，引用前请自行核实原始出处。
 
 ---
 
@@ -79,12 +81,30 @@ for f in lab*.py; do python3 "$f"; done   # 一次全跑，全部 ✅ 自检通�
 
 ## 📚 方法论来源
 
-本手册的分层工程观参考《Agent Harness Engineering: A Survey》（TMLR under review, anonymous, 2026；64 页，映射 170+ 开源项目，配「四层心智模型 + 推理/运维工程清单」两张架构图）：第 13 章的 **ETCLOVG 七层分类**（Execution / Tooling / Context / Lifecycle / Observability / Verification / Governance）与 **Prompt Engineering → Context Engineering → Harness Engineering** 三阶段演进即源自该综述，用于把分散在各章的可靠性关切统一为一个可控、可检查、可恢复的系统。
+本手册的分层工程观参考《Agent Harness Engineering: A Survey》——该综述覆盖 110+ 篇论文、分析 23+ 个已部署系统：第 13 章的 **ETCLOVG 七层分类**（Execution / Tooling / Context / Lifecycle / Observability / Verification / Governance）与 **Prompt Engineering → Context Engineering → Harness Engineering** 三阶段演进即源自该综述，用于把分散在各章的可靠性关切统一为一个可控、可检查、可恢复的系统。
+
+- 预印本全文：<https://openreview.net/pdf?id=eONq7FdiHa>
+- 项目页：<https://picrew.github.io/LLM-Harness/>
+
+> ⚠️ 该综述仍在 TMLR 审稿中（Under review），尚未经同行评议定稿，结论与分类可能随修订变化；本手册第 13 章据此加了相应说明，引用时请一并注明其预印本状态。
 
 ## 📅 建议学习路径
 
 详见 `chapters/00-开篇导读.md`：知识全景图（分层依赖）→ 面试考察地图（按公司/级别）→
 **4 周学习路线**（约 60 小时）→ 答题通用框架（概念/原理/系统设计/项目四套方法论）。
+
+## ⚠️ 免责声明
+
+- **独立性**：本手册为个人独立整理的学习资料，与 Anthropic、OpenAI、Google、DeepSeek、阿里巴巴及文中提及的任何公司均无关联，未获其审阅或背书。文中产品名与商标归各自权利人所有，仅作技术指代与学习讨论之用。
+- **内容性质**：所有面试题均为依据公开资料自行编写的**模拟题**，不含任何公司的真实面试题或内部资料。
+- **时效与准确性**：内容含大量时效性技术与法规陈述，**内容基准日：2026-08**。技术生态变化快，引用前请自行核实原始出处；发现错误欢迎提 issue。
+
+## 📄 许可
+
+本仓库是「文字 + 代码」的混合作品，两部分许可不同（详见 [LICENSE](LICENSE)）：
+
+- **文字内容**（`chapters/`、合订本、速记表、追问链、`flashcards/`、章节正文）—— [CC BY-NC-SA 4.0](https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh)：可自由分享与改编，须署名、非商业、相同方式共享。
+- **代码**（`labs/*.py`、`serve.py`、`build_search_index.py`）—— MIT。
 
 ---
 

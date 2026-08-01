@@ -16,9 +16,9 @@ cd labs && python3 lab01_react_agent.py
 # 成功打印 ✅ 自检通过；任何 assert 失败即为回归）
 cd labs && for f in lab*.py; do python3 "$f"; done
 
-# 提供学习网站（零依赖：gzip + 多线程 + 隐藏文件屏蔽；生产由 launchd 服务
-# com.ai-agent-handbook.serve 常驻 8080 端口，经 tailscale funnel 对公网发布）
-python3 serve.py
+# 提供学习网站（零依赖：gzip + 多线程 + 隐藏文件/目录列表屏蔽）
+python3 serve.py            # 默认 0.0.0.0:8000
+PORT=8080 python3 serve.py  # 换端口
 
 # 接入真实 LLM（阿里云百炼 Anthropic 兼容网关；无 Key 时 lab09 自动降级为 Mock）
 export DASHSCOPE_API_KEY='sk-sp-...'
@@ -30,10 +30,15 @@ python3 labs/lab09_real_llm_react.py     # 真实 tool-use ReAct
 
 这是本仓库最重要的约束。修改任何章节内容时，以下四处必须保持一致：
 
-1. **`chapters/NN-章名.md`** — 按章拆分的 Markdown（00-开篇导读 + 01~13 章），精读用的规范来源。
+1. **`chapters/NN-章名.md`** — 按章拆分的 Markdown（00-开篇导读 + 01~14 章），精读用的规范来源。
 2. **`AI-Agent面试学习手册.md`** — 单文件全书，是 chapters/ 的拼接（章标题格式 `# 第 N 章 · 标题`），供全文检索/导入笔记软件。
 3. **`index.html` 的章节 HTML** — 手工维护的单文件学习网站（约 2.3MB，全部 CSS/JS 内联、无外部依赖）。每章是 `<section id="chN" class="chapter">`，含 `minitoc` 本章导航，小节锚点为 `#chN-sM`。
-4. **`index.html` 内联脚本里的搜索索引** — 第二个 `<script>` 块开头的 `const SECTIONS=[{"id":"ch1","title":...,"text":...}]`，是每章内容的**小写纯文本副本**（预构建索引）。只改章节 HTML 而不更新对应 SECTIONS 条目，站内搜索会返回过期结果。
+4. **`index.html` 内联脚本里的搜索索引** — 最后一个 `<script>` 块开头的 `const SECTIONS=[{"id":"ch1","title":...,"text":...}]`，是每章内容的**小写纯文本副本**（预构建索引）。只改章节 HTML 而不更新对应 SECTIONS 条目，站内搜索会返回过期结果。**不要手改**，改完章节 HTML 后跑：
+
+```bash
+python3 build_search_index.py          # 从章节 HTML 重建 SECTIONS
+python3 build_search_index.py --check   # 索引过期则 exit 1（可做提交前检查）
+```
 
 派生内容视改动范围联动更新：`考前速记表.md`（浓缩考点）、`模拟面试追问链.md`（10 条追问链）、`flashcards/`（anki_cards.txt 为制表符分隔的 Anki Basic 卡片，格式 `[章节] 问题<TAB>答案`，答案内含 HTML 标签与实体）。
 
@@ -51,4 +56,10 @@ python3 labs/lab09_real_llm_react.py     # 真实 tool-use ReAct
 
 ## 安全
 
-API Key 一律从环境变量读取（优先级 `DASHSCOPE_API_KEY` → `BAILIAN_API_KEY` → `ANTHROPIC_AUTH_TOKEN` → `TOKENPLAN_API_KEY`），绝不硬编码、绝不提交；`.gitignore` 已忽略 `.env`/`*.key` 及 `*.png` 等本地产物。
+- API Key 一律从环境变量读取（优先级 `DASHSCOPE_API_KEY` → `BAILIAN_API_KEY` → `ANTHROPIC_AUTH_TOKEN` → `TOKENPLAN_API_KEY`），绝不硬编码、绝不提交；`.gitignore` 已覆盖 `.env*`/`*.key`/`*.pem`/`credentials*.json` 等一整类凭据文件。
+- `serve.py` 的 `_is_blocked()` **必须基于 `translate_path()` 解码后的真实路径判断**——直接检查 `self.path` 会被 URL 编码绕过（`%2Eenv` 解码后就是 `.env`），曾据此泄露过 `labs/.env`。改动这个函数后请回归：`/labs/%2Eenv`、`/%2Egit/config`、`/labs/`、`/../../etc/passwd` 均应 404。
+- 仓库中的绝对路径会暴露本机目录结构：labs 与文档里的示例命令一律写成 `cd labs && python3 xxx.py` 的相对形式。
+
+## 许可
+
+见 `LICENSE`：文字内容 CC BY-NC-SA 4.0，代码（`labs/*.py`、`serve.py`、`build_search_index.py`）MIT。新增内容默认沿用对应许可。

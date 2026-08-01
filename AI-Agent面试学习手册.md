@@ -45,6 +45,8 @@
 
 **章节内的固定结构**：核心概念 → 机制原理（必要处配伪代码/结构化拆解）→ 常见误区与陷阱 → 高频面试题（标注 ⭐ 难度与考察意图）→ 延伸阅读。建议第一遍只读「核心概念 + 面试题」做快速扫描，第二遍按学习路线精读机制部分，面试前 3 天只看「误区与陷阱」和各章的一页纸速记。
 
+> **关于题目来源的说明**：本手册所有面试题均为依据公开资料与知识体系自行编写的**模拟题**，不含任何公司的真实面试题或内部资料。
+
 ---
 
 ## AI Agent 知识全景图
@@ -128,6 +130,8 @@
 ## 面试考察地图
 
 ### 按公司类型
+
+> 下表为作者基于公开信息与社区反馈的**个人经验性归纳**，不代表任何公司的官方招聘标准，各团队差异极大，仅作复习优先级参考。
 
 | 公司类型 | 最看重的域 | 考察风格 |
 |---|---|---|
@@ -601,7 +605,7 @@ L_DPO = − E[ log σ( β·log π(y_w)/π_ref(y_w) − β·log π(y_l)/π_ref(y_
 **三代认知。**
 1. **Kaplan et al. (2020)**：损失随 N、D、C 呈幂律下降，指数上参数更"划算"，结论是堆参数（催生了 GPT-3 175B 只训 300B token、约 1.7 tokens/param 的"欠训练"做法）。
 2. **[Chinchilla](https://arxiv.org/abs/2203.15556) (Hoffmann et al., 2022)**：更严谨的实验证明**算力应在参数 N 与数据 D 间大致均分**——最优分配下 N、D 随计算预算近似按 0.5 次方同速增长，经验法则 **≈20 tokens/参数**。70B 的 chinchilla-optimal 训练量约 1.4T token。而 LLaMA-3-70B 训了 15T（≈214 tokens/param）——严重"超训"。
-3. **为何业界集体超训？** 因为 Chinchilla 只优化**训练算力**，而模型要服务海量请求。[Should We Prioritize Research on Small Language Models?（Sardar et al. 2024, arXiv:2401.00448）](https://arxiv.org/abs/2401.00448)（其 inference-aware scaling laws 一节）把推理成本纳入总账：总成本 = 训练 + 查询量×单 token 推理成本（∝ N），最优解偏向**更小、超训的模型**——同样的训练预算产出推理便宜得多的产品。这是"小模型+大数据"范式（Phi、Llama-3-8B、GPT-4o-mini）的理论依据。
+3. **为何业界集体超训？** 因为 Chinchilla 只优化**训练算力**，而模型要服务海量请求。[Beyond Chinchilla-Optimal: Accounting for Inference in Language Model Scaling Laws（Sardana et al. 2024, arXiv:2401.00448）](https://arxiv.org/abs/2401.00448)把推理成本纳入总账：总成本 = 训练 + 查询量×单 token 推理成本（∝ N），最优解偏向**更小、超训的模型**——同样的训练预算产出推理便宜得多的产品。这是"小模型+大数据"范式（Phi、Llama-3-8B、GPT-4o-mini）的理论依据。
 
 **边际收益、数据墙与"撞墙"论。** 按 Chinchilla 指数，训练算力翻倍仅换来**总损失约 5–6% 的相对改善**（指数口径约 5.7%；若看 excess loss，相对改善约 20%）；叠加 2.6 节的**数据墙**（高质量语料约 2026–2032 见底的外推值），2024 年起业界共识是**纯预训练 scaling 的边际曲线明显放缓**。
 
@@ -767,7 +771,7 @@ L_DPO = − E[ log σ( β·log π(y_w)/π_ref(y_w) − β·log π(y_l)/π_ref(y_
 **参考答案要点**：
 - Chinchilla：固定训练预算 C≈6ND，N 与 D 应同速扩展（≈20 tokens/param）；此前 GPT-3（约 1.7 tokens/param）严重欠训；
 - 但 Chinchilla **不计算服务成本**。模型上线后推理 FLOPs ∝ N × 查询量，通常远超训练成本；
-- 推理感知缩放（Sardar et al.《Should We Prioritize Research on Small Language Models?》, arXiv:2401.00448）：把推理纳入总账后，最优模型**更小、训得更久**——同等训练预算下，小模型的每 token 服务成本低得多，全生命周期更优；
+- 推理感知缩放（Sardana et al.《Beyond Chinchilla-Optimal: Accounting for Inference in Language Model Scaling Laws》, arXiv:2401.00448）：把推理纳入总账后，最优模型**更小、训得更久**——同等训练预算下，小模型的每 token 服务成本低得多，全生命周期更优；
 - 附加：超训还有产品价值（小模型能端侧/低成本部署）；数据层面多 epoch 收益递减（~4 epoch 内可接受），且高质量数据接近"数据墙"（Villalobos et al. 外推：高质量语料约 2026–2032 耗尽、中点约 2028，属趋势性外推、有争议）；
 - 现状：纯预训练 scaling 边际放缓（算力翻倍 ≈ 总损失相对降 5–6%），增量转向数据质量、后训练与**推理时计算**。
 
@@ -885,7 +889,7 @@ L_DPO = − E[ log σ( β·log π(y_w)/π_ref(y_w) − β·log π(y_l)/π_ref(y_
    [https://github.com/karpathy/nanoGPT](https://github.com/karpathy/nanoGPT)
 3. **DeepSeek-V3 Technical Report（arXiv:2412.19437）** — 一篇同时覆盖 MLA、MoE、无辅助损失负载均衡、FP8 训练的工业级报告，2024-2026 架构题的"标准答案出处"。
    [https://arxiv.org/abs/2412.19437](https://arxiv.org/abs/2412.19437)
-4. **Chinchilla 论文 + 推理感知缩放 follow-up** — 理解 scaling 争论的两篇对读材料：Hoffmann et al. 2022《Training Compute-Optimal Large Language Models》（arXiv:2203.15556）与 Sardar et al. 2024《Should We Prioritize Research on Small Language Models?》（[arXiv:2401.00448](https://arxiv.org/abs/2401.00448)）；再配 Villalobos et al. 的数据墙外推（[arXiv:2211.04325](https://arxiv.org/abs/2211.04325)，ICML 2024）理解"为何纯预训练 scaling 放缓"。
+4. **Chinchilla 论文 + 推理感知缩放 follow-up** — 理解 scaling 争论的两篇对读材料：Hoffmann et al. 2022《Training Compute-Optimal Large Language Models》（arXiv:2203.15556）与 Sardana et al. 2024《Beyond Chinchilla-Optimal: Accounting for Inference in Language Model Scaling Laws》（[arXiv:2401.00448](https://arxiv.org/abs/2401.00448)）；再配 Villalobos et al. 的数据墙外推（[arXiv:2211.04325](https://arxiv.org/abs/2211.04325)，ICML 2024）理解"为何纯预训练 scaling 放缓"。
 5. **FlashAttention 论文 + vLLM/PagedAttention 论文** — 训练侧与推理侧各一篇奠基工程论文：Dao et al. 2022（arXiv:2205.14135）、Kwon et al. SOSP'23（[arXiv:2309.06180](https://arxiv.org/abs/2309.06180)），配合 [vLLM 官方文档](https://docs.vllm.ai/en/latest/)动手跑一遍。
 6. **DeepSeek-R1（arXiv:2501.12948）+ PRM 综述** — 推理模型路线的一手材料：GRPO、可验证奖励、思维链涌现，配 [A Survey of Process Reward Models（arXiv:2510.08049）](https://arxiv.org/abs/2510.08049) 理解 PRM/ORM 的信用分配之争。
 7. **Stanford CS336: Language Modeling from Scratch（2025）/ Hugging Face LLM Course** — 2025 年最好的系统课程之一，从数据、训练到推理全链路手搓；HuggingFace 的[后训练算法指南](https://huggingface.co/blog/karina-zadorozhny/guide-to-llm-post-training-algorithms)是 PPO/DPO/GRPO 对比的高质量速读。
@@ -1187,7 +1191,7 @@ Drew Breunig《How Long Contexts Fail》（2025-06）把长上下文的失效方
 
 #### 2.11 上下文工程的生产细则（Harness 综述视角）
 
-2026 年的综述《Agent Harness Engineering: A Survey》（TMLR under review, anonymous, 2026；64 页，映射 170+ 开源项目）把长程 Agent 的工程实践按 **ETCLOVG 七层**（Execution 执行环境/沙箱、Tooling 工具接口/协议、Context 上下文管理、Lifecycle 生命周期/编排、Observability 可观测、Verification 验证/评估、Governance 治理/安全）做了系统梳理，并把 harness 定义为"把模型调用转成**有界、有状态、经工具中介的任务执行**的工程化包裹层"——分析单元是让长程 Agent 行为可控、可检查、可恢复的基础设施，而非模型或提示本身；综述据此描绘了 **Prompt Engineering → Context Engineering → Harness Engineering** 的三阶段演进（图 1 / §2，并配四层心智模型与推理/运维工程清单两张架构图）。以下是其 Context 层的生产级细则，与前文的理论互为表里：
+2026 年的综述《Agent Harness Engineering: A Survey》（TMLR under review, 2026；覆盖 110+ 篇论文、分析 23+ 个已部署系统）把长程 Agent 的工程实践按 **ETCLOVG 七层**（Execution 执行环境/沙箱、Tooling 工具接口/协议、Context 上下文管理、Lifecycle 生命周期/编排、Observability 可观测、Verification 验证/评估、Governance 治理/安全）做了系统梳理，并把 harness 定义为"把模型调用转成**有界、有状态、经工具中介的任务执行**的工程化包裹层"——分析单元是让长程 Agent 行为可控、可检查、可恢复的基础设施，而非模型或提示本身；综述据此描绘了 **Prompt Engineering → Context Engineering → Harness Engineering** 的三阶段演进（图 1 / §2，并配四层心智模型与推理/运维工程清单两张架构图）。以下是其 Context 层的生产级细则，与前文的理论互为表里：
 
 **① Progressive disclosure / JIT（渐进披露、按需供给）**。不把知识一次性塞进上下文，而是维护一组**轻量标识符（路径 / 查询 / 链接）**，由 Agent 按需加载。Claude Code 是典型混合形态：**启动只加载 CLAUDE.md，代码库靠 glob/grep 按需探索**——同时规避了预建索引的 stale-indexing 成本与一次性大预载的 prefill 成本。这是 2.5 节"Preloading vs JIT"取舍的生产落地：高频稳定材料前置，长尾留给按需检索。
 
@@ -2198,7 +2202,7 @@ def react_loop(task, tools, llm, max_steps=25):
 
 ## Memory 系统与 RAG
 
-> **写在前面（方法论提示）**：RAG 已从"检索拼进 prompt"的朴素范式，演进为涵盖索引、路由、改写、检索、重排、校验、记忆管理的**复合工程系统**。2025 年以来行业进一步收敛到一个更大的框架——**上下文工程（Context Engineering）**：模型本身无状态，决定输出质量的是"在正确时刻把正确的信息以正确的形式放进上下文"，而 Memory 与 RAG 正是这件事的两大支柱。面试官真正考察的不是你能否背出"向量相似度检索"，而是你能否在 **RAG / 长上下文 / 缓存增强生成（CAG）/ 微调 / 工具调用** 之间做有依据的取舍，能否诊断"检索到了但答错"与"根本没检索到"这两类截然不同的失败。本章按"知识图谱 → 精讲 → 考点 → 真题 → 易错点 → 资源"组织，建议结合一个你亲手做过的 RAG 项目来理解。
+> **写在前面（方法论提示）**：RAG 已从"检索拼进 prompt"的朴素范式，演进为涵盖索引、路由、改写、检索、重排、校验、记忆管理的**复合工程系统**。2025 年以来行业进一步收敛到一个更大的框架——**上下文工程（Context Engineering）**：模型本身无状态，决定输出质量的是"在正确时刻把正确的信息以正确的形式放进上下文"，而 Memory 与 RAG 正是这件事的两大支柱。面试官真正考察的不是你能否背出"向量相似度检索"，而是你能否在 **RAG / 长上下文 / 缓存增强生成（CAG）/ 微调 / 工具调用** 之间做有依据的取舍，能否诊断"检索到了但答错"与"根本没检索到"这两类截然不同的失败。本章按"知识图谱 → 精讲 → 考点 → 面试题 → 易错点 → 资源"组织，建议结合一个你亲手做过的 RAG 项目来理解。
 
 ---
 
@@ -3192,7 +3196,7 @@ Server 暴露三类 primitive，**控制主体不同**，这是高频考点：
 - **HTTP+SSE（已弃用）**：2024-11-05 版 spec 的远程方案，需要两个 endpoint（GET 开 SSE 长连接收消息 + 单独的 POST endpoint 发消息），且 SSE 连接必须先建立才能回传 POST 响应。**致命缺陷**：强状态、长连接黏性、无法部署在 serverless / 负载均衡之后、断线重连即丢上下文、难以水平扩展。
 - **Streamable HTTP（2025-03-26 版 spec 引入）**：单一 HTTP endpoint。客户端 POST 发 JSON-RPC 请求，服务端响应**既可以是普通 JSON（一问一答），也可以升级为 SSE 流**（服务端推送/长任务进度）；可选的 GET 流用于服务端主动通知；用 `Mcp-Session-Id` 头管理会话，`Last-Event-ID` 支持断线续传；2025-06-18 起后续 HTTP 请求还须携带 `MCP-Protocol-Version` 头声明协议版本。它同时兼容无状态 serverless 部署和有状态长会话，这就是取代 SSE 的根本原因。
 
-**长时任务与进度（"一个工具跑 10 分钟怎么办"——高频真题）。** MCP 提供三级递进的机制：
+**长时任务与进度（"一个工具跑 10 分钟怎么办"——高频面试题）。** MCP 提供三级递进的机制：
 
 1. **进度上报**：客户端在请求中附带 `progressToken`；长操作期间服务器以 `notifications/progress` 推送进度（progress / total）；客户端也可发 `ping` 心跳防止连接被中间设施超时掐断、并探活服务器；
 2. **取消**：客户端发送 `notifications/cancelled`（携带对应 `requestId`）终止进行中的操作，服务器应尽快停止工作并清理资源（这是通知语义，不保证硬中止）；
@@ -5269,7 +5273,7 @@ Agent 比普通 LLM 多了"手脚"，安全评估必须独立成维度，不能�
 
 当 pass rate 成为优化目标，grader 就成了攻击面——这是一类独立于提示注入的失败模式，Goodhart 定律在 grader 层的具体现身：
 
-- **典型案例**：SWE-bench 式评测中 Agent 直接**修改测试文件**让失败测试"通过"；对 DB 状态断言做**表面达标**（只改被校验的字段、破坏业务一致性而 grader 不查）；specification gaming——钻评分规则的空子（利用 grader 宽松的字符串匹配输出"格式正确但语义错误"的答案）。2025 年多个"刷榜"Agent 结果被曝出此类 grader 钻空行为，直接动摇了相关基准的公信力。
+- **典型案例**：SWE-bench 式评测中 Agent 直接**修改测试文件**让失败测试"通过"；对 DB 状态断言做**表面达标**（只改被校验的字段、破坏业务一致性而 grader 不查）；specification gaming——钻评分规则的空子（利用 grader 宽松的字符串匹配输出"格式正确但语义错误"的答案）。grader 钻空是有据可查的失败模式，因此**公开榜单成绩需配合轨迹审计才能采信**——只看 pass rate 不看轨迹，等于默认 Agent 没走捷径。
 - **检测**：对"可疑通过"做监控——通过但轨迹异常（动了测试/配置文件、接触了黄金答案文件、路径短得不合理）；对通过样本人工抽检采样；diff 出 Agent 写入的文件并与受保护清单比对。
 - **加固**：测试/黄金文件设为只读且不出现在工作区；断言优先用**状态级多点校验**（目标状态 + 业务完整性约束）而非单点断言；为每个 grader 配**对抗样本**（构造"看起来对其实错"的输出，验证 grader 能抓出来——即对 grader 做红队测试）；LLM judge 引入判据随机化，防止被反向摸索出固定套路。
 - **面试考点**：被问"为什么 pass rate 突然飙升"时，给出"grader 被钻空 / 评估集被污染 / judge 漂移"三段式排查反应，而不是直接相信"模型变强了"。
@@ -5550,7 +5554,7 @@ defaultTest:
 3. **GAIA（Mialon et al., ICLR 2024）+ GAIA-2 / ARE（Meta FAIR, arXiv 2509.17158, 2025-09）**
    "对人简单、对 AI 难"的通用助理基准范本，及其从"只读"到"读写交互"的演进（800 场景 × 10 universes，配套 ARE 环境框架），理解基准饱和与迭代逻辑。
    https://arxiv.org/abs/2311.12983 ・ https://arxiv.org/abs/2509.17158 ・ https://huggingface.co/blog/gaia2 ・ 榜单 https://huggingface.co/spaces/gaia-benchmark/leaderboard
-4. **Judge 方法学三件套**：《A Survey on LLM-as-a-Judge》（Haitao et al., 2024）+《Justice or Prejudice?》（Ye et al., 2024，arXiv 2410.02736，偏差系统量化）+《Agent-as-a-Judge》（Zhuge et al., ICML 2025，工具化核验）
+4. **Judge 方法学三件套**：《A Survey on LLM-as-a-Judge》（Gu et al., 2024，arXiv 2411.15594）+《Justice or Prejudice?》（Ye et al., 2024，arXiv 2410.02736，偏差系统量化）+《Agent-as-a-Judge》（Zhuge et al., ICML 2025，工具化核验）
    judge 范式从方法、偏差到 Agent 化评审的完整脉络。
    https://arxiv.org/abs/2411.15594 ・ https://arxiv.org/abs/2410.02736 ・ https://github.com/CSHaitao/Awesome-LLMs-as-Judges
 5. **OpenTelemetry GenAI Semantic Conventions**
@@ -5827,7 +5831,7 @@ Agent 相比普通 LLM 应用新增了四块攻击面：**工具（能改变世�
 
 技术防御之外，资深工程师还需理解**治理层**——它决定"必须做什么"，并日益成为上线的硬门槛：
 
-- **EU AI Act（欧盟人工智能法案）**：2024.8.1 生效，采用风险分级（不可接受/高/有限/最小）。关键时间线：不可接受风险禁令 2025.2.2 起适用；**通用 AI（GPAI）模型义务 2025.8.2 起适用**（技术文档、版权政策、训练数据摘要、系统性风险评估与红队），配套的 **GPAI Code of Practice 于 2025.7.10 正式发布**，提供厂商签署的自愿合规路径（签署可获执法宽限）；**2026.8.2 Annex III 高风险义务适用，欧委会同期起对 GPAI 实际行使执法权**。罚则最高达 **3500 万欧元或全球营业额 7%**。一个新变量：欧委会 2025 年 11 月提出的 **Digital Omnibus** 简化草案拟**推迟部分高风险义务的时间表**——本段写于该草案尚在立法程序中之时，面试前请核实 2026 年的立法进展、以及 Annex III 高风险义务适用日期（原定 2026.8.2）是否被实际推迟，勿把草案阶段的提议当成已生效的结论。对 Agent 团队意味着：模型/能力卡片、评估留痕、高危用例的合规证据是必需品。
+- **EU AI Act（欧盟人工智能法案）**：2024.8.1 生效，采用风险分级（不可接受/高/有限/最小）。关键时间线：不可接受风险禁令 2025.2.2 起适用；**通用 AI（GPAI）模型义务 2025.8.2 起适用**（技术文档、版权政策、训练数据摘要、系统性风险评估与红队），配套的 **GPAI Code of Practice 于 2025.7.10 正式发布**，提供厂商签署的自愿合规路径（签署可获执法宽限）；**欧委会对 GPAI 的执法权自 2026.8.2 起行使**。罚则最高达 **3500 万欧元或全球营业额 7%**。**2026 年的关键变化**：欧委会 2025 年 11 月提出的 **Digital Omnibus** 简化方案已完成立法程序——《Digital Omnibus on AI》即 **Regulation (EU) 2026/1744**，2026.7.24 在欧盟官方公报刊登、2026.7.27 生效，把**独立高风险系统（Annex III）的主要义务由原定 2026.8.2 推迟至 2027.12.2**，把**嵌入受管制产品的高风险系统（Annex I）由 2027.8.2 推迟至 2028.8.2**。**务必区分两条互不相同的适用日期（高频追问点）**：Article 50 的**透明度义务未被推迟，仍自 2026.8.2 起适用**（与 AI 交互的告知、AI 生成内容标识、深度伪造披露），仅对 2026.8.2 前已上市系统的机器可读标记义务给出至 2026.12.2 的过渡期；新增的"生成儿童性虐待材料／非自愿私密影像"禁令则要求 2026.12.2 前落实技术防护。对 Agent 团队意味着：模型/能力卡片、评估留痕、高危用例的合规证据是必需品；而"透明度义务已经在跑、高风险义务还有缓冲期"正是当下最容易被追问的时间点差异。**本节法规状态基准日：2026-08，引用前请核实最新进展。**
 - **国内监管（中文面试必问）**：《**生成式人工智能服务管理暂行办法**》（网信办等七部门，2023.8.15 施行）是境内面向公众提供生成式 AI 服务的基础规章；**TC260《生成式人工智能服务安全基本要求》** 给出安全评估的技术基线（语料安全、模型安全、安全措施、生成内容安全等），是备案与验收的事实参考；面向公众上线须完成**深度合成算法备案与生成式 AI 服务（大模型）备案**双备案；《**人工智能生成合成内容标识办法**》（2025.9.1 施行）要求对生成内容做显式 + 隐式标识；《**人工智能安全治理框架**》（TC260，2024 年发布）提供本土化的风险分类与治理实践指引。国内监管的特点是"先备案后上线、价值观对齐与内容安全并重"，做境内产品的团队必须把它纳入合规地图。
 - **NIST AI RMF + GenAI Profile（NIST-AI-600-1，2024.7）**：美国自愿性框架，围绕 **Govern / Map / Measure / Manage** 四个功能组织风险管理；GenAI Profile 把生成式 AI 的特有风险（C&B 风险、信息完整性、信息安全、隐私等）映射进去。虽无强制力，但是事实上的企业治理模板。
 - **ISO/IEC 42001**：可认证的 **AI 管理体系（AIMS）** 国际标准，类似 ISO 27001 之于信息安全，用于向客户/审计方证明组织级 AI 治理能力。
@@ -5852,7 +5856,7 @@ Agent 相比普通 LLM 应用新增了四块攻击面：**工具（能改变世�
 
 #### 2.11 治理作为一等层与工具循环四 hook 点（Harness 综述视角）
 
-前面 2.1–2.10 按"攻击面 → 防御 → 对齐 → 合规"展开，本节补一个**架构治理视角**：来自《Agent Harness Engineering: A Survey》（TMLR under review，匿名，2026，64 页，映射 170+ 开源项目）的 **ETCLOVG 七层**心智模型——Execution 执行环境/沙箱、Tooling 工具接口/协议、Context 上下文管理、Lifecycle 生命周期/编排、Observability 可观测、Verification 验证/评估、**Governance 治理/安全**。它相对旧的"六组件"框架做了一个关键升级：**把 Observability 与 Governance 提升为一等层**，而非散落在生命周期里的副作用；状态管理归入 L（Lifecycle），而 hooks/策略执行明确归入 G（Governance）。harness 的定义正是：把模型调用转成"**有界、有状态、经工具中介的任务执行**"的工程化包裹层——分析单元是让长程 agent 行为**可控、可检查、可恢复**的基础设施，而非模型或提示本身。对安全章的意义在于：它给"纵深防御"提供了一个**可落地的层位坐标**。
+前面 2.1–2.10 按"攻击面 → 防御 → 对齐 → 合规"展开，本节补一个**架构治理视角**：来自《Agent Harness Engineering: A Survey》（TMLR under review，2026；覆盖 110+ 篇论文、分析 23+ 个已部署系统）的 **ETCLOVG 七层**心智模型——Execution 执行环境/沙箱、Tooling 工具接口/协议、Context 上下文管理、Lifecycle 生命周期/编排、Observability 可观测、Verification 验证/评估、**Governance 治理/安全**。它相对旧的"六组件"框架做了一个关键升级：**把 Observability 与 Governance 提升为一等层**，而非散落在生命周期里的副作用；状态管理归入 L（Lifecycle），而 hooks/策略执行明确归入 G（Governance）。harness 的定义正是：把模型调用转成"**有界、有状态、经工具中介的任务执行**"的工程化包裹层——分析单元是让长程 agent 行为**可控、可检查、可恢复**的基础设施，而非模型或提示本身。对安全章的意义在于：它给"纵深防御"提供了一个**可落地的层位坐标**。
 
 **（1）治理是三子层，不是一个开关。** G 层内部再分三个子层，恰好与本章既有防御清单对位：
 
@@ -5866,9 +5870,9 @@ Agent 相比普通 LLM 应用新增了四块攻击面：**工具（能改变世�
 
 **（3）capability-control 是【设计轴】，不是安全附加项（§11.2）。** 综述的一条核心论断：**更多能力 = 更大控制问题 = 更大爆炸半径**。控制不是事后"加个 guardrail"，而是一条**贯穿始终的设计轴**，连接六件事：tool schema（fewer, more expressive tools）／上下文策略／运行时权限／身份／可审计／人工批准。这与 2.5 的"权限控制是 Agent 安全的最高杠杆"、2.6 的 Lethal Trifecta 同根——能力维度的每一次扩张（新工具、新记忆、新对外通道）都必须沿这条轴同步扩张控制，否则就是 2.13 节意义上"被合法能力滥用"（capability abuse，CaMeL 2025.7 被绕过的机制）的温床。
 
-**（4）回扣执行环境：沙箱是安全边界（E 层）。** **SandboxEscapeBench（Marchand et al. 2026）**（注：该基准名出自匿名综述的转述，公开渠道不可核实；面试引用建议换用各家 code interpreter 沙箱逃逸的公开披露案例）的实证结论值得记住：**前沿模型确实可利用沙箱弱点，且现实中的防御高度碎片化**。这把 2.9 的"意外代码执行（ASI05）/沙箱逃逸"从理论威胁升级为有基准支撑的实测风险，也说明**执行环境（E 层）本身就是一道安全边界**——隔离（gVisor/Firecracker/E2B/WASM）、资源限额、默认拒绝的出网策略，与上层的 hook 同等重要，而非"运维细节"。
+**（4）回扣执行环境：沙箱是安全边界（E 层）。** **SandboxEscapeBench（Marchand et al. 2026，《Quantifying Frontier LLM Capabilities for Container Sandbox Escape》，[arXiv:2603.02277](https://arxiv.org/abs/2603.02277)）**的实证结论值得记住：**前沿模型确实可利用沙箱弱点，且现实中的防御高度碎片化**。这把 2.9 的"意外代码执行（ASI05）/沙箱逃逸"从理论威胁升级为有基准支撑的实测风险，也说明**执行环境（E 层）本身就是一道安全边界**——隔离（gVisor/Firecracker/E2B/WASM）、资源限额、默认拒绝的出网策略，与上层的 hook 同等重要，而非"运维细节"。
 
-**（5）治理覆盖普遍稀疏 → 必须前置（Table 4）。** 综述对 170+ 项目的观测是：**治理覆盖普遍稀疏**，治理常常沦为**事后补丁**（对应 §11.4：平台化阶段问题从"如何造一个 agent"变为"如何运维一支行为可审查、可回滚的 agent 舰队"）。工程结论：治理（hook、权限、审计、HITL、可观测）应与 T/C/L 各层**同期设计、同期测试**，而不是上线出事后补。综述 §10 的金句同样适用于安全设计——"**harness 设计应被读作依赖结构，而非可拆组件清单**"：治理不是可独立拆装的模块，它依附于其它每一层。
+**（5）治理覆盖普遍稀疏 → 必须前置（Table 4）。** 综述横向比对已部署系统后的观测是：**治理覆盖普遍稀疏**，治理常常沦为**事后补丁**（对应 §11.4：平台化阶段问题从"如何造一个 agent"变为"如何运维一支行为可审查、可回滚的 agent 舰队"）。工程结论：治理（hook、权限、审计、HITL、可观测）应与 T/C/L 各层**同期设计、同期测试**，而不是上线出事后补。综述 §10 的金句同样适用于安全设计——"**harness 设计应被读作依赖结构，而非可拆组件清单**"：治理不是可独立拆装的模块，它依附于其它每一层。
 
 **面试一句话**：谈 Agent 安全时，能把"纵深防御"落到 **ETCLOVG 的层位坐标**（治理是三子层一等层 + 工具循环四 hook 点 + capability-control 设计轴 + E 层沙箱边界），比泛泛列举防御手段更显结构化纵深。
 
@@ -6065,7 +6069,7 @@ Agent 相比普通 LLM 应用新增了四块攻击面：**工具（能改变世�
   - **越权拦截**：capability/权限凭证校验，命中即熔断（tripwire/interrupt），切断"不可信内容→特权动作"。
   - **结果过滤**：对工具返回内容做不可信标注与清洗（Spotlighting）、拦截外传模式，结果回灌前过护栏。
   - **调用后审计**：记录 provenance/权限/成本/失败证据，供对账、回归与事故复盘（标准化协议 MCP/A2A 把这部分责任进一步压给 G+O）。
-- **两条贯穿性约束**：①**capability-control 作为设计轴**——新增任何工具/记忆/对外通道，都要沿 tool schema/上下文策略/运行时权限/身份/可审计/人工批准六处同步加控制，而非事后"补个 guardrail"；②**E 层沙箱是安全边界**——代码执行强制隔离（gVisor/Firecracker/E2B）+ 资源限额 + 默认拒绝出网，呼应 SandboxEscapeBench（Marchand et al. 2026，该基准名公开渠道不可核实，见 2.11 注记）"前沿模型可利用沙箱弱点、防御碎片化"的实测结论。
+- **两条贯穿性约束**：①**capability-control 作为设计轴**——新增任何工具/记忆/对外通道，都要沿 tool schema/上下文策略/运行时权限/身份/可审计/人工批准六处同步加控制，而非事后"补个 guardrail"；②**E 层沙箱是安全边界**——代码执行强制隔离（gVisor/Firecracker/E2B）+ 资源限额 + 默认拒绝出网，呼应 SandboxEscapeBench（Marchand et al. 2026，arXiv:2603.02277）"前沿模型可利用沙箱弱点、防御碎片化"的实测结论。
 - **收尾**：治理要与 T/C/L 各层**同期设计、同期测试**（综述观测治理覆盖普遍稀疏、常沦为事后补丁）；harness 应被读作**依赖结构**而非可拆组件清单——三子层 + 四 hook 点彼此依赖，缺任何一格都不是完整防御。
 
 ---
@@ -6525,7 +6529,7 @@ Agent 相比普通 LLM 应用新增了四块攻击面：**工具（能改变世�
 
 #### 16. 推理与运维工程清单（MLOps for LLM Serving）
 
-**出处与定位。** 《Agent Harness Engineering: A Survey》（TMLR under review, anonymous, 2026，64 页，映射 170+ 开源项目）提出 harness 工程的三阶段演进（Prompt Engineering → Context Engineering → Harness Engineering）与 ETCLOVG 七层心智模型（Execution 执行环境/沙箱、Tooling 工具接口/协议、Context 上下文管理、Lifecycle 生命周期/编排、Observability 可观测、Verification 验证/评估、Governance 治理/安全——其中 O 与 G 被升为**一等层**，状态管理归 L，hooks/策略执行归 G）。该综述把 harness 定义为"把模型调用转成有界、有状态、经工具中介的任务执行的工程化包裹层"，其图 2 给出一份**推理/运维工程清单**——即本节主题。它与本章前 15 节的关系是：前述各节讲清单里每一项"怎么工作"，本节讲"这份完整清单长什么样、每项何时上场"，并收口于综述 §10 的金句：**harness 设计应被读作依赖结构，而非可拆组件清单**——下面 17 项彼此耦合，任何一项的改动都应按系统变更测试（综述 §11.3），而非局部优化。
+**出处与定位。** 《Agent Harness Engineering: A Survey》（TMLR under review, 2026，覆盖 110+ 篇论文、分析 23+ 个已部署系统）提出 harness 工程的三阶段演进（Prompt Engineering → Context Engineering → Harness Engineering）与 ETCLOVG 七层心智模型（Execution 执行环境/沙箱、Tooling 工具接口/协议、Context 上下文管理、Lifecycle 生命周期/编排、Observability 可观测、Verification 验证/评估、Governance 治理/安全——其中 O 与 G 被升为**一等层**，状态管理归 L，hooks/策略执行归 G）。该综述把 harness 定义为"把模型调用转成有界、有状态、经工具中介的任务执行的工程化包裹层"，其图 2 给出一份**推理/运维工程清单**——即本节主题。它与本章前 15 节的关系是：前述各节讲清单里每一项"怎么工作"，本节讲"这份完整清单长什么样、每项何时上场"，并收口于综述 §10 的金句：**harness 设计应被读作依赖结构，而非可拆组件清单**——下面 17 项彼此耦合，任何一项的改动都应按系统变更测试（综述 §11.3），而非局部优化。
 
 **清单逐条（是什么 / 何时用）：**
 
@@ -8130,15 +8134,15 @@ Faithfulness 校验与引用回填（逐句核对"引用是否真的支持该论
 
 **Agent 支付、商务与合规速览（2025–2026 新兴战场）**：当 agent 开始"替用户办事、比价下单"，"这笔钱谁授权、谁担责"立刻浮出水面，2025 年三个协议瓜分了版图：**AP2（Agent Payments Protocol，Google 牵头，2025.9）**引入"授权委托"（mandate）——用户预签意图与限额条件，agent 在授权范围内执行支付，给银行/发卡方留下可验证的授权证据链；**x402（Coinbase）**复活 HTTP 402，用稳定币做机器间微支付（API 按次计费）；**ACP（Agentic Commerce Protocol，Stripe 与 OpenAI 共建，2025.9）**率先落地应用内结账（ChatGPT Instant Checkout）。面试价值：浏览器 Agent 题（Q12）被追问"付款怎么办"时，答"授权凭证（mandate）+ scoped 支付工具 + 不可逆动作人工确认"，而不是"把卡号给 agent"。
 
-合规侧先记三条：① **EU AI Act**——2026.8.2 起 Annex III 高风险义务适用，高风险系统负有日志留存与人类监督的可追溯义务，agent 的全链路 trace 不只是工程需要也是合规需要；② **中国《人工智能生成合成内容标识办法》**（2025.9.1 施行）要求显式 + 隐式双标识，生成式 AI 服务需备案——国内上线必遇；③ GDPR 被遗忘权对记忆与用户数据仍然有效（呼应 Q15）。整体时间表仍在变动，引用前核实最新状态。
+合规侧先记三条：① **EU AI Act**——Article 50 透明度义务 2026.8.2 起适用，Annex III 高风险义务经 Digital Omnibus（Regulation (EU) 2026/1744）推迟至 2027.12.2；高风险系统负有日志留存与人类监督的可追溯义务，agent 的全链路 trace 不只是工程需要也是合规需要；② **中国《人工智能生成合成内容标识办法》**（2025.9.1 施行）要求显式 + 隐式双标识，生成式 AI 服务需备案——国内上线必遇；③ GDPR 被遗忘权对记忆与用户数据仍然有效（呼应 Q15）。整体时间表仍在变动，引用前核实最新状态。
 
 #### 2.12 系统设计的三个跨层权衡（Harness 综述升华）
 
-2.1–2.11 是按模块拆解的"知识点视图"；本节把它们升维成**跨层权衡视图**——这是系统设计题从"画得出架构图"进阶到"讲得出设计哲学"的分水岭。素材出自综述《Agent Harness Engineering: A Survey》（TMLR 在审、匿名，2026；64 页，映射 170+ 开源项目，配套两张架构图：四层心智模型 + 推理/运维工程清单）。综述给 harness 下的定义本身就是一道设计题的破题句：**harness 是把模型调用转成"有界、有状态、经工具中介的任务执行"的工程化包裹层**，其分析单元不是模型、不是提示，而是"让长程 agent 行为可控、可检查、可恢复的基础设施"。综述还给出了一条三阶段演进线（图 1/§2）：**Prompt Engineering → Context Engineering → Harness Engineering**——面试中用它一句话交代"agent 工程的关注点是怎么逐代上移的"，比罗列技术名词更显体系感。
+2.1–2.11 是按模块拆解的"知识点视图"；本节把它们升维成**跨层权衡视图**——这是系统设计题从"画得出架构图"进阶到"讲得出设计哲学"的分水岭。素材出自综述《Agent Harness Engineering: A Survey》（TMLR 在审，2026；覆盖 110+ 篇论文、分析 23+ 个已部署系统，配套两张架构图：四层心智模型 + 推理/运维工程清单）。综述给 harness 下的定义本身就是一道设计题的破题句：**harness 是把模型调用转成"有界、有状态、经工具中介的任务执行"的工程化包裹层**，其分析单元不是模型、不是提示，而是"让长程 agent 行为可控、可检查、可恢复的基础设施"。综述还给出了一条三阶段演进线（图 1/§2）：**Prompt Engineering → Context Engineering → Harness Engineering**——面试中用它一句话交代"agent 工程的关注点是怎么逐代上移的"，比罗列技术名词更显体系感。
 
 **ETCLOVG 七层：系统设计题的分层底稿。** 综述用七个一等层切分 harness，可直接当设计题的架构图骨架：**E**xecution（执行环境/沙箱）、**T**ooling（工具接口/协议）、**C**ontext（上下文管理）、**L**ifecycle（生命周期/编排）、**O**bservability（可观测）、**V**erification（验证/评估）、**G**overnance（治理/安全）。相对旧式"模型/工具/记忆/规划/评估/安全"六组件框架，它的关键升格有两处：**把 O 与 G 升为一等层**（不再是事后补丁），并把状态管理归入 L、把 hooks/策略执行归入 G。逐层的综述论据可与本章前文互引：
 
-- **E 层**：沙箱不是"加个容器"就完事——SandboxEscapeBench（Marchand et al. 2026）显示前沿模型可利用沙箱弱点逃逸，而业界防御碎片化；长程平台的执行环境硬化本身是开放问题（§12）。
+- **E 层**：沙箱不是"加个容器"就完事——SandboxEscapeBench（Marchand et al. 2026，《Quantifying Frontier LLM Capabilities for Container Sandbox Escape》，[arXiv:2603.02277](https://arxiv.org/abs/2603.02277)）显示前沿模型可利用沙箱弱点逃逸，而业界防御碎片化；长程平台的执行环境硬化本身是开放问题（§12）。
 - **T 层**：Table 1 按"集成边界"排列工具/接口标准；设计原则是"**prefer fewer, more expressive tools**——若人类工程师都说不清何时用哪个工具，模型更做不到"（呼应本章易错点 #7）。MCP/ACP/A2A 的标准化不是免费午餐：它把责任转移给 G+O——跨系统调用必须保留 provenance、权限、成本与失败证据。
 - **C 层**：短期/中期/长期三分。短期 system prompt 要找"**right altitude**"（过具体 = 脆弱难维护，过模糊 = 无指引）；token-efficient tool design；progressive disclosure / JIT（Claude Code：CLAUDE.md 启动加载 + glob/grep 按需，即 2.6(2)）；**KV-cache-aware 设计**——Manus 称"KV-cache 命中率是生产级 AI agent 最重要的单一指标"：Sonnet 缓存价 $0.30/MTok vs 未缓存 $3.00/MTok（10×），三条规则 = ① 保持 prompt 前缀稳定 ② 上下文 append-only ③ 确定性序列化（正是 2.7 缓存杠杆的底层机理）；Manus 用掩码 logits 而非运行时改工具列表来收束动作空间，配合 Anthropic cache_control 断点使用。中期靠结构化笔记（NOTES.md/todo.md）外置。
 - **O 层**：Langfuse + OpenTelemetry 组合（呼应 2.9 的 OTel GenAI 约定）。**V 层**：评估结果必须回流改进 harness，eval 即 CI 的闭环。
@@ -8518,9 +8522,9 @@ Faithfulness 校验与引用回填（逐句核对"引用是否真的支持该论
 
 # 第 13 章 · Agent 工程分层架构与 Harness Engineering
 
-第 1–12 章分别讲了提示词、记忆、工具、多智能体、评估、安全、部署——但在真实系统里，这些从来不是"独立模块"，而是同一个**包裹层（harness）**的不同切面：它们在运行时彼此耦合，共同决定一个长程 agent 是否可控、可检查、可恢复。本章是全书的"统一元框架"：以 2026 年的综述《Agent Harness Engineering: A Survey》（TMLR under review，anonymous，64 页，映射 170+ 开源项目，配两张架构图：四层心智模型 + 推理/运维工程清单）为主干，把散落在各章的 harness 关切串成一个**控制系统视角**——模型是被控对象，harness 是控制器 C_H，评估分数是闭环系统的联合属性。面试中，能把"我用了 LangGraph + 加了 guardrail"上升为"我在 ETCLOVG 的每一层做了什么决策、承担了什么代价"的人，才是资深岗想要的候选人。
+第 1–12 章分别讲了提示词、记忆、工具、多智能体、评估、安全、部署——但在真实系统里，这些从来不是"独立模块"，而是同一个**包裹层（harness）**的不同切面：它们在运行时彼此耦合，共同决定一个长程 agent 是否可控、可检查、可恢复。本章是全书的"统一元框架"：以 2026 年的综述《Agent Harness Engineering: A Survey》（TMLR under review，预印本可在 OpenReview 获取；覆盖 110+ 篇论文、分析 23+ 个已部署系统，配两张架构图：四层心智模型 + 推理/运维工程清单）为主干，把散落在各章的 harness 关切串成一个**控制系统视角**——模型是被控对象，harness 是控制器 C_H，评估分数是闭环系统的联合属性。面试中，能把"我用了 LangGraph + 加了 guardrail"上升为"我在 ETCLOVG 的每一层做了什么决策、承担了什么代价"的人，才是资深岗想要的候选人。
 
-> ⚠️ **单一来源风险提示** — 本章框架主干出自《Agent Harness Engineering: A Survey》（TMLR under review、匿名投稿，外部暂不可检索），其中 SandboxEscapeBench、Bölük et al.、Kim et al. 等内部引用目前无法独立核实。面试中引用本章结论时，**落点放在工程逻辑本身**（分层为何如此划分、权衡为何成立），而非"某综述说"；数据类断言（如治理层覆盖普遍稀疏）请作为定性观察转述，不要当硬数据报出。
+> ⚠️ **单一来源风险提示** — 本章框架主干出自《Agent Harness Engineering: A Survey》。该综述目前是 **TMLR 在审稿件**，预印本公开可读（[OpenReview PDF](https://openreview.net/pdf?id=eONq7FdiHa)、[项目页](https://picrew.github.io/LLM-Harness/)），但**尚未经同行评议定稿**；ETCLOVG 是它新提出的术语体系，业界尚未广泛采用，不能当作通行行话使用。面试中引用本章结论时，**落点放在工程逻辑本身**（分层为何如此划分、权衡为何成立），而非"某综述说"；数据类断言（如治理层覆盖普遍稀疏）请作为定性观察转述，不要当硬数据报出。
 
 ### 一、知识图谱
 
@@ -8664,7 +8668,7 @@ ETCLOVG 是综述提出的七层职能框架：**E**xecution、**T**ooling、**C
 
 #### 把 ETCLOVG 翻译成通用工程语言
 
-ETCLOVG 是一篇匿名在审综述的私有术语，**外部面试官大概率没听过**。逐层翻译成业界通用词汇：
+ETCLOVG 是一篇仍在 TMLR 审稿中的综述所提出的术语体系，**外部面试官大概率没听过**。逐层翻译成业界通用词汇：
 
 | 层 | 综述术语 | 通用工程语言（面试首选） |
 |---|---|---|
@@ -8676,7 +8680,7 @@ ETCLOVG 是一篇匿名在审综述的私有术语，**外部面试官大概率�
 | V | Verification | 评估与验证 |
 | G | Governance | 权限与治理 |
 
-**面试策略三条：** ① **外部面试先用右列通用词汇作答**——被问"生产级 agent 要考虑什么"，直接说"沙箱隔离、工具接口、上下文管理、状态持久化与恢复、可观测性、评估验证、权限治理"七个方面，每个词面试官都能对上自己的知识体系；开口报"ETCLOVG"反而要先花时间解释缩写，且对方无从校验。② **把七层当成自己的检查清单，而非答题话术**——它的价值是帮你在脑内快速过一遍"哪层还没答到"，保证覆盖度与条理，而不是当术语抛出去镇场。③ **只有对方追问"你有没有系统化的框架"时再引出**，并如实注明出处是一篇匿名在审的综述（TMLR under review）——主动交代来源的不确定性，比让面试官事后搜不到这个词更显专业。最后一层保险：右列七个词各自对应本书第 9/10、5、2/4、3/7、8、8、9 章的成熟内容，就算全程不提 ETCLOVG，答案深度也不受影响——框架是组织答案的骨架，不是答案本身。
+**面试策略三条：** ① **外部面试先用右列通用词汇作答**——被问"生产级 agent 要考虑什么"，直接说"沙箱隔离、工具接口、上下文管理、状态持久化与恢复、可观测性、评估验证、权限治理"七个方面，每个词面试官都能对上自己的知识体系；开口报"ETCLOVG"反而要先花时间解释缩写，且对方在面试现场也难以校验。② **把七层当成自己的检查清单，而非答题话术**——它的价值是帮你在脑内快速过一遍"哪层还没答到"，保证覆盖度与条理，而不是当术语抛出去镇场。③ **只有对方追问"你有没有系统化的框架"时再引出**，并如实注明出处是一篇仍在 TMLR 审稿中的综述（预印本已在 OpenReview 公开）——主动交代来源的成熟度，比让面试官事后发现这是个尚未经同行评议的新术语更显专业。最后一层保险：右列七个词各自对应本书第 9/10、5、2/4、3/7、8、8、9 章的成熟内容，就算全程不提 ETCLOVG，答案深度也不受影响——框架是组织答案的骨架，不是答案本身。
 
 #### 2.4 控制流谱系：Loop vs Graph，Code/LLM/Hybrid，三种系统形态
 
@@ -8727,7 +8731,7 @@ ETCLOVG 是一篇匿名在审综述的私有术语，**外部面试官大概率�
 
 **§10 金句：** "harness 设计应被读作**依赖结构（dependency structure）**，而非可拆组件清单。" 清单思维问"我集齐了 ETCLOVG 七层没有"，依赖结构思维问"这层坏了，哪些层会跟着失效；这层改了，哪些层的假设被打破"。前者产出 checklist 式架构师，后者产出系统设计题的高分答案。
 
-**五个跨层反复出现的缺口**（综述在 170+ 项目中反复观察到的未完成项）：
+**五个跨层反复出现的缺口**（综述在百余篇论文与数十个已部署系统中反复观察到的未完成项）：
 
 1. **cross-tool 互操作**：工具生态标准化了，但跨工具的状态与 provenance 传递仍靠胶水；
 2. **cost 归因**：一张账单里，哪笔钱是哪个 agent、哪步决策、哪个子任务花的，多数系统答不出；
@@ -8849,7 +8853,7 @@ ETCLOVG 是一篇匿名在审综述的私有术语，**外部面试官大概率�
 
 ### 六、推荐资源
 
-1. **《Agent Harness Engineering: A Survey》**（TMLR under review，anonymous，2026，64 页）：本章主干来源。映射 170+ 开源项目，提出 ETCLOVG 七层框架、四层心智模型（图 1）、推理/运维工程清单（图 2）、工具循环四 hook 点（Fig 14）、三大跨层权衡（§11）与五个开放问题（§12）。综述尚未正式刊出，引用时注明 under review 状态；面试中点出"2026 年已有综述级文献把 harness 作为独立工程学科来梳理"，本身就是跟进社区的信号。
+1. **《Agent Harness Engineering: A Survey》**（TMLR under review，2026；预印本 [OpenReview PDF](https://openreview.net/pdf?id=eONq7FdiHa)，另有[项目页](https://picrew.github.io/LLM-Harness/)与配套 HuggingFace 数据集）：本章主干来源。覆盖 110+ 篇论文、分析 23+ 个已部署系统，提出 ETCLOVG 七层框架、四层心智模型（图 1）、推理/运维工程清单（图 2）、工具循环四 hook 点（Fig 14）、三大跨层权衡（§11）与五个开放问题（§12）。综述尚未正式刊出，引用时注明 under review 状态；面试中点出"2026 年已有综述级文献把 harness 作为独立工程学科来梳理"，本身就是跟进社区的信号。
 
 2. **Anthropic — [Effective harnesses for long-running agents](https://www.anthropic.com/engineering)**：与综述互为印证的工业界一手经验，讲长程 agent 的包裹层如何设计（循环控制、状态、恢复、边界），是"harness"一词从行话变成工程范畴的标志性文章之一。配合其 [Effective context engineering for AI agents](https://www.anthropic.com/engineering/effective-context-engineering-for-ai-agents)（2025.9）一起读：后者是 C 层的最佳单点教材（compaction、结构化笔记、sub-agent 隔离、JIT、context rot），前者把 C 层放回七层整体中——两篇合读才能理解"包含而非替代"的演进关系。
 
@@ -8859,7 +8863,7 @@ ETCLOVG 是一篇匿名在审综述的私有术语，**外部面试官大概率�
 
 5. **[OpenAI Agents SDK 文档](https://openai.github.io/openai-agents-python/)**：harness 原语标准化的样本（guardrails、handoff、session、tracing 内建），与 Claude Agent SDK 对读可看出 frameworks→platforms 途中各家把哪些层做进了 SDK、哪些留给了平台——答 frameworks→platforms 题的一手材料。
 
-6. **SandboxEscapeBench（Marchand et al., 2026）**：E 层的冷水——前沿模型可发现并利用沙箱实现弱点、防御碎片化的系统性证据。谈执行环境安全时引用它，等于承认"沙箱 ≠ 安全"这一 2026 年共识；配合第 9 章的 guardrails 文献，构成"能力越强越要硬化 E 层"的完整论据链。
+6. **SandboxEscapeBench（Marchand et al., 2026，《Quantifying Frontier LLM Capabilities for Container Sandbox Escape》，[arXiv:2603.02277](https://arxiv.org/abs/2603.02277)）**：E 层的冷水——前沿模型可发现并利用沙箱实现弱点、防御碎片化的系统性证据。谈执行环境安全时引用它，等于承认"沙箱 ≠ 安全"这一 2026 年共识；配合第 9 章的 guardrails 文献，构成"能力越强越要硬化 E 层"的完整论据链。
 
 7. **Bölük et al.（2026b，闭环 agent 评估）与 Kim et al.（2026，Table 3/4 风险 taxonomy 与覆盖度）**：前者是"分数不能脱离 C_H 归因模型"的形式化来源，评估岗必引；后者是"治理覆盖普遍稀疏"的数据来源，安全岗必引。两篇都是综述的关键支撑文献，独立阅读可校准对 §11.3 与 G 层现实的理解。
 
