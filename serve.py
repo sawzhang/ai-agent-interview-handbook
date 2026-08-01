@@ -34,19 +34,30 @@ class Handler(SimpleHTTPRequestHandler):
         ".txt": "text/plain; charset=utf-8",
     }
 
-    def _is_hidden(self):
-        # 隐藏文件/目录（.env、.git 等）一律 404，绝不对外暴露
-        clean = self.path.split("?", 1)[0].split("#", 1)[0]
-        return any(seg.startswith(".") for seg in clean.split("/") if seg)
+    def _is_blocked(self):
+        """隐藏文件/目录（.env、.git 等）与越界路径一律 404。
+
+        判断必须基于 translate_path() 解码并规范化后的真实路径：直接看
+        self.path 会被 URL 编码绕过（%2Eenv 解码后就是 .env）。realpath
+        同时挡住经符号链接逃出 ROOT 的情况。
+        """
+        real = os.path.realpath(self.translate_path(self.path))
+        try:
+            rel = os.path.relpath(real, os.path.realpath(ROOT))
+        except ValueError:  # 跨盘符等无法比较的情况一律拒绝
+            return True
+        if rel == ".." or rel.startswith(".." + os.sep):
+            return True
+        return any(seg.startswith(".") for seg in rel.split(os.sep) if seg not in ("", "."))
 
     def do_HEAD(self):
-        if self._is_hidden():
+        if self._is_blocked():
             self.send_error(404, "File not found")
             return
         super().do_HEAD()
 
     def do_GET(self):
-        if self._is_hidden():
+        if self._is_blocked():
             self.send_error(404, "File not found")
             return
         path = self.translate_path(self.path)
