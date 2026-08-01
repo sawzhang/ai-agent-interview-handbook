@@ -2584,6 +2584,23 @@ Rerank 通常带来**最显著且最便宜**的端到端质量提升，是性价
 
 要点：**Faithfulness 不需要标准答案**——它只检查"答案 ⊆ 检索上下文"，这正是"无参考评估"的关键，也是它能用于**在线监控**的原因。它把幻觉定义为"超出证据的陈述"。
 
+**检索侧的经典 IR 指标（RAGAS 之外，必须能区分）。** RAGAS 的 Context Precision/Recall 靠 LLM 判定，成本高、有 judge 偏置；**带标注的黄金文档集 + 经典 IR 指标**是更便宜、更稳定的日常回归手段，二者互补。四个指标常被混着说，面试要能一句话讲清差异：
+
+| 指标 | 度量什么 | 对排序敏感? | 需要分级标注? | 典型场景 |
+|---|---|---|---|---|
+| **Recall@K** | 黄金证据**有没有**落进 top-K | 否（只问在不在） | 否 | **RAG 的第一指标** |
+| **Hit Rate** | 至少一条相关文档进 top-K 的**查询占比** | 否 | 否 | 线上粗粒度监控 |
+| **MRR** | **第一条**正确结果排名的倒数 `1/rank` | 是（只看第一条） | 否 | 只需一个答案：FAQ、导航式查询 |
+| **nDCG** | 全部位置 + 分级相关性，按 `1/log₂(rank+1)` 折扣 | 是（看全序） | **是** | 需多条证据：多跳、聚合总结 |
+
+**为什么 RAG 里 Recall@K 通常比排序质量更重要（这是与传统搜索的关键分野）。** 传统 IR 的下游是**人**——用户只看前几条，所以 MRR/nDCG 是主角；RAG 的下游是 **LLM**，它会把 top-K **全部读进上下文**。只要证据进了窗口，rerank 之后的精确名次对最终答案的影响，远小于"到底有没有召回"。所以调优优先级通常是：**先把 Recall@K 拉满，再用 rerank 去噪**。
+
+**但这个结论有边界（能说出边界才是资深）：** 当上下文预算紧、或使用推理模型（对噪声更敏感，见 §2.5 末尾注记）时，你只能塞 3–5 条，排序质量重新变成主要矛盾——此时 MRR/nDCG 的权重回升。
+
+**两个高频陷阱：**
+- **只盯 Recall@K 就把 K 调大。** K 从 5 调到 50，Recall 必然上升，但噪声同步涌入，端到端答案率可能**不升反降**。检索指标必须**和端到端指标一起看**，任何单独优化某一层的动作都要用全链路评估验收。
+- **没有分级标注却报 nDCG。** nDCG 的价值来自"高度相关 vs 勉强相关"的区分；二值标注下它退化得接近 MRR/MAP，却要多付一大笔标注成本。**标注预算不够就老实用 Recall@K + MRR。**
+
 **更细粒度：RAGChecker（Amazon, 2024，NeurIPS 2024 D&B）。** 把评估下沉到 **claim（原子陈述）级**，分三组指标：Overall（Answer F1、Faithfulness、Claim Precision/Recall）、Retrieval（Context Relevance/Precision/Recall）、Generation（Claim Recall、Contextual Precision、Faithfulness、Answer Relevancy），并引入 **Noise Sensitivity（噪声敏感度）**——度量"答案被检索到的无关块带偏的程度"，这正是"检索到了但答错"的量化指标。诊断粒度比 RAGAS 更细，且带在线 dashboard，是 2025 年后的推荐补充。
 
 **引用质量（可溯源场景必测）：** **ALCE** 系指标度量 **citation precision**（引用的来源真的支持该陈述吗）与 **citation recall**（该引用的陈述都标来源了吗）。"答案对"与"答案对且出处对"是两件事。
@@ -2608,6 +2625,8 @@ Rerank 通常带来**最显著且最便宜**的端到端质量提升，是性价
 | Dense / Sparse / Hybrid 与 RRF | ⭐⭐⭐ | 错误模式互补，RRF 用排名规避分数不可比（k=60） |
 | Chunking 策略与 chunk size 取舍 | ⭐⭐⭐ | 小块精准、大块全；Small-to-Big / Contextual Retrieval / RAPTOR |
 | 检索质量 vs 生成质量的评估解耦 | ⭐⭐⭐ | Context Precision/Recall 管检索，Faithfulness/Relevancy 管生成；RAGChecker 到 claim 级 |
+| Recall@K / MRR / nDCG 的区别与选用 | ⭐⭐⭐ | 下游是 LLM 不是人，Recall@K 通常优先于排序质量；上下文预算紧时 MRR/nDCG 回升；无分级标注别报 nDCG |
+| 引用溯源的粒度设计 | ⭐⭐ | 页码+bbox / 行号区间 / block anchor 要在解析期写进元数据；用 ALCE citation precision/recall 度量 |
 | Lost in the Middle / 长上下文评测陷阱 | ⭐⭐⭐ | 中段信息易丢，Needle 测试高估真实能力（RULER/NoLiMa/HELMET） |
 | Reranker 的作用与性价比 | ⭐⭐⭐ | 两段式中最便宜、最显著的质量提升；RankGPT 系 LLM 重排更准更贵 |
 | Prompt caching 与 CAG 的边界 | ⭐⭐⭐ | 稳定前缀缓存命中后长上下文重新划算；CAG 只适合"小而静态"的 KB，不替代 RAG |
@@ -2744,7 +2763,7 @@ Rerank 通常带来**最显著且最便宜**的端到端质量提升，是性价
 - **索引**：结构感知 chunking + Parent-Document；Hybrid（dense + BM25）；Contextual 前缀提升专名与残缺语境命中；HNSW（efSearch 按延迟预算调）或托管向量库；按 source 分 namespace/collection。
 - **检索与生成**：Query 路由（FAQ/文档/代码分别走不同索引与块粒度）→ Hybrid 召回 + RRF → Rerank → 组装 prompt **强制带引用**（每个论断挂 source url，最相关放首尾）→ 生成 → **Faithfulness 校验 + citation 回填**，低于阈值显式说"证据不足"。
 - **可更新**：文档变更 webhook → 按 doc_id 增量重切/重嵌/失效旧向量；保留版本以便回滚；嵌入模型升级时全量重嵌、双索引灰度切换。
-- **可溯源**：答案引用 chunk_id → 反链原文锚点位置；前端可点开核对；日志留存便于审计。
+- **可溯源（要答到粒度，这是本题最容易被追问的点）**：引用**不能只挂到文档级**——解析阶段就把定位坐标写进 chunk 元数据：**PDF 存页码 + bbox**（版面解析时顺手留下）、**代码存文件路径 + 行号区间**、**Confluence 存 block/anchor id**。有了坐标，前端才能**高亮到那一段原文**，而不是甩一个 200 页 PDF 的链接——"能点到第 37 页那一句"和"给你个文档链接"是两个产品，可信度天差地别。引用质量本身要进评估集，对应 §2.8 的 **ALCE citation precision / recall**（引用的来源真支持该陈述吗、该标引用的陈述都标了吗）。日志留存完整引用轨迹便于审计。
 - **评估与运维**：建分层黄金集跑 RAGAS/RAGChecker 回归；线上采样 LLM-judge 监控忠实度与命中率；query 日志回流扩充评估集（含拒答负例）；A/B 上线；全链路 trace。
 - **主动讲的取舍**：多租户用 namespace 隔离防串库；代码检索用 AST 符号索引 + 嵌入混合；宏观总结类问题评估 GraphRAG/RAPTOR 但先算索引成本；若只是单个小产品的静态 FAQ，可退化为 CAG（整库预载进缓存）省掉整套 pipeline——**先问要不要上系统**。
 
