@@ -39,7 +39,7 @@ Agent 评估与可观测性
 │   ├── GAIA / GAIA-2（通用助理，读→读写，人机差距，ARE 环境框架）
 │   ├── AgentBench（8 环境，LLM-as-Agent 横向对比）
 │   ├── τ-bench / τ²-bench / τ³-bench（tool-agent-user 交互、双控制、policy following、pass^k、语音模态）
-│   └── 延伸：SWE-bench(Verified/Pro)、OSWorld、WebArena、Terminal-Bench、BFCL v3（多轮工具调用）、PlanBench
+│   └── 延伸：SWE-bench(Verified/Pro)、OSWorld、WebArena、Terminal-Bench、BFCL v4（agentic：多跳工具链/记忆/web 检索/格式敏感性）、PlanBench
 ├── 6. 可观测性
 │   ├── 三大支柱：Logs / Metrics / Traces
 │   ├── 数据模型：Trace / Span / Generation / Event；分数（score）作为 trace 的标注
@@ -53,6 +53,7 @@ Agent 评估与可观测性
 │   ├── 用户反馈（显式/隐式）、升级机制、containment 分析
 │   ├── Shadow mode → Canary → A/B（会话级分流、序贯检验）→ 全量
 │   ├── 数据飞轮：failure mining → 失败分类学（taxonomy）→ golden set → 回归套件
+│   ├── 训练闭环：轨迹筛选 → SFT / 拒绝采样 / 偏好对（RFT）→ eval 门禁 → 灰度上线
 │   └── 人机协同：HITL vs HOTL、annotation queue、judge 校准回路
 ├── 8. 评估环境工程与可复现性
 │   ├── 确定性控制（温度/seed、版本锁定、record-replay、用户模拟器固定）
@@ -215,9 +216,13 @@ Agent 评估与可观测性
 | 计算机操作 | OSWorld（真机桌面，人类 72%，榜首 >60%）、WindowsAgentArena | 端到端 GUI 操作 |
 | Web Agent | WebArena / VisualWebArena / Mind2Web | 自托管真实网站任务 |
 | 终端 Agent | Terminal-Bench | 命令行环境任务 |
-| 工具调用 | BFCL v3（Berkeley） | 函数调用格式/选择/多轮多步细粒度评测 |
+| 工具调用 | BFCL v4（Berkeley） | 函数调用格式/选择/多轮多步细粒度评测；v4 转向 agentic：多跳工具链、记忆、web 检索与格式敏感性 |
 | 规划 | PlanBench | 规划可行性与重规划 |
 | 安全/对抗 | AgentDojo、InjecAgent、AgentHarm、ToolEmu | 注入攻防与危害任务（详见 2.10） |
+
+**（5）MCP 生态评估基准（2025– 新兴方向）**
+
+MCP 成为工具接入的事实标准后，"Agent 用得好 MCP 吗"独立成了评估方向：**MCP-Bench**——跨多个真实 MCP server 的多步任务基准，考察跨 server 的工具组合与长链规划，工具不再是你精心手写的函数，而是生态里参差不齐的第三方接口；**MCPMark**——对 server 做增删改查全操作的压力测试，任务要求真实改写状态而非只读问答，SOTA 模型单次通过率也不高、pass^k 回落更明显（"读易写难"在 MCP 语境下再次得到验证）；LiveMCPBench、MCPEval 等则分别提供大规模真实 server 集合与自动化评测框架，面试一句带过即可。考点在于这类基准把三件事变成了可测量对象：**工具描述质量**（description 写得差直接拖垮工具选择准确率）、**跨 server 组合能力**、**对残缺/报错 server 的错误恢复**。工程衔接：真实 MCP server 的时变数据与状态残留，正是 2.9"评估环境工程"里 record-replay 与快照重置要解决的问题。
 
 **Benchmark 使用的元认知**：公开题面 → 训练污染；榜单饱和 → 区分度消失（应定期淘汰饱和用例）；**scaffold 混淆**——同一模型在不同 harness 下分数差几十点，榜单比的是"系统"不是"模型"，解读时必须问"用的什么脚手架"；基准分布 ≠ 你的业务分布。**基准是路标不是终点，最终必须建自有评估集**。
 
@@ -268,6 +273,28 @@ Agent 评估与可观测性
 **部署阶段的评估递进**：Shadow mode（旁路复制流量，不影响用户，验证候选版本不"明显坏"）→ Canary（小比例真实流量）→ A/B（对照显著性）→ 全量。Agent A/B 的特殊性：会话长、转化稀疏、有副作用，需要**会话级分流**、更长观察窗、序贯检验（always-valid CI，避免偷看 p 值；实现锚点：mSPRT / GSEQ 类 always-valid 推断，或 Eppo / GrowthBook / Statsig 等平台的 sequential testing 功能），以及一组**护栏指标**（转人工率、投诉率、成本）防止赢了指标输了体验。
 
 **人机协同评估**：区分 **HITL**（人在回路内批准/修正动作后才生效，高风险操作）与 **HOTL**（人在回路上监控、异常介入）。人工评估的工程要点：rubric 先于标注员；用 golden set 质检标注员本身；报告 inter-annotator agreement（κ/α），它同时是 rubric 质量的度量；人审结果回流校准 LLM judge（judge 漂移检测）。
+
+**编码 Agent 产品的线上指标（与客服域并列的第二个域模板）**：上面的显式/隐式信号体系（重试、转人工、放弃、重开）是客服域模板；编码 Agent 产品（Copilot/Cursor/Claude Code 类）有自己的一套口径，面试常被追问：
+
+- **建议接受率（acceptance rate）**：最直观也最危险——接受 ≠ 有用，接受后秒删、大改的代码同样计入接受；只优化接受率容易滑向"讨好当下"的建议风格。
+- **代码留存率 / churn**：被接受的代码在 7/30 天后仍存活的比例，比接受率更接近真实价值；churn 异常升高是"AI 代码质量下滑"的早期信号。
+- **PR 维度**：Agent 发起/参与 PR 的合并率、合并时长（time-to-merge）、review 轮次——异步自主编码 Agent 的核心口径。
+- **人工接管率**：Agent 任务被人半途接管改写的比例，等价于客服域的"转人工"。
+- **"AI 生成代码占比"的口径之争**：按字符、按 commit、还是按"AI 参与过"算，同一团队数字可差数倍——引用任何"XX% 代码由 AI 写"之前先问口径。
+- **DORA 视角收口**：部署频率、lead time 的提升必须与**变更失败率、MTTR**对照着看；吞吐上涨而变更失败率同步恶化，是编码 Agent 上线后最常见的"赢了指标输了工程质量"。
+
+两个域的共同结构：**一个易得但可被 game 的前排指标（接受率/containment）+ 一组滞后但更真实的留存/质量指标 + 护栏指标**。按这个三层结构回答"你怎么设计线上指标"，可以迁移到任何域。
+
+#### 数据飞轮：从在线评估到训练闭环
+
+前文的"failure mining → 回归集"只是飞轮的半圈——回归集改的是 prompt 与 scaffold；再往前推一步，生产 trace 可以直接变成**训练资产**，闭环才完整。考点是能画出全链路：**生产 trace → 轨迹筛选 → 训练资产 → 训练 → eval 门禁回归 → 灰度上线**。
+
+- **轨迹筛选**：两条进料线——online judge 高分且结果验证通过的**成功轨迹**（直接做 SFT，或拒绝采样：一题采多条轨迹、只留通过验证的最优轨迹）；人工修复过的**失败轨迹**（修复前后天然构成偏好对，喂 DPO/RFT 类偏好优化）。筛选质量决定飞轮上限：judge 有偏，训练只会把偏差放大。
+- **反馈信号分层**（被追问"标注从哪来"就答这个）：显式 thumbs 稀疏且有选择偏差（差评者远比好评者爱点按钮）；隐式信号（重试、人工接管率、会话放弃）覆盖广但噪声大；**结果可验证信号**（测试通过、订单成立、终态可程序化判定）最可靠——能自动验证的域飞轮转得最快，这是编码 Agent 进化快于开放对话的结构性原因。
+- **训练与门禁**：训练产物必须先过本章的 eval 门禁（golden set 回归 + A/A 噪声基线 + 安全回归）才能进前文的 Shadow → Canary 灰度通道；否则飞轮会自我强化坏数据的偏差，模型在自己生成的分布上退化。
+- **数据治理红线**：PII 清洗、用户同意（ToS 明示、可 opt-out）、轨迹留存期与删除权——任何一条缺失，飞轮在法务处直接卡死。载体上，OpenAI 的 RFT 与各家微调 API 已把"轨迹 + 打分器 → 定制模型"产品化。
+
+与本书互为上下游：训练方法本身（agentic RL、过程奖励）见第 11 章；灰度发布与回滚工程见第 10 章——本节提供的是两者之间的**数据与门禁层**。
 
 #### 2.9 评估环境工程与可复现性
 
@@ -364,7 +391,7 @@ Agent 比普通 LLM 多了"手脚"，安全评估必须独立成维度，不能�
 {"id": "cancel-001", "input": "帮我取消订单 #1234", "policy_snapshot": "v7", "expect": {"db_state": {"orders.1234.status": "cancelled"}, "must_call": ["verify_identity"], "must_not_call": ["issue_refund"]}}
 ```
 
-**（2）Inspect 最小示例**（UK AI Safety Institute 开源评估框架，solver/scorer 抽象天然适合 Agent 与安全评估）：
+**（2）Inspect 最小示例**（英国 AI Security Institute（AISI，2025 年 2 月由 AI Safety Institute 更名）开源评估框架，solver/scorer 抽象天然适合 Agent 与安全评估）：
 
 ```python
 from inspect_ai import Task, task
@@ -444,10 +471,12 @@ defaultTest:
 | 评估环境工程与可复现性 | ⭐⭐ | 锁版本 + record-replay + 状态重置 + 统计可复现 + CI 分层 |
 | 安全与提示注入评估 | ⭐⭐ | ASR × 效用保持双轴；间接注入是 Agent 特有攻击面 |
 | 统计严谨性（CI、功效、多重比较） | ⭐⭐ | 不报 trial 数与置信区间的数字都是噪声 |
+| 编码 Agent 线上指标（接受率/留存/churn） | ⭐⭐ | 接受≠留存；DORA 视角双看吞吐与变更失败率 |
 | 评估基础设施自检 | ⭐ | A/A 测试噪声基线 + 离线-在线相关性回测 |
 | Shadow/Canary/A/B 在 Agent 场景的特殊性 | ⭐ | 副作用、稀疏转化、会话级分流、序贯检验 |
 | 多智能体评估 | ⭐ | handoff 保真度、相关误差放大、联合回归 |
 | HITL vs HOTL | ⭐ | 批准在动作前 vs 监控在动作后 |
+| MCP 生态基准（MCP-Bench/MCPMark） | ⭐ | 真实 server 全操作压力测试；工具描述质量与错误恢复 |
 
 ---
 
@@ -613,6 +642,7 @@ defaultTest:
 18. **grader 被钻空（reward hacking）当成模型变强**：pass rate 突然飙升，先怀疑 grader 被钻空——Agent 改测试文件、对单点断言表面达标、利用宽松匹配 specification gaming，都有真实案例；grader 要配"看起来对其实错"的对抗样本，测试/黄金文件只读且不可见。
 19. **评估管线不自检**：没有 A/A 测试定噪声基线，"涨了 2 个点"可能只是噪声波动；没有离线-在线相关性回测，离线涨幅可能系统性不预测线上——两者缺失时，评估趋势图只是自我安慰。
 20. **对评估集污染不设防**：公开基准题面进训练语料，自有评估集也会被针对性优化；没有 canary 埋点、复述变体试探与定期换血，通过率曲线可能度量的只是"对评估集的记忆"。
+21. **把建议接受率当编码 Agent 的北极星**：接受后秒删/大改同样计入接受，接受率上涨可能只是建议风格更"讨好"；要用 7/30 天代码留存与 churn 校验，并按 DORA 对照变更失败率，防止吞吐涨、质量崩。
 
 ---
 
@@ -639,6 +669,6 @@ defaultTest:
 7. **安全评估线**：AgentDojo（NeurIPS 2024 D&B）+ InjecAgent（ACL 2024 Findings）+ AgentHarm（ICLR 2025）
    提示注入攻防的双轴评估（ASR × 效用保持）与危害任务评测，Agent 安全评估的事实标准参照。
    https://arxiv.org/abs/2406.13352 ・ https://arxiv.org/abs/2403.02691 ・ https://arxiv.org/abs/2410.09024
-8. **评估框架工具线**：Inspect（UK AI Safety Institute 开源评估框架）+ promptfoo / DeepEval / RAGAS
+8. **评估框架工具线**：Inspect（英国 AI Security Institute 开源评估框架；该机构 2025 年 2 月由 AI Safety Institute 更名，缩写仍为 AISI）+ promptfoo / DeepEval / RAGAS
    把本章方法论落到代码的常见选择：Inspect 的 solver/scorer 抽象适合 Agent 与安全评估（`--repeat` 做多 trial），promptfoo 适合 CI 门禁集成，RAGAS 专攻检索链路的组件级指标。
    https://github.com/UKGovernmentBEIS/inspect_ai ・ https://github.com/promptfoo/promptfoo

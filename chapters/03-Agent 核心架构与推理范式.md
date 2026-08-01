@@ -59,12 +59,12 @@ Agent 核心架构与推理范式
 │
 ├── 8. 多智能体系统
 │   ├── Supervisor/Orchestrator vs 去中心化 Handoff
-│   └── 可并行 + 上下文独立才值得；token 成本约高一个量级（研究型任务的输入 token 口径 ~15×）
+│   └── 可并行 + 上下文独立才值得；token 成本双层口径：单 agent ≈ chat ~4×、多智能体 ≈ chat ~15×（≈ 单 agent ~4×）
 │
 ├── 9. 评测与基准
 │   ├── 两层：结果评测（成功率、pass@k 与 pass^k）+ 轨迹评测（逐步合理性）
 │   ├── SWE-bench(-Verified) / GAIA / τ-bench / τ²-bench / WebArena / OSWorld；LLM-as-judge 的局限
-│   ├── 能力坐标：METR（2025）50% 可靠完成的任务时长约每 7 个月翻倍
+│   ├── 能力坐标：METR（2025）50% 可靠完成的任务时长约每 7 个月翻倍（2024–2025 前沿子集已加速至约 4 个月）
 │   └── 基准污染与活基准；可观测性（LangSmith/Langfuse、OTel GenAI 语义约定）
 │
 ├── 10. 工程取舍（贯穿所有面试题）
@@ -115,7 +115,7 @@ Agent 核心架构与推理范式
 
 ReAct 的 synergy 在于：**Thought 帮助模型决定"做什么、为什么"**（规划、追踪进度、注入领域知识），**Action 帮助模型"接触现实"**（检索事实、获得反馈），二者交错使推理被 grounding 持续校准。论文在 HotpotQA、FEVER 上显示 ReAct 能纠正 CoT 的事实性错误，同时在 ALFWorld/WebShop 上比纯 acting 更鲁棒。
 
-**怎么用。** 现代框架（LangChain `create_react_agent`、多数 Agent SDK）默认就是 ReAct 变体。注意两个 2024+ 的能力升级：在支持 **原生 parallel tool calling** 的模型上，一个 step 可并发多个 Action；在支持 **interleaved thinking**（如 Claude extended thinking）的模型上，Thought 可以发生在任意两次工具调用之间，规划更深。
+**怎么用。** 现代框架（LangChain `create_react_agent`、多数 Agent SDK）默认就是 ReAct 变体（注：LangChain 1.0（2025-10）起标准入口已收敛为基于 LangGraph 的 `create_agent`，`create_react_agent` 属 legacy 命名，机制不变）。注意两个 2024+ 的能力升级：在支持 **原生 parallel tool calling** 的模型上，一个 step 可并发多个 Action；在支持 **interleaved thinking**（如 Claude extended thinking）的模型上，Thought 可以发生在任意两次工具调用之间，规划更深。
 
 **可默写的循环骨架（设计面试常要求手写控制流）：**
 
@@ -155,7 +155,7 @@ def react_loop(task, tools, llm, max_steps=25):
 | 长任务表现 | 易在长程中"忘记目标"/漂移 | 全局视野更好，目标对齐更稳 |
 | 对环境的适应 | 实时，天然适应观测 | 依赖 Replan，计划可能过时 |
 | 失败模式 | error compounding | 计划基于错误假设 → 整段跑偏 |
-| 典型实现 | LangChain create_react_agent | LangGraph plan-and-execute 教程 |
+| 典型实现 | LangChain create_react_agent（1.0 起标准入口为 create_agent） | LangGraph plan-and-execute 教程 |
 
 **关键工程点：Replan 的必要性。** 一次性计划几乎必然与现实不符（工具失败、返回意外数据）。没有 Replan 的 Plan-and-Execute 是脆弱的。Replanner 要回答：① 当前计划是否仍有效？② 需要增删改哪些步骤？③ 是否已可收尾？这本质上是一个**带状态的反思节点**。
 
@@ -382,7 +382,7 @@ def react_loop(task, tools, llm, max_steps=25):
 
 #### 2.14 多智能体系统（简述）
 
-**何时该上多智能体。** 单个 Agent 的上下文窗口与注意力有限；当任务**可并行且子任务上下文相互独立**（多源调研、大型代码库多模块修改）时，Orchestrator-Workers 多智能体同时拿到**上下文隔离**与**并行加速**。但要有成本意识：Anthropic 多代理研究系统的实测是 **token 消耗约为单 Agent 的 15 倍**（研究型任务的**输入 token** 口径）——只对可并行的高价值任务划算。
+**何时该上多智能体。** 单个 Agent 的上下文窗口与注意力有限；当任务**可并行且子任务上下文相互独立**（多源调研、大型代码库多模块修改）时，Orchestrator-Workers 多智能体同时拿到**上下文隔离**与**并行加速**。但要有成本意识：Anthropic 多代理研究系统的实测口径是双层的——**单 Agent ≈ 普通 chat 的 ~4 倍、多智能体系统 ≈ chat 的 ~15 倍**（即多智能体约为单 Agent 的 ~4 倍；研究型任务的**输入 token** 口径）——只对可并行的高价值任务划算。
 
 **两种主流编排。**
 - **Supervisor / Orchestrator**：中心 Agent 负责分解、分派、聚合（LangGraph supervisor、Claude Code subagent 模式）。
@@ -400,7 +400,7 @@ def react_loop(task, tools, llm, max_steps=25):
 
 **pass@k vs pass^k（可靠性的量化落点）。** pass@k 衡量"k 次里至少成功一次"，pass^k 衡量"k 次全部成功"——前者刻画能力上限，后者刻画**策略稳定性**，两者差距才是生产可用性的真实距离：一个 pass@1 约六成、看起来"还行"的系统，pass^8 可能已跌到约 25%（τ-bench 口径，相对降幅约 60%）。对外汇报 Agent 能力时应同时给出两者，否则会对生产可用性过度乐观。
 
-**能力坐标（时效）。** METR 的长任务研究（2025，arXiv 2503.14499）测得：AI 能**以 50% 可靠性完成的任务时长约每 7 个月翻倍**。回答"Agent 现在到什么水平"时，这是比单个榜单分数更有说服力的量化坐标，也解释了为什么长程一致性（而非单步能力）是当前瓶颈。
+**能力坐标（时效）。** METR 的长任务研究（2025，arXiv 2503.14499）测得：AI 能**以 50% 可靠性完成的任务时长约每 7 个月翻倍**；METR 的后续更新进一步指出，**2024–2025 的前沿模型子集翻倍期已缩短至约 4 个月**——引用这条趋势时应带上加速口径。回答"Agent 现在到什么水平"时，这是比单个榜单分数更有说服力的量化坐标，也解释了为什么长程一致性（而非单步能力）是当前瓶颈。
 
 **方法与陷阱。**
 - 从**真实失败轨迹**沉淀回归评测集，prompt/工具任何改动都跑回归。
@@ -474,9 +474,9 @@ def react_loop(task, tools, llm, max_steps=25):
 | 上下文工程 / 长程上下文管理 | ⭐⭐ | context rot；compaction；子代理隔离；prompt caching；记忆谱系（Letta/Zep/Mem0） |
 | 工具设计、MCP 与行动空间 | ⭐⭐ | MCP 规范演进与安全风险；工具规模问题（progressive disclosure）；受限解码机制；CodeAct |
 | "LLM 不能自纠" 的反直觉结论 | ⭐⭐ | 外部反馈/ground truth 是可靠性之源（体现深度） |
-| 多智能体编排 | ⭐⭐ | 可并行 + 上下文独立才值得；~15× token 成本（输入口径）；supervisor vs handoff |
+| 多智能体编排 | ⭐⭐ | 可并行 + 上下文独立才值得；token 成本双层口径（单 agent ≈ chat ~4×、多智能体 ≈ chat ~15×）；supervisor vs handoff |
 | HITL 模式与生产韧性 | ⭐⭐ | approval/steering/escalation 三模式；不可逆性 × 影响面；幂等/熔断/回滚/event sourcing |
-| 可靠性度量与能力趋势 | ⭐⭐ | pass@k vs pass^k 刻画策略稳定性；METR"7 个月翻倍"坐标；基准污染与活基准 |
+| 可靠性度量与能力趋势 | ⭐⭐ | pass@k vs pass^k 刻画策略稳定性；METR"7 个月翻倍、前沿子集已加速至约 4 个月"坐标；基准污染与活基准 |
 | 单步 vs 多步、如何控制 Agent 成本 | ⭐ | 降级策略、max iterations、缓存、模型分级 |
 | 如何评测 Agent | ⭐ | 结果+轨迹两层；回归集；SWE-bench(-Verified)/GAIA/τ-bench/τ²-bench；LLM-judge 局限 |
 
@@ -636,7 +636,7 @@ def react_loop(task, tools, llm, max_steps=25):
 
 **参考答案要点。**
 - **架构**：Orchestrator（主代理）解析问题 → 产出调研计划 → 分派 3–5 个并行 researcher 子代理（各管一个子问题、独立上下文）→ 子代理返回结构化摘要 + 来源链接 → 主代理交叉核对并撰写报告；尾部可加 citation checker / evaluator 节点。
-- **为什么多智能体**：每个子问题的浏览/检索上下文巨大且相互独立 → 上下文隔离 + 并行提速，单代理必然撑爆窗口。成本清醒：token 消耗约为单代理的 15 倍（Anthropic 实测，研究型任务的输入 token 口径），只对高价值任务划算。
+- **为什么多智能体**：每个子问题的浏览/检索上下文巨大且相互独立 → 上下文隔离 + 并行提速，单代理必然撑爆窗口。成本清醒：Anthropic 实测的双层口径是单代理 ≈ chat 的 ~4 倍、多智能体系统 ≈ chat 的 ~15 倍（即约为单代理的 ~4 倍；研究型任务的输入 token 口径），只对高价值任务划算。
 - **通信协议**：任务简报必须精确（目标、范围、返回格式、来源要求）；子代理内部是 ReAct（搜索→浏览→推理）；只回传"压缩证据 + 链接"，不回传原始网页——**网页内容是不可信数据**，需按 2.16 的间接注入防线处理（spotlighting、出网管控）。
 - **质量与可靠性**：每条论断必须有可点击来源；跨源冲突显式标注；以**工具返回内容**为唯一事实源防幻觉；LLM-judge + 人工抽检。
 - **工程**：模型分级（浏览抽取用小模型、综合用大模型）、prompt caching、每子代理超时与预算上限、Checkpointer 断点重试、全程轨迹日志支撑回归评测。
@@ -649,7 +649,7 @@ def react_loop(task, tools, llm, max_steps=25):
 
 **参考答案要点。**
 - 两层：① **结果评测**（success rate / pass@k，以及刻画策略可靠性的 **pass^k**——k 次全对的比例）回答"成不成、稳不稳"；② **轨迹评测**（逐步工具选择/参数合理性、冗余度）回答"为什么不成、怎么优化"，后者对迭代更具可操作性。
-- 代表基准：**SWE-bench(-Verified)**（真实仓库 issue 修复；Verified 是经人工去污染核查的版本）、**GAIA**（通用助手多步工具使用）、**τ-bench / τ²-bench**（工具调用 + 政策合规，pass^k 即出自此）、**WebArena / OSWorld**（GUI 操作）、**AgentBench**（多环境）；能力趋势可引 METR（2025）"50% 可靠完成的任务时长约每 7 个月翻倍"作为坐标。
+- 代表基准：**SWE-bench(-Verified)**（真实仓库 issue 修复；Verified 是经人工去污染核查的版本）、**GAIA**（通用助手多步工具使用）、**τ-bench / τ²-bench**（工具调用 + 政策合规，pass^k 即出自此）、**WebArena / OSWorld**（GUI 操作）、**AgentBench**（多环境）；能力趋势可引 METR（2025）"50% 可靠完成的任务时长约每 7 个月翻倍"作为坐标（其后续更新：2024–2025 前沿子集已加速至约 4 个月，引用时带上加速口径）。
 - 工程实践：从真实失败轨迹沉淀**回归集**，任何 prompt/工具改动都跑回归；A/B 灰度；成功率之外同时跟踪平均步数、token 成本、人工干预率、失败分类分布；trace 走 LangSmith/Langfuse + OTel GenAI 语义约定。
 - 坑：LLM-as-judge 有自我偏好与位置偏差，只适合开放式维度，不能替代可执行验证；静态基准有污染风险（用活基准如 Terminal-Bench、SWE-bench Live 应对）；长轨迹评测昂贵难复现，需要环境快照、固定种子与轨迹回放。
 
@@ -668,7 +668,7 @@ def react_loop(task, tools, llm, max_steps=25):
 9. **忘记终止条件与护栏** —— 含环 Agent 没有 max iterations / stopping criteria 会成本失控甚至死循环；自主性越强越需要沙箱与 HITL。
 10. **把 reasoning model 与 Agent 范式对立** —— o/R 系列把 CoT/搜索内化，但**系统级**的环境交互、多路径搜索、状态管理仍是 Agent 框架职责，二者互补。
 11. **"长上下文窗口 = 可以全塞进去"** —— 反直觉。lost in the middle / context rot 表明有效注意力随长度衰减，且按 token 计费；正解是按需检索 + compaction + 记忆外化。
-12. **"多智能体更先进所以更好"** —— 错。token 成本约高一个量级（研究型任务输入口径 ~15×），还要付协调成本与评测难度；只有**可并行 + 上下文独立**的高价值任务才值得，不可并行的任务拆代理只会放大错误。
+12. **"多智能体更先进所以更好"** —— 错。token 成本显著更高（Anthropic 双层口径：单 agent ≈ chat ~4×、多智能体 ≈ chat ~15×，即多智能体约为单 agent 的 ~4 倍；研究型任务输入口径），还要付协调成本与评测难度；只有**可并行 + 上下文独立**的高价值任务才值得，不可并行的任务拆代理只会放大错误。
 13. **"有了 reasoning model 就不用研究 prompt 与范式"** —— 错。思考预算调优、模型分级路由、工具与上下文设计、评测护栏全是系统工程；内化 ≠ 万能，且思考模型更贵更慢。
 14. **"接了 MCP 就解决了工具问题"** —— 片面。MCP 解决的是连接标准化（2025-12 捐赠 Linux Foundation 后生态进一步扩大），但工具的语义设计、稳定性仍需治理；更要命的是**安全面**：第三方服务器的工具描述与返回内容是**间接提示注入**的载体，存在 tool poisoning / rug pull / 数据外泄风险，必须叠加权限最小化、不可逆操作 HITL、数据-控制平面分离（CaMeL 思路）、spotlighting、输出过滤与沙箱（见 2.16）。
 15. **"pass@k 高 = 生产可用"** —— 反直觉。pass@k 是"k 次至少成一次"，生产要的是 pass^k（k 次全成）；策略不稳时两者差距巨大（τ-bench 口径 pass@1 ~60% 的系统 pass^8 可跌到 ~25%），可靠性汇报必须给 pass^k。
@@ -693,7 +693,7 @@ def react_loop(task, tools, llm, max_steps=25):
    https://arxiv.org/abs/2210.03629
 
 4. **Tree of Thoughts（Yao et al., NeurIPS 2023）+ Graph of Thoughts（Besta et al., AAAI 2024）**
-   理解推理拓扑从树到图的演进；配合 CoT（Wei 2022）、Zero-shot CoT（Kojima 2022, https://arxiv.org/abs/2205.11916 ）与 Self-Consistency（Wang et al., ICLR 2023, https://arxiv.org/abs/2210.03493 ）一起读，形成完整谱系。
+   理解推理拓扑从树到图的演进；配合 CoT（Wei 2022）、Zero-shot CoT（Kojima 2022, https://arxiv.org/abs/2205.11916 ）与 Self-Consistency（Wang et al., ICLR 2023, https://arxiv.org/abs/2203.11171 ）一起读，形成完整谱系。
    ToT: https://arxiv.org/abs/2305.10601 ｜ GoT: https://arxiv.org/abs/2308.09687
 
 5. **Reflexion（Shinn et al., NeurIPS 2023）+ Self-Refine（Madaan et al., NeurIPS 2023）**
@@ -705,7 +705,7 @@ def react_loop(task, tools, llm, max_steps=25):
    https://www.langchain.com/blog/planning-agents
 
 7. **Anthropic — *Effective Context Engineering for AI Agents*（2025-09）+ *How We Built Our Multi-Agent Research System*（2025-06）**
-   2025 年上下文工程与多智能体工程实践的权威两篇：前者讲 compaction、子代理隔离与注意力预算，后者给出 orchestrator-worker 的实测经验（含 ~15× token 成本与工具设计教训）。
+   2025 年上下文工程与多智能体工程实践的权威两篇：前者讲 compaction、子代理隔离与注意力预算，后者给出 orchestrator-worker 的实测经验（含"单 agent ≈ chat ~4×、多智能体 ≈ chat ~15×"的 token 成本口径与工具设计教训）。
    https://www.anthropic.com/engineering/effective-context-engineering-for-ai-agents ｜ https://www.anthropic.com/engineering/multi-agent-research-system
 
 8. **OpenAI — *A Practical Guide to Building Agents*（2025）+ *Learning to Reason with LLMs*（o1 发布博客，2024-09）**
@@ -720,7 +720,7 @@ def react_loop(task, tools, llm, max_steps=25):
     MCP（https://modelcontextprotocol.io ）理解工具生态标准化与规范演进（2025-06 授权/elicitation、2025-11 Tasks、2025-12 捐赠 Linux Foundation）；**CoALA: Cognitive Architectures for Language Agents**（Sumers et al., 2023, https://arxiv.org/abs/2309.02427 ）提供记忆/决策空间的统一框架（可配读 MemGPT, https://arxiv.org/abs/2310.08560 ）；评测基准看 **SWE-bench**（https://arxiv.org/abs/2310.06770 ）、**GAIA**（https://arxiv.org/abs/2311.12983 ）、**τ-bench**（https://arxiv.org/abs/2406.12045 ）。
 
 11. **METR — *Measuring AI Ability to Complete Long Tasks*（2025）+ τ²-bench（Sierra, 2025）**
-    前者给出"50% 可靠完成的任务时长约每 7 个月翻倍"的能力坐标；后者提出 pass^k 可靠性度量并引入双智能体交互评测——回答"Agent 能力与可靠性到底如何"的时效性组合。
+    前者给出"50% 可靠完成的任务时长约每 7 个月翻倍"的能力坐标（METR 后续更新：2024–2025 前沿子集已加速至约 4 个月）；后者提出 pass^k 可靠性度量并引入双智能体交互评测——回答"Agent 能力与可靠性到底如何"的时效性组合。
     https://arxiv.org/abs/2503.14499 ｜ https://arxiv.org/abs/2506.07982
 
 12. **OWASP Top 10 for LLM Applications + CaMeL（Debenedetti et al., DeepMind, 2025）**

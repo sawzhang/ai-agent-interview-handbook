@@ -131,7 +131,7 @@ Prompt Engineering 与上下文工程
 - *为什么有效*：把多步问题分解为若干中间状态，每一步生成都在为下一步提供"工作记忆"（token 即工作记忆）；同时让问题落入模型预训练中见过的推理文本分布。
 - *Zero-shot CoT*（Kojima et al., 2022）：仅追加 "Let's think step by step" 即可触发，说明推理能力是潜藏的，触发器即可激活。变体如 Plan-and-Solve（先规划再解）、Least-to-Most（分解子问题依次求解）在分解粒度上做了细化。
 - *适用边界*：对算术、常识、符号推理等**多步任务**增益明显；对简单单步任务可能无效甚至有害（增加错误链传播的概率）。
-- *与原生推理模型的关系*：o3/o4-mini（2025 下半年已被并入 GPT-5）、DeepSeek-R1、Claude extended thinking、Gemini thinking 模式已把 CoT **内化为训练目标（Long CoT + RL）**，推理在模型内部完成。**代际提示（2026 视角）**：2025-08 起 OpenAI 将 o 系列与 GPT 系列合并为**统一推理模型 GPT-5**，以 `reasoning_effort` 统一控制思考深度；Claude Sonnet 4.5 / Opus 4.1、Gemini 3 同代均内置思考预算。举例仍停在 o3/o4-mini 会暴露知识停在 2025 上半年。对这类模型，官方（OpenAI reasoning best practices）建议**反而要简化 prompt**：不要手写 "think step by step"、不要塞 few-shot，直接描述目标和约束，用 `reasoning_effort`（及 `verbosity`）之类的参数控制思考预算。这是 2024–2025 的重要范式转移：**传统 CoT prompting 技巧在推理模型上多数已过时，甚至互相干扰**。
+- *与原生推理模型的关系*：o3/o4-mini（2025 下半年已被并入 GPT-5）、DeepSeek-R1、Claude extended thinking、Gemini thinking 模式已把 CoT **内化为训练目标（Long CoT + RL）**，推理在模型内部完成。**代际提示（2026 视角）**：2025-08 起 OpenAI 将 o 系列与 GPT 系列合并为**统一推理模型 GPT-5**，以 `reasoning_effort` 统一控制思考深度；Claude Opus 4.1（2025-08）、Sonnet 4.5（2025-09）到 Gemini 3（2025-11），2025 下半年相继发布的各家旗舰亦均内置思考预算。举例仍停在 o3/o4-mini 会暴露知识停在 2025 上半年。对这类模型，官方（OpenAI reasoning best practices）建议**反而要简化 prompt**：不要手写 "think step by step"、不要塞 few-shot，直接描述目标和约束，用 `reasoning_effort`（及 `verbosity`）之类的参数控制思考预算。这是 2024–2025 的重要范式转移：**传统 CoT prompting 技巧在推理模型上多数已过时，甚至互相干扰**。
 - *深层争议*：推理链的**忠实性（faithfulness）**问题——2024–2025 的多项研究（如 Anthropic 的 *Reasoning models don't always say what they think*）表明，显式推理链可能是事后合理化（post-hoc rationalization），与模型真实的计算过程不一致。面试中能说出这一点，体现文献深度。
 
 **Self-Consistency（Wang et al., 2022）**：CoT 默认用 greedy decoding，单一推理路径脆弱。Self-Consistency 用**较高温度采样多条不同的推理链**，对**最终答案**做多数表决（majority voting）。
@@ -201,7 +201,7 @@ Prompt Engineering 与上下文工程
 
 #### 2.6 上下文窗口管理：长程 Agent 的三大技术
 
-Agent 跑几十上百步后，上下文必然撞墙（主流旗舰模型普遍 128K–200K tokens；Claude Sonnet 4、GPT-4.1、Gemini 2.5 等在 2025 年提供了 1M 级窗口，但长窗口不等于好用，见 2.7；LangChain 提到常见在 95% 处触发自动 compaction）。三件套：
+Agent 跑几十上百步后，上下文必然撞墙（128K–200K tokens 是 2024–2025 上半年的主流格局；截至 2026 年，GPT-5 系为 400K，Gemini 2.5/3 与 Claude Sonnet 4.5 已达 1M 级窗口，但长窗口不等于好用，见 2.7；LangChain 提到常见在 95% 处触发自动 compaction）。三件套：
 
 **① Compaction（压缩重启）**：对话接近上限时，生成一份保留"关键决策、已确认事实、未决问题"的摘要，**用摘要替换原始历史并重启会话**。Anthropic 披露 Claude Code 的做法：压缩历史 + **最近访问的 5 个文件**继续（官方原文仅说 the five most recently accessed files，未承诺保留完整原文）。最安全的第一步压缩是"清空旧的 tool result，只留调用记录与结论"。
 
@@ -210,6 +210,12 @@ Agent 跑几十上百步后，上下文必然撞墙（主流旗舰模型普遍 1
 **③ Sub-agent（子代理隔离）**：把高 token 消耗的子任务（深度检索、代码库勘察）交给独立上下文的子 Agent，子 Agent 只回传 **1,000–2,000 token 的浓缩摘要**，主 Agent 做综合。本质是**用进程隔离换上下文隔离**，主线程的注意力预算不被搜索噪声污染。代价：LangChain 指出多 Agent 架构整体 token 消耗可达单 Agent 的 **15 倍**——隔离省的是*主上下文*，不是*总成本*，别混淆这两个口径。
 
 **API 级产品化（2025）**：Anthropic 把上述技术沉淀为官方原语——**context editing** 在接近阈值时自动清理过期的 tool-use 结果（compaction 的托管版）；**memory tool** 让 Agent 跨上下文读写客户端记忆目录（notes 的托管版）；**interleaved thinking** 允许模型在工具调用之间思考，提升长轨迹的推理质量。这标志着三件套从"各家自制"走向"平台默认能力"，系统设计题里提一句"能用平台原语就不自研"体现工程判断。
+
+#### 多轮对话性能衰减：Lost in Multi-Turn（2025）
+
+**《LLMs Get Lost in Multi-Turn Conversation》（Laban et al., 微软/Salesforce, arXiv:2505.06120）**给"Agent 聊着聊着就变傻"提供了定量证据：把同一任务的信息**分片成多轮逐步给出**，与**单轮一次性给全**对比——15 个主流模型在六类生成任务上**平均性能下降约 39%**，开源闭源无一幸免。
+- **机理**：①模型在信息不全时**过早尝试给出完整解**，并**锚定自己早期的错误假设**，后续轮次难以纠偏——错误不是被修正而是被反复引用；②按论文的分解指标，**aptitude（最好情况能力）仅小幅下降，unreliability（同题多次运行的方差）暴涨才是主因**——"变笨"是次要的，"变得不可靠"才是主要的；③降温度救不了：论文实测低温度下多轮方差依旧居高。
+- **工程启示**：①关键任务做**单轮重述（consolidation）**——把多轮收集到的需求合并成一条完整指令重新发起，收益立竿见影；②长对话 Agent 跑偏时，**重启会话并携带浓缩状态**（即上文 compaction + structured notes 的组合）优于在原对话里原地修补——补丁修不掉早期错误锚定；③这与 context rot 是**两个独立机制**：前者源于错误锚定与方差爆炸，后者源于注意力稀释，面试中分开表述体现精确性。
 
 #### 2.7 长上下文的陷阱与压缩技术
 
@@ -220,7 +226,24 @@ Agent 跑几十上百步后，上下文必然撞墙（主流旗舰模型普遍 1
 - *Token/Prompt 级*：**LLMLingua**（用小语言模型的 perplexity 信号删除低信息量 token，宣称可达约 20× 压缩且损失极小）；**LongLLMLingua** 专门针对长上下文，引入 question-aware 压缩与文档重排序来对抗 lost-in-the-middle。
 - *KV Cache 级*：长上下文的真正瓶颈常在显存——长序列场景下 KV cache 可占 GPU 显存的 **70%** 以上。代表工作：**H2O（Heavy-Hitter Oracle）** 保留累计注意力高的"重击"token；**StreamingLLM** 发现并保留 **attention sink**（句首几个 token 承载大量注意力质量，丢弃即崩溃），实现"无限"流式推理；以及 KV 量化、ChunkKV（2025，按语义 chunk 粒度驱逐）、Locret（训练辅助 retaining head 预测保留位）等。
 - *表征层成因（深度加分）*：名义上的超长上下文多靠**位置编码外推**达成——RoPE 及其缩放方案（YaRN、NTK-aware scaling）把基础频率拉伸以覆盖更长序列，但模型的**训练长度分布集中在远短于名义上限的序列**上。位置编码可以外推、训练分布补不上，这为 context rot 提供了机制层解释：有效检索能力随长度退化，本质是训练-推理长度错配的结果。
-- *工程侧平替*：**Prompt Caching**——应用层最划算的"压缩"。Anthropic 提供显式缓存（最多 4 个 `cache_control` 断点、最小可缓存前缀 ≥1024 tokens（Sonnet/Opus 级）/ 2048 tokens（Haiku 级））：缓存命中后输入成本约为原价的 **1/10**，写入缓存约 1.25×（5 分钟 TTL）/ 2×（1 小时 TTL）；OpenAI 为自动缓存、命中约 5 折、无需配置。稳定的 system + tools 前缀应当永远缓存，TTFT 与账单同步下降。面试谈成本优化必提。
+- *工程侧平替*：**Prompt Caching**——应用层最划算的"压缩"。Anthropic 提供显式缓存（最多 4 个 `cache_control` 断点、最小可缓存前缀 ≥1024 tokens（Sonnet/Opus 级）/ 2048 tokens（Haiku 级））：缓存命中后输入成本约为原价的 **1/10**，写入缓存约 1.25×（5 分钟 TTL）/ 2×（1 小时 TTL）；OpenAI 为自动缓存、无需配置，命中折扣按代际区分：4o 代约 5 折、GPT-4.1 代 75% 折扣、GPT-5 代约 9 折（缓存输入 $0.125 vs $1.25/MTok）——"缓存一律 5 折"是 2024 年 gpt-4o 口径的过时说法。稳定的 system + tools 前缀应当永远缓存，TTFT 与账单同步下降。面试谈成本优化必提。
+
+#### 上下文失效四模式：可引用的命名体系（Breunig, 2025）
+
+Drew Breunig《How Long Contexts Fail》（2025-06）把长上下文的失效方式归纳为四个可点名的模式，面试中能替代含糊的"上下文太长效果会变差"：
+- **Context Poisoning（中毒）**：幻觉或错误信息一旦进入上下文，就被后续轮次**反复引用并自我强化**——Gemini 玩 Pokémon 的技术报告是著名案例：目标栏被污染后，Agent 持续追逐不可能达成的目标。
+- **Context Distraction（分心）**：历史过长时模型**过度依赖上下文中的既有内容、放弃调用参数化知识**——表现为倾向重复历史动作而非推理新方案。
+- **Context Confusion（混淆）**：无关内容也会被模型"认真对待"从而干扰决策——几十个用不上的工具定义拖垮工具选择准确率即此模式。
+- **Context Clash（冲突）**：上下文内部信息互相矛盾（早期错误假设 vs 新到证据），模型无法可靠仲裁——与 2.6"多轮对话性能衰减"的错误锚定机理同源。
+
+对应缓解各有其名：**quarantine（隔离：sub-agent 独立上下文）、pruning（修剪无关内容）、summarization（摘要压缩）、offloading（卸载到外部笔记/工具）**——正是 2.6 三件套与 LangChain 四支柱的另一套投影。本章散见的 context rot、lost-in-the-middle 属于衰减的**度量与机理**，四模式是**症状级分类学**；两套词汇对照使用，最能体现体系感。
+
+#### Many-shot ICL：长上下文的正向利用
+
+长上下文不只有陷阱。**Agarwal et al.《Many-Shot In-Context Learning》（DeepMind, NeurIPS 2024）**系统验证：把示例数从 few-shot 的个位数扩展到**数百至数千个**（可占数十万 token），在翻译、摘要、规划、代码等任务上**性能随示例数持续提升**，部分场景**逼近微调效果**，并能一定程度覆盖预训练偏差（如低资源语言）。
+- **Reinforced ICL**：人写示例供不起怎么办——让模型自己生成推理链、按最终答案正确性筛选后当示例用，效果可比人写示范，缓解 many-shot 的数据瓶颈。
+- **工程组合**：数千示例是一段**巨大但完全稳定的前缀**，与 prompt caching 天然互补——一次写入缓存、后续按命中折扣计费（见上文），使 many-shot 从"贵得离谱"变成"可负担的轻量替代微调"。
+- **注意区分**：2.8 的 many-shot jailbreaking 是同一机制的攻击面——大量示例既能压过预训练偏差，也能压过对齐训练。此处是能力面；面试中把两面说通，体现对 ICL 机制的完整理解。
 
 #### 2.8 提示词注入（Prompt Injection）与防御
 
@@ -250,6 +273,7 @@ Agent 跑几十上百步后，上下文必然撞墙（主流旗舰模型普遍 1
 - **OPRO（Yang et al., DeepMind, 2023）**：把"历史 prompt + 得分"喂回 LLM，让它作为优化器提出更优 prompt，迭代搜索。
 - **Metaprompting / 控制台工具**：Anthropic Console 的 Generate a Prompt、OpenAI Playground 的生成/优化按钮，是上述思想的平民化产品。
 - **DSPy（Stanford, Khattab et al.）**：代表性框架。用**签名（signature）**声明任务、用模块（ChainOfThought、ReAct 等）搭流水线，把指令措辞与 few-shot 示例的选择交给**优化器（BootstrapFewShot、MIPROv2 等）**在训练集 + 指标上自动搜索——这一步称为**编译（compile）**。类比：你写 SQL，优化器生成执行计划。
+- **GEPA（Agrawal et al., UC Berkeley/Stanford/Databricks 等, 2025）**：反思式进化 prompt 优化，谱系的最新一代。机制两件套：①**自然语言反思**——让 LLM 阅读失败轨迹（含推理过程与报错信息），用语言诊断"为什么错"并据此改写 prompt，比只回传标量分数的 OPRO 式优化信息利用率高得多；②**Pareto 前沿维护**——不只保留全局最优，而是保留"在任一子任务上最优"的候选集合参与进化，避免过早收敛。论文声称在**显著更少 rollout（约 35× 样本效率量级）下超过 MIPROv2 与 GRPO 类 RL 路线**。其定位是 2025 年的新叙事：**prompt 优化可作为权重 RL 的低成本替代**——把"改提示"与"改权重"放进同一张性价比坐标系比较，面试中能点出这层定位即是加分。
 - **价值与边界**：优势是 prompt 随模型换代可重新编译、pipeline 各阶段联合优化、消除手工玄学；前提是**高质量的 eval 集与自动指标**（含 LLM-as-judge），代价是优化本身消耗大量调用、结果可能过拟合 dev 集、编译产物不透明且换模型必须重编译。
 - **面试信号**：能区分"prompt 工匠"（靠手感试错）与"prompt 工程"（eval 驱动 + 自动优化），是中高级候选人的分水岭。
 
@@ -298,12 +322,14 @@ Agent 跑几十上百步后，上下文必然撞墙（主流旗舰模型普遍 1
 | System/User 角色分工与 system prompt 设计原则 | ⭐⭐ | 偏工程实操；知道 developer 角色更名加分 |
 | ToT / ReAct / Reflexion 对比及"模板过时、循环保留" | ⭐⭐ | 通常作为 CoT 追问，Agent 岗必问 |
 | 采样参数（temperature / top-p / penalty / stop）与确定性迷思 | ⭐⭐ | 基础但暴露功底：temperature 0 ≠ 可复现；penalty 抑重复、stop 控边界；结构合法性不靠调温 |
-| Prompt 自动优化（DSPy / OPRO）与 eval-driven | ⭐⭐ | 区分"手工匠人"与"工程学派" |
+| Prompt 自动优化（DSPy / OPRO / GEPA）与 eval-driven | ⭐⭐ | 区分"手工匠人"与"工程学派"；GEPA 代表"prompt 优化替代权重 RL"新叙事 |
 | KV cache / Prompt Caching 的成本视角 | ⭐⭐ | 区分"会写 prompt"与"会做系统"的分水岭 |
 | 模型代际（GPT-5 统一推理模型 / Sonnet 4.5 / Gemini 3） | ⭐⭐ | 举例停在 o3/o4-mini 会被判定知识陈旧；reasoning_effort 统一控制思考深度 |
 | MCP 的安全面（工具描述投毒 / rug-pull / sampling 注入） | ⭐⭐ | 2025–2026 新增高频；与注入防御框架天然衔接 |
 | 多模态 / VLM prompting | ⭐⭐ | 图像 token 预算、图文排布（指令置于图像后）、多图交错、文档理解 |
 | 长期记忆系统生态（MemGPT/Letta、Mem0、Zep） | ⭐⭐ | "长期记忆怎么落地"的标准答案；检索-注入 + 写回更新模式 |
+| 多轮对话衰减与上下文失效四模式 | ⭐⭐ | Lost in Multi-Turn 平均掉约 39%、unreliability 是主因；poisoning/distraction/confusion/clash 可引用命名 |
+| Many-shot ICL（长上下文能力面） | ⭐ | 数百至数千示例持续增益、逼近微调，配 prompt caching；与 many-shot jailbreaking 一体两面 |
 | 推理链忠实性（faithfulness）争议 | ⭐ | 开放题加分项 |
 
 ---
@@ -335,7 +361,7 @@ Agent 跑几十上百步后，上下文必然撞墙（主流旗舰模型普遍 1
 **参考答案要点**：
 - 机制：自回归模型把已生成 token 当作工作记忆；CoT 把多步计算外显为中间 token，使每步只做局部推理，并让问题落入预训练中见过的推理文本分布；同时错误可以在步骤层面被（人类或验证器）定位。
 - 边界：对单步/检索型任务无效甚至有害；长链有错误传播；推理链可能不忠实（post-hoc rationalization）。
-- 范式转移：o3/o4-mini（已被并入 GPT-5）、R1、Claude extended thinking、Gemini thinking 用 Long CoT + RL 把搜索式思考内化进训练，推理发生在内部；2025-08 起 GPT-5 以**统一模型 + `reasoning_effort`** 成为 OpenAI 侧默认形态，Claude Sonnet 4.5 / Opus 4.1、Gemini 3 同代内置思考预算。OpenAI 官方明确建议对推理模型**简化 prompt**：直接给目标与约束，不要手写 CoT 触发词、不要 few-shot 推理示范，用 reasoning effort/budget 参数控制深度。传统 CoT prompting 技巧在这一代模型上多数过时甚至干扰。
+- 范式转移：o3/o4-mini（已被并入 GPT-5）、R1、Claude extended thinking、Gemini thinking 用 Long CoT + RL 把搜索式思考内化进训练，推理发生在内部；2025-08 起 GPT-5 以**统一模型 + `reasoning_effort`** 成为 OpenAI 侧默认形态，Claude Opus 4.1（2025-08）、Sonnet 4.5（2025-09）与稍晚的 Gemini 3（2025-11）相继内置思考预算。OpenAI 官方明确建议对推理模型**简化 prompt**：直接给目标与约束，不要手写 CoT 触发词、不要 few-shot 推理示范，用 reasoning effort/budget 参数控制深度。传统 CoT prompting 技巧在这一代模型上多数过时甚至干扰。
 - 加分：Self-Consistency 与 ToT 的思想（多路径边际化、搜索+评估）其实被吸收进了训练期的搜索式 RL（如 MCTS 式训练），所以应用层不再需要手工做。
 
 #### 题 4（进阶）：Self-Consistency 为什么能提升准确率？它的适用前提和代价是什么？
@@ -458,7 +484,7 @@ Agent 跑几十上百步后，上下文必然撞墙（主流旗舰模型普遍 1
 - 为什么缓存是主矛盾：长程 Agent 每轮都要为"全部历史"重新 prefill，未缓存时输入成本与 TTFT 随轨迹长度线性增长。Manus 的判断（Harness 综述引用）：**KV-cache 命中率是生产级 AI agent 最重要的单一指标**——Sonnet 缓存命中约 $0.30/MTok、未缓存约 $3.00/MTok，差一个数量级；命中率是同时决定账单与首 token 延迟的变量。
 - 三条结构规则（综述 C 层生产细则）：①**前缀稳定**——system prompt + 工具定义固定在上下文最前，顺序与措辞不随意改动；②**append-only**——新信息只追加到末尾（用户轮次、工具返回、assistant 输出天然 append-only），不在中段插入或改写；compaction 用"摘要重启"显式重建一段新的稳定前缀，而不是在历史中段动手术；③**确定性序列化**——同一内容每轮序列化逐字节一致：JSON 字段顺序固定、前缀中不掺入时间戳/随机 ID，否则缓存键漂移、命中率无声崩塌。
 - 最易破坏缓存的细节（加分）：工具可用性随状态变化时，**用掩码 logits 在解码层屏蔽不可用工具，而不是运行时增删工具列表**（Manus 做法）——改工具列表即改前缀，整段缓存作废；动态检索内容追加在尾部，不插入 system 段；多 Agent 场景共享同一份稳定前缀模板，最大化跨轮次、跨会话复用。
-- API 落地：Anthropic 显式缓存最多 4 个 `cache_control` 断点（最小可缓存前缀 Sonnet/Opus 级 ≥1024 tokens、Haiku 级 2048 tokens；TTL 5 分钟/1 小时），命中约原价 1/10、写入 1.25×–2×；OpenAI 自动缓存、命中约 5 折、无需配置。断点打在"稳定性边界"上：system 之后、tools 之后、few-shot 之后、长文档之后。
+- API 落地：Anthropic 显式缓存最多 4 个 `cache_control` 断点（最小可缓存前缀 Sonnet/Opus 级 ≥1024 tokens、Haiku 级 2048 tokens；TTL 5 分钟/1 小时），命中约原价 1/10、写入 1.25×–2×；OpenAI 自动缓存、无需配置，折扣随代际加深（4o 代约 5 折 → GPT-4.1 代 75% 折扣 → GPT-5 代约 9 折，缓存输入 $0.125 vs $1.25/MTok）。断点打在"稳定性边界"上：system 之后、tools 之后、few-shot 之后、长文档之后。
 - 与可观测性闭环：把命中率纳入指标体系（综述的推理/运维工程清单明确要求为延迟/token/错误/成本建可观测性）；compaction 策略或 prompt 改版时按"系统变更"对待，回归验证命中率与任务成功率——harness 各层耦合，局部"清理"可能正在悄悄击穿缓存。
 - 一句话收束：稳定前缀钉死、动态尾部追加、序列化字节对齐、工具掩码而非移除、命中率当一等指标。
 
@@ -488,6 +514,7 @@ Agent 跑几十上百步后，上下文必然撞墙（主流旗舰模型普遍 1
 20. **MCP 只谈红利、不谈安全**。工具描述本身是进入上下文的不可信文本（投毒 CVE-2025-54136），server 定义可被 rug-pull，sampling 可被反向利用；第三方 MCP server 要按供应链风险管理。
 21. **运行时增删工具会击穿前缀缓存**。"状态变了就把不可用工具从工具列表里拿掉"这一直觉会修改 prompt 前缀，使整段 KV cache 失效——按 Manus 的口径（缓存命中约 $0.30/MTok vs 未缓存约 $3.00/MTok，差一个数量级），这等于直接扔掉了生产级 agent 最重要的单一指标（KV-cache 命中率）。正确做法是工具列表保持稳定、**用掩码 logits 在解码层屏蔽不可用工具**：模型可见的工具集不变、前缀不变、缓存不丢。同源原则：任何"动态改前缀"的操作（中途插入 system 补丁、重排工具顺序）都是缓存杀手，动态内容只许 append 到末尾。
 22. **在 system prompt 里预先穷举边缘情况，只带来膨胀、不带来可靠性**。if-else 分支越多 prompt 越脆（边界上互相冲突），且指令块本身占用注意力预算；未经实证验证的边缘指令往往从未被真正触发过。生产做法相反：**先用最小 prompt 配最好的模型，从 eval/线上 trace 观察真实失败模式，再逐条补指令**——每条指令都应有"事故出处"。"预先穷举"是把 prompt 当规格说明书而非可优化制品的典型症状（呼应第 16 条）。
+23. **Agent 多轮跑偏时，原地修补不如重启携带浓缩状态**。《LLMs Get Lost in Multi-Turn Conversation》（arXiv:2505.06120）显示同一任务分片多轮平均比单轮合并低约 39%，且 aptitude 降幅小、unreliability（运行间方差）暴涨才是主因——早期错误被锚定后，后续轮次打补丁修不回来。生产对策：关键任务做单轮重述（consolidation）；长对话跑偏就 compaction 后重启并携带浓缩状态（见 2.6）。
 
 ---
 

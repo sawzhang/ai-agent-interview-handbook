@@ -12,6 +12,7 @@ LLM 基础原理
 │   ├── 整体结构：Encoder-only / Decoder-only / Encoder-Decoder
 │   ├── 核心组件：Token Embedding → N × (Attention + FFN) + Residual + Norm → LM Head
 │   ├── 现代 Decoder-only 标配（LLaMA 栈）：Pre-RMSNorm / SwiGLU / RoPE / GQA / MLA（大模型不绑定权重）
+│   ├── 训练稳定性组件：QK-Norm（Qwen3/Gemma 3/OLMo 2）、logit soft-capping（Gemma 2）、z-loss
 │   ├── 机理视角：残差流（residual stream）、FFN 存知识、Attention 做路由、induction head
 │   └── 为什么赢：并行化、长程依赖、可扩展性（对比 RNN/CNN）
 ├── 2. 注意力机制
@@ -41,9 +42,11 @@ LLM 基础原理
 │   └── 工程问题：token 计费、数字/拼写缺陷、chat template、一致性
 ├── 6. 训练流程
 │   ├── 预训练：Next-token Prediction、交叉熵/困惑度、数据工程、C≈6ND、稳定性
-│   ├── 低精度训练：FP8（blockwise scaling、DeepGEMM）；推理 FP8 主流、FP4 起步
+│   ├── 低精度训练：FP8（blockwise scaling、DeepGEMM）；推理 FP8 主流、FP4 进入主流（GPT-OSS 的 MXFP4 发布精度、Blackwell 上 NVFP4 规模化 serving）
+│   ├── 显存与并行：≈16 字节/参数（混合精度 AdamW）、梯度检查点、ZeRO-1/2/3（FSDP）、TP/PP/3D 并行
 │   ├── 数据墙：高质量语料约 2026–2032 见底（Villalobos et al. 外推、有争议）、合成数据与 model collapse
 │   ├── SFT：指令格式、质量 > 数量（LIMA）
+│   ├── PEFT：LoRA（W'=W+BA、r≪d、可合并零延迟）/ QLoRA（NF4 + 双重量化 + paged optimizer）、multi-LoRA serving
 │   ├── 蒸馏（Distillation）：教师 logits / 输出迁移；GKD、on-policy 蒸馏
 │   ├── RLHF：Reward Model(Bradley-Terry) + PPO + KL 惩罚、四模型并存、奖励过优化
 │   ├── DPO/SimPO/ORPO：闭式解、隐式奖励、离线、去 reference、失效模式
@@ -72,6 +75,7 @@ LLM 基础原理
 └── 10. 亚二次与新架构（2024-2026）
     ├── SSM：Mamba/Mamba-2（选择性机制、O(n) 复杂度、常数状态）
     ├── 线性注意力：GLA / DeltaNet / RWKV（去 softmax、RNN 式递推）
+    ├── 可训练稀疏注意力：NSA（DeepSeek）、MoBA（Moonshot）、DSA（V3.2 lightning indexer）——保精确检索的亚二次路
     ├── 混合架构：Jamba / Nemotron-H / Kimi Linear / Qwen3-Next（少量注意力层 + 线性层）
     └── 扩散 LM：LLaDA / Dream / Mercury（掩码扩散、双向、块并行解码）
 ```
@@ -94,6 +98,11 @@ LLM 基础原理
 - **SwiGLU 激活的 FFN**：`FFN(x) = (Swish(xW₁) ⊙ xW₃)W₂`，比 ReLU/GELU 效果更好（代价是多一个投影矩阵，FFN 隐藏层相应缩小为约 2/3）。
 - **RoPE 位置编码**（见 2.3）。
 - **GQA**（见 2.2）。
+
+**训练稳定性组件（2024-2026 增量，"Qwen3 相比 Qwen2 架构改了什么"的答案锚点）。** 规模与深度上去后 attention logits 会失控增长，引发 loss spike，新一代模型的应对：
+- **QK-Norm**：计算注意力分数前对 q、k 各做一次 RMSNorm，从源头压制 attention logit 爆炸——已是 Qwen3、Gemma 3、OLMo 2 的标配；"Qwen3 相比 Qwen2 改了什么"的标准答案就是"去掉 QKV bias、加上 QK-Norm"。
+- **logit soft-capping**：Gemma 2 用 `cap·tanh(logit/cap)` 给注意力/输出 logits 设软上限；因与 FlashAttention 类 kernel 适配不佳，Gemma 3 已改用 QK-Norm 替代。
+- **z-loss** 一句话：对 softmax 配分函数加 `log²Z` 惩罚、防止 logits 整体漂移（PaLM、MoE 训练常用）。
 
 **机理视角（区分"会用"和"懂"的分水岭）。** 把模型看成在一条**残差流（residual stream）**上读写：
 - **FFN 占模型参数约 2/3、占算力大头**，各层 FFN 以键值存储方式编码事实性知识（"FFN as key-value memory"，Geva et al. 2021）；而可解释的"概念方向/特征"主要来自对**残差流（residual stream）**本身的研究（Anthropic 的特征抽取、sparse autoencoder / dictionary learning 工作），不要把两者混成"第一层 FFN 输出概念方向"。
@@ -126,7 +135,7 @@ Attention(Q, K, V) = softmax(QKᵀ / √d_k) · V
 以 LLaMA-3-70B 为例（80 层、GQA 8 个 KV 头、d_head=128、FP16）：**每 token 的 KV cache = 2(K+V) × 80 × 8 × 128 × 2B = 320 KiB**；8K 上下文单请求即 2.5 GiB。若用 MHA（64 KV 头）则是 20 GiB——GQA 直接省 8×。这个量级解释了为什么"长上下文"本质上是显存工程问题。
 
 **稀疏/局部化注意力（补充考点）。**
-- **Sliding Window Attention**（Mistral）：每个 token 只看前后 W 个位置——**每 token 注意力计算与每层 KV 缓存从 O(n) 降到 O(W)**（全序列训练计算从 O(n²) 降到 O(nW)）；通过多层堆叠，感受野逐层扩张到 `L×W`，长程信息靠"接力"传递。
+- **Sliding Window Attention**：每个 token 只看前后 W 个位置——**每 token 注意力计算与每层 KV 缓存从 O(n) 降到 O(W)**（全序列训练计算从 O(n²) 降到 O(nW)）；通过多层堆叠，感受野逐层扩张到 `L×W`，长程信息靠"接力"传递。早期代表是 Mistral-7B（v0.1，注意 Mistral 后续版本已弃用 SWA）；当前代表实践是**滑窗层与全局层混合**：Gemma 2 以 1:1、Gemma 3 以 5:1 交替"局部滑窗:全局"层（Gemma 3 滑窗仅 1024），GPT-OSS 每隔一层用 128-token 滑窗层——**混合滑窗 + 全局层是当前主流形态**：少数全局层买回长程整合能力，多数滑窗层把 KV 压成常数。
 - **Attention Sink**（Xiao et al., StreamingLLM, 2023）：流式/无限长推理中发现，**最初几个 token（尤其第一个）会吸收大量注意力分数，成为"注意力沉淀"**——即使语义无关，一旦从窗口滑出，perplexity 就崩。保留"开头几个 sink token + 最近的滑动窗口"即可稳定做百万 token 级流式推理。这把"位置编码外推"问题部分转化成了"哪些 KV 必须留下"的工程问题。
 
 **MLA 的原理（2024-2026 新考点）。** DeepSeek 的做法（[技术报告 arXiv:2412.19437](https://arxiv.org/abs/2412.19437)）：
@@ -177,7 +186,7 @@ Attention(Q, K, V) = softmax(QKᵀ / √d_k) · V
 **Prefix Caching（前缀缓存）。** Agent 场景下同一 system prompt + 工具定义会在海量请求中重复出现。SGLang 的 RadixAttention、vLLM 的 Automatic Prefix Caching 把公共前缀的 KV 缓存起来复用，命中后 prefill 成本骤降——这是 Agent 基建里 ROI 最高的优化之一。
 
 **其他 KV 优化。**
-- **KV 量化**：FP8 KV cache 相比 FP16 省 2× 显存（相比 FP32 约 4×），质量损失小，vLLM 已原生支持；INT4 KV 是活跃研究方向。
+- **KV 量化**：FP8 KV cache 相比 FP16 省 2× 显存（相比 FP32 约 4×），质量损失小，vLLM 已原生支持；INT4/FP4 KV 量化也已走出论文、进入主流推理框架的生产选项（LMDeploy 的 INT4 KV cache、TensorRT-LLM 在 Blackwell 上的 FP4 KV cache 等），再省一半显存，代价是对长上下文精确召回更敏感，上线前需按任务实测。
 - **KV 驱逐**：H2O 等观察到注意力高度集中于少数"heavy-hitter" token，可丢弃低重要性 KV。
 - **KV offload**：把冷 KV 卸到 CPU/NVMe，需要时换回，用带宽换显存容量。
 - **结构级**：MLA（见 2.2）从根上把每 token KV 压到几百字节量级。
@@ -219,13 +228,37 @@ Attention(Q, K, V) = softmax(QKᵀ / √d_k) · V
 
 **稳定性工程。** warmup + cosine 衰减、梯度裁剪、bf16 混合精度（bf16 动态范围大、不易溢出，已取代 fp16 成为训练默认）；loss spike 的常见处置是回滚到上一个健康 checkpoint 并跳过问题数据批次。
 
-**低精度训练与推理（2024-2026 新考点）。** 训练侧，**FP8 混合精度**已进入一线：DeepSeek-V3 在 671B 规模上用 FP8（E4M3 前向 / E5M2 反向梯度）+ **细粒度 blockwise scaling**（激活按 1×128、权重按 128×128 分块缩放）+ 自研 DeepGEMM 算子验证了稳定性——粗粒度（per-tensor / per-channel）缩放在大模型的离群激活面前会发散，**分块缩放是 FP8 训练可用的关键**。推理侧，FP8（E4M3）已是 Hopper / Blackwell 上的主流 serving 精度（vLLM、TensorRT-LLM 原生支持，DeepSeek-V3 即以此部署），Blackwell 起 FP4（NVFP4 / MXFP4）开始落地；BF16/FP16 退为兜底精度。面试口径：低精度的核心矛盾是**离群激活（outliers）与缩放粒度的取舍**。
+**Muon 优化器（前沿岗加分题："K2 为什么不用 AdamW"）。** Muon 对**矩阵形参数**不再走 Adam 的逐元素自适应，而是把动量矩阵先做**正交化**（Newton-Schulz 迭代近似求正交因子）再更新——直觉是让更新在各方向上"等强度"推进、避免少数奇异方向主导；embedding/LM Head 等非矩阵参数仍配 AdamW。Kimi K2 用 **MuonClip**（Muon + **qk-clip**：按 attention logit 超限比例回缩 q/k 投影权重，压制 logit 爆炸这一 Muon 大规模训练的主要不稳因素）完成了 **1T 总参 MoE 的全程无 loss spike 训练**，官方口径是 token 效率（同数据量下的损失下降）优于 AdamW。面试一句话：**Muon 赢在矩阵结构感知带来的 token 效率，MuonClip 补上大规模稳定性短板**。
+
+**低精度训练与推理（2024-2026 新考点）。** 训练侧，**FP8 混合精度**已进入一线：DeepSeek-V3 在 671B 规模上用 FP8（E4M3 前向 / E5M2 反向梯度）+ **细粒度 blockwise scaling**（激活按 1×128、权重按 128×128 分块缩放）+ 自研 DeepGEMM 算子验证了稳定性——粗粒度（per-tensor / per-channel）缩放在大模型的离群激活面前会发散，**分块缩放是 FP8 训练可用的关键**。推理侧，FP8（E4M3）已是 Hopper / Blackwell 上的主流 serving 精度（vLLM、TensorRT-LLM 原生支持，DeepSeek-V3 即以此部署）；FP4 也已跨过"起步"阶段进入主流：OpenAI 的 **GPT-OSS** 直接以 **MXFP4** 作为发布权重精度（MoE 权重 4-bit，120B 单卡 80GB 可跑），**NVFP4** 在 Blackwell 上进入规模化 serving（TensorRT-LLM / vLLM 支持，NVIDIA 官方放出多款模型的 NVFP4 checkpoint）；BF16/FP16 退为兜底精度。面试口径：低精度的核心矛盾是**离群激活（outliers）与缩放粒度的取舍**。
+
+**训练显存口算与分布式并行（与 6ND FLOPs 配对的第二道必会口算）。** 混合精度 AdamW 全参训练的**静态显存 ≈ 16 字节/参数**：bf16 权重 2 + bf16 梯度 2 + fp32 master 权重 4 + fp32 一阶矩 4 + fp32 二阶矩 4；另加激活显存（随 batch×序列长度×层数增长，长上下文下会反超静态项）。经典演算题"**70B 全参要多少卡**"：70B×16B ≈ **1.12 TB 静态状态**——80GB 卡（A100/H100）光放静态态就要 ≥14 张，加上激活、通信 buffer 与并行开销，实践中 **16–32 张起步**。省显存三板斧：
+- **梯度检查点（activation checkpointing）**：只存层边界激活、反向时重算，省掉激活大头，代价约 **+30% 计算**（多一次前向）；
+- **ZeRO 三档**（DeepSpeed）：ZeRO-1 只切分**优化器状态**（16 字节里的 12 字节 ÷ DP 卡数）；ZeRO-2 再切**梯度**；ZeRO-3 连**参数**也切、用时 all-gather——显存最省但通信量增约 50%。**FSDP ≈ ZeRO-3** 的 PyTorch 原生实现；
+- 量化底模 + PEFT（QLoRA 路线，见 2.7）。
+
+**并行三件套（怎么把一个放不下的模型切开）。**
+
+| 并行 | 切什么 | 通信特征 | 适用域 |
+|---|---|---|---|
+| **TP 张量并行** | 层内：权重矩阵按行/列切 | 每层前/反向各 2 次 all-reduce，高频大流量 | 限高带宽域（NVLink），一般 ≤8 卡节点内 |
+| **PP 流水线并行** | 层间：按层切成 stage | 相邻 stage 点对点传激活，流量小 | 可跨节点；有 pipeline bubble，需 micro-batch（1F1B/interleaved）填充 |
+| **DP/ZeRO 数据并行** | 切数据（ZeRO 再切训练状态） | 梯度 all-reduce/reduce-scatter | 扩吞吐主力，规模最自由 |
+
+**选型口诀**：**节点内 TP、跨节点 PP/DP、显存不够上 ZeRO**；万卡级训练即 TP×PP×DP 的 **3D 并行**（Megatron-LM），超长序列再叠序列/上下文并行（见 2.3）。
 
 #### 2.7 后训练：SFT → 蒸馏 → RLHF → DPO → GRPO
 
 对齐与能力激发的流水线，面试几乎必问其一。
 
 **SFT（监督微调）。** 用 (指令, 回答) 示范教模型"格式与风格"。核心经验：**质量远比数量重要**——LIMA（Meta, 2023）证明约 1000 条精挑数据即可接近 RLHF 模型的表现；SFT 主要改变行为分布（怎么说），知识增量有限（知识主要靠预训练或 RAG）。
+
+**参数高效微调（PEFT）：LoRA / QLoRA（微调落地的默认起点，Agent 岗必会）。** 全参微调 70B 要 16–32 张卡（见 2.6 显存口算），多数场景负担不起——PEFT 用"冻结底模、只训小增量"把门槛降两个数量级：
+- **LoRA**（Hu et al., 2021）：冻结 W，训练低秩增量 `W' = W + (α/r)·BA`（`B∈ℝ^{d×r}`、`A∈ℝ^{r×k}`、秩 r≪d；A 高斯初始化、B 零初始化，保证训练起点等价原模型）。可训参数常仅 0.1–1%，优化器状态随之骤减；**推理前可把 BA 合并回 W——零额外延迟**。常见取值 r=8–64、α=16–32（经验上 α≈2r，缩放系数 α/r 控制增量幅度）；**加在哪些矩阵**：原论文只加 q/v 投影即有效，实践中加满全部线性层（q/k/v/o + FFN 三矩阵）效果更强（QLoRA 的结论之一）。
+- **QLoRA**（Dettmers et al., 2023）：底模量化为 **4-bit NF4**（按正态权重分位数设计的量化格式）+ **双重量化**（把量化常数再量化，每参数再省约 0.37 bit）+ **paged optimizer**（显存尖峰时把优化器状态换页到 CPU），LoRA 增量仍以 bf16 训练。经典账：**单张 48GB 卡微调 65B**（Guanaco）——对照全参的 16 字节/参数（65B ≈ 1TB），省了约两个数量级。
+- **LoRA vs 全参（必答取舍）**：数据少、任务窄（格式/风格/领域话术对齐）、多租户定制 → LoRA；大幅行为改变、注入大量新能力、长程 agent 轨迹训练 → 全参或 RFT。**为什么低秩有效**：任务适配的权重增量本身近似低秩（intrinsic dimension 低），低秩分解足以覆盖；但也因此 **LoRA 学新知识弱，更像"格式/风格适配器"**——Agent 的 tool-call 格式对齐用 LoRA 通常够，推理能力提升要靠 RL/全参。
+- **multi-LoRA serving**：S-LoRA / vLLM 支持共享一份底模、按请求动态挂载不同 adapter（unified paging 管理 adapter 显存），一张卡可服务成百上千个租户定制——"可合并（零延迟）"与"可热插拔（多租户）"是 LoRA 的两种部署形态。
+- 变体一句：**DoRA** 把权重更新分解为幅值 + 方向两部分分别学习，低秩下常比 LoRA 更接近全参效果。
 
 **蒸馏（Distillation，2024-2026 小模型路线的关键）。** 用强模型（teacher）生成回答或输出 logits，训练弱模型（student）模仿：
 - **输出级**：直接学 teacher 的回答文本（本质是高质量合成数据 SFT）——DeepSeek-R1-Distill 把推理能力蒸馏到 1.5B–70B（Qwen2.5-1.5B/7B/32B 与 Llama-3.1-8B/70B），是"用 RL 造教师、用蒸馏铺学生"的范例；
@@ -267,6 +300,15 @@ L_DPO = − E[ log σ( β·log π(y_w)/π_ref(y_w) − β·log π(y_l)/π_ref(y_
 **RLAIF / Constitutional AI**（Anthropic, 2022）：用模型自己按"宪法原则"生成偏好、自我批评修订，减少人工标注依赖，是规模化对齐的现实路径。
 
 **RL 基建与蒸馏新范式（工程岗加分）。** 大规模 RL 的系统瓶颈在 rollout 与权重同步：**veRL**（字节，hybrid-flow 架构，把训练与采样在同集群内灵活编排）与 **OpenRLHF**（基于 Ray 的分离式架构）是两套主流开源框架；异步 rollout 与 staleness 控制（允许多旧的 off-policy 样本）是核心工程权衡。蒸馏侧的两个新词：**GKD**（Generalized Knowledge Distillation，Agarwal et al. 2024）让学生在**自生成输出**上匹配教师分布，缓解"训练看教师轨迹、推理用自己分布"的错配；**on-policy distillation**（Thinking Machines, 2025）把"学生自采样 + 教师逐 token 打分"做成规模化流程，被描述为介于 SFT 与 RL 之间的低成本能力迁移路径。
+
+#### 幻觉的机理成因（"为什么大模型会幻觉"必考，浅答扣分）
+
+浅答只说"训练数据有错/覆盖不全"——这只是次要因素。深答分三层：
+- **训练目标层**：next-token MLE 奖励的是"在训练分布下最流畅的续写"，而非"真实"。事实断言在语料中往往只出现一次（singleton），模型没有足够统计量把"记住的"与"编得像的"区分开——生成一个高概率但错误的实体名，在交叉熵意义上几乎不受惩罚。叠加解码期的**采样随机性**，低概率的错误延续总有机会被采出来，并被后文"自圆其说"。
+- **知识边界层**：预训练没有显式的"我不知道"监督信号——语料里几乎没有"这个问题我答不上来"的自然示范，模型对自身知识边界**缺乏校准**，到了边界外仍按同样的方式流畅外推。
+- **评测激励层**（OpenAI 2025《Why Language Models Hallucinate》的核心论点）：主流基准**二值评分**——答对得分、答错与弃权同样零分（弃权甚至更亏），这在统计上**激励猜测**：即使一个校准良好、知道自己不确定的模型，在这种记分规则下的最优策略也是硬答而非弃权。幻觉因此被制度性地固化——不改评分规则（给"恰当弃权"记分、对自信错误重罚），训练侧的修补是逆水行舟。
+
+**缓解分层**：训练侧（拒绝/弃权数据、校准感知的奖励设计）→ 解码侧（事实性任务降温、自洽采样交叉验证）→ 检索侧（RAG 用外部证据落地，见第 4 章）→ 校验侧（引用核查、评估与可观测性，见第 8 章）。面试口径：**浅答训练数据，深答"训练目标 + 评测激励 + 校准"三层，再顺出分层缓解**。
 
 #### 2.8 Scaling Laws：从 Chinchilla 到推理时计算
 
@@ -327,6 +369,12 @@ L_DPO = − E[ log σ( β·log π(y_w)/π_ref(y_w) − β·log π(y_l)/π_ref(y_
 
 **系统性短板（面试必答的取舍）。** 固定大小状态是对序列的**有损压缩**：亚二次模型在**精确召回（associative recall）、in-context copy（"复述前文出现过的字符串"）类任务上系统性弱于 Transformer**，多篇 2024 年的实证研究反复验证了这一点；纯 Mamba 模型的 in-context learning 能力也明显受限。这正是它们没有取代 Attention 的原因。
 
+**可训练稀疏注意力：保精确检索的亚二次路线（2025 增量考点）。** 与"把历史压进固定状态"的线性路线正交：**不压缩，而是精确地选**——每个 query 只对被选中的 KV 块做标准 softmax 注意力，整体复杂度亚二次，但被选中 token 的信息**无损**：
+- **NSA**（DeepSeek，Native Sparse Attention，ACL 2025 最佳论文）：压缩粗粒度 token + 选择性保留细粒度 token 块 + 滑动窗口，三分支门控融合；**端到端可训练**（而非推理期事后稀疏化），且按 GPU block 对齐设计、拿得到真实加速；
+- **MoBA**（Moonshot）：上下文切块、gate 为每个 query 选 top 块——**MoE 思想搬进注意力**，可与全注意力无缝切换；
+- **DSA**（DeepSeek-V3.2 的 lightning indexer）：轻量索引头为历史 token 打分、每个 query 只取 top-k 进注意力，把 MLA 稀疏化，已在生产模型落地——NSA→MoBA→DSA 是同一条线从论文走向生产。
+与线性注意力的对比口径：**线性/SSM 是有损压缩状态，稀疏注意力是保留全部 KV、按需精确选取**——前者状态常数、省得更狠，后者保住精确召回能力，正面回应上一段的"系统性短板"。
+
 **业界收敛到"混合架构"。** 主流做法是**少量注意力层 + 大量 SSM/线性层**：注意力层负责精确召回与 in-context 能力，线性层承担廉价的逐 token 处理，整体接近 O(n) 成本与常数级状态显存。代表：
 - **Jamba**（AI21, 2024）：Mamba + Transformer 混合，支持 256K 上下文；
 - **Nemotron-H**（NVIDIA, 2025）：Mamba-2 + 注意力混合家族；
@@ -336,6 +384,18 @@ L_DPO = − E[ log σ( β·log π(y_w)/π_ref(y_w) − β·log π(y_l)/π_ref(y_
 **面试口径**："不是 Attention 不好，而是全 Attention 太贵；混合架构用少数注意力层买回精确检索能力，其余层走 O(n)。"
 
 **另一条轴：扩散语言模型（非自回归）。** 与"亚二次"正交的新范式是**掩码扩散 LM**：训练时随机掩码 token、让模型用**双向注意力**并行去噪，推理时按 block 迭代解码（而非逐 token 自回归）。代表：**LLaDA**（2025，8B 开源掩码扩散 LM）、**Dream**（2025，开源扩散 LM，块并行解码吞吐显著高于同规模自回归模型）、**Mercury**（Inception Labs, 2025，面向代码，主打超高 tokens/s）。优势：天然双向上下文、块级并行解码、适合代码编辑与"挖空填充"式任务；短板：缺乏成熟的 KV cache / prefix cache 生态，可控生成与长程连贯性仍弱于自回归主流。目前是自回归路线的有力补充，而非替代。
+
+#### VLM 架构基础（多模态 / GUI Agent 岗的前置知识）
+
+**主流拼接范式（LLaVA 范式，先答这个）。** 绝大多数开源 VLM 是三段拼接：**视觉编码器**（CLIP/SigLIP 系 ViT，用图文对比学习预训练，输出的 patch 特征天然与语言语义对齐）→ **投影层**（把视觉特征映射进 LLM 的 embedding 空间：最简是 **MLP**（LLaVA 路线）；或用 **cross-attention Resampler**（Q-Former / Perceiver Resampler 类，用固定数量的可学习 query 把任意多 patch 压成定长 token，控制序列开销）→ **LLM 主干**（视觉 token 与文本 token 拼在同一序列里走标准自回归）。对 LLM 而言，图像就是"一段外语 token"。
+
+**图像的 token 账与分辨率策略。** 一张图经 ViT 切 patch 后是**数百至数千个 token**（如 336×336、patch 14 → 576 token），高分辨率是主要成本来源。主流做法：**AnyRes / 切片**（LLaVA-NeXT 路线：原图切成若干子图各自过编码器 + 一张全局缩略图拼接）；**Qwen-VL 系的原生动态分辨率**：不切片、按原始分辨率直接产出变长 patch 序列，并用 **M-RoPE** 把位置编码分解为**时间 / 高 / 宽三个分量**——图像按二维坐标、视频再加时间维编码，文本退化为普通一维 RoPE，一套位置编码统一三种模态。
+
+**两条路线之争。** **适配器路线**（上述拼接，复用成熟视觉编码器与 LLM，训练便宜，是主流）vs **早期融合**（Fuyu：不要独立视觉编码器，图像 patch 线性投影后直接进 LLM，结构最简、天然任意分辨率，但训练代价高、效果长期未成为主流）。
+
+**训练两阶段。** ① **对齐预训练**：冻结视觉编码器与 LLM，只训投影层（图文 caption 对）；② **多模态指令微调**：解冻 LLM（常连同投影层，视觉编码器可选解冻），用多模态指令数据教会"看图对话/推理"。
+
+**为什么 Agent 面试考这个**：GUI Agent 岗必问 VLM 结构，且**高分辨率支持是 GUI grounding 的前提**——截图里的按钮/输入框只占几十像素，低分辨率编码后信息直接丢失，AnyRes / 原生动态分辨率决定了模型"看不看得清屏幕"（GUI grounding 与坐标预测详见第 14 章）。
 
 ---
 
@@ -359,6 +419,8 @@ L_DPO = − E[ log σ( β·log π(y_w)/π_ref(y_w) − β·log π(y_l)/π_ref(y_
 | 投机采样为何无损 | ⭐⭐ | 接受-拒绝的数学保证、Medusa 近似无损的限定 |
 | 亚二次与混合架构（Mamba/线性注意力）的取舍 | ⭐⭐ | O(n)+常数状态 vs 精确召回弱；为何收敛到混合 |
 | R1-Zero vs R1 训练管线、规则化奖励 | ⭐⭐ | 纯 RL 涌现 vs 冷启动 SFT；R1 四阶段 |
+| LoRA/QLoRA 原理与全参微调的取舍 | ⭐⭐ | 低秩假设、NF4/双重量化、单卡 48GB 调 65B 的账、multi-LoRA serving |
+| 训练显存口算（16 字节/参数）与 ZeRO/TP/PP 选型 | ⭐⭐ | "70B 全参要多少卡"；节点内 TP、跨节点 PP、显存不够 ZeRO |
 | FP8/FP4 低精度、基准饱和与污染检测 | ⭐ | blockwise scaling；MMLU-Pro/HLE/LiveCodeBench、Min-K%++ |
 | 蒸馏 / SFT 数据量质量经验（LIMA）/ perplexity 的局限 | ⭐ | 对齐直觉、小模型路线 |
 
@@ -525,6 +587,7 @@ L_DPO = − E[ log σ( β·log π(y_w)/π_ref(y_w) − β·log π(y_l)/π_ref(y_
 21. **"Mamba 会取代 Transformer" / "R1 是纯 RL 不要 SFT"**：亚二次架构在精确召回 / in-context copy 上系统性弱于注意力，业界收敛到"少量注意力层 + 线性层"的混合架构；同理，纯 RL 涌现推理的是 **R1-Zero**，发布的 **R1** 用的是含冷启动 SFT 的四阶段流水线。
 22. **KV Cache 让每步计算变成 O(1)**：它只消除历史 K/V 的重复投影（投影 O(t·d²)→O(d²)），新 query 对全部历史 key 的注意力仍是 O(t·d)——每步成本仍随序列线性增长，这也是 decode 带宽受限的根源。
 23. **权重绑定是大模型标配**：恰恰相反，LLaMA/Mistral/DeepSeek 等大模型均不绑定（`tie_word_embeddings=False`）；绑定是 GPT-2、Gemma 等小模型的常见做法。
+24. **LoRA 与全参微调只差在"省不省钱"**：LoRA 的本质是低秩适配器——任务增量低秩假设成立时（格式、风格、领域话术对齐）效果接近全参，但**学新知识、提升推理能力偏弱**；Agent 的 tool-call 格式对齐用 LoRA 通常够，推理能力提升要靠全参/RL；把 r 调大也不等价于全参（优化动态不同）。
 
 ---
 

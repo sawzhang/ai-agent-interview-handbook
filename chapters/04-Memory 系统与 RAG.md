@@ -43,7 +43,8 @@ Memory 系统与 RAG
 │   │   ├── 代表：OpenAI text-embedding-3、Cohere embed-v3/v4、
 │   │   │        BGE-M3（dense+sparse+多向量三态一体）、Qwen3-Embedding、
 │   │   │        Gemini Embedding、NV-Embed-v2、E5-mistral、GTE、
-│   │   │        nomic-embed、jina-embeddings-v3、Voyage（MongoDB）
+│   │   │        nomic-embed、jina-embeddings-v4（多模态+late interaction 统一）、
+│   │   │        Voyage（MongoDB）
 │   │   ├── 指令式嵌入（instruction-tuned，需区分 query/passage 前缀）
 │   │   └── 选型基准：MTEB / C-MTEB（中文）
 │   ├── 2. 稀疏表示 / 学习型稀疏检索
@@ -204,6 +205,14 @@ Memory 系统与 RAG
 - ❌ "换个更大的嵌入模型就能解决检索差"。多数"检索差"其实是 **chunking 问题或 query-doc 措辞鸿沟**，不是嵌入模型问题。先做错误分析（到底是没召回，还是召回了但排序低）。
 - ❌ 用 cosine 相似度阈值做"是否相关"的硬判定。绝对分数跨模型、跨语料不可比，**应用相对排序 + rerank**，而不是拍一个 0.78 的阈值。
 
+#### 单向量 embedding 的理论表达上限（Google DeepMind, 2025）
+
+**考点**：为什么 hybrid / 多向量 / rerank 不只是工程妥协，而是**理论必需**。
+
+**机制**：DeepMind 2025 年论文《On the Theoretical Limitations of Embedding-Based Retrieval》证明：固定维度 d 的单向量嵌入，能精确表示的"top-k 相关文档组合"数量存在**数学上限**（基于 sign-rank 的论证）——一旦任务要求的相关组合复杂度超过该上限，**换更强的模型、喂更多的数据都无解**。作者据此构造 **LIMIT 基准**：查询极其简单（"谁喜欢苹果？"式），只因相关组合覆盖了文档间的所有两两配对，SOTA 单向量模型就大面积失败（recall@100 普遍很低），而 **BM25（超高维稀疏）与 ColBERT 式多向量**不受同一上限约束、表现明显更好。
+
+**面试怎么用**：把本章的 hybrid（2.5）、BGE-M3 三态一体（2.2）、ColBERT late interaction、两段式 rerank 串成一句话——"单向量是**信息瓶颈**：可表示的相关组合随维度只多项式增长，而组合空间指数爆炸，所以稀疏 / 多向量 / 交互式打分是**补齐表达力的理论必需**，不是锦上添花"。追问"那单向量为何仍是主流"：真实查询的相关结构远比 LIMIT 的对抗构造稀疏，且 ANN 基建成熟——正确姿势正是"单向量粗召回 + sparse 兜底精确匹配 + 多向量/cross-encoder 精排"。
+
 ---
 
 #### 2.3 Chunking：被严重低估的一环
@@ -281,6 +290,18 @@ Rerank 通常带来**最显著且最便宜**的端到端质量提升，是性价
 
 **推理模型时代的检索注记（2025-2026，以下更多是工程经验观察而非定论）：** 深度推理模型（o 系列、DeepSeek-R1/QwQ 类）在实践中对上下文噪声往往**更敏感**——塞 20 个块常常不如喂 3–5 个高相关块让它专注推理；更好的姿势是让模型**在推理链里自己规划检索**（"我需要先查 A 再查 B"）。"检索越多越保险"的直觉在推理模型上经常失效，最终进 prompt 的条数应在自己评估集上消融确定。
 
+#### 中文检索特化：分词、归一化与 C-MTEB（国内面试特色考点）
+
+**考点**："把 RAG 从英文语料换到中文，哪些环节要改？"多数候选人只答"换个中文 embedding"，真正的区分点在**稀疏那一路**。
+
+**BM25 与分词**。中文无空格分隔，BM25 的词项化必须显式分词——这是英文场景不存在的额外环节，两条路线各有取舍：**词级索引**（jieba、Elasticsearch 的 IK analyzer——惯用法 `ik_max_word` 建索引、`ik_smart` 切查询）词项语义完整、精度高、索引小，但受**分词错误与 OOV**（新词、产品名、人名）拖累——查询与文档切法不一致就直接召回失败，需**自定义词典**持续维护领域专名；**字级 / 字 n-gram 索引**（单字或 bigram）零 OOV、任何新词都能召回，代价是索引膨胀、大量字面撞车的噪声命中、精度下降。工程折中是**词级为主、n-gram 兜底**（ES 同字段挂多个 analyzer 分别建索引再融合）——本质上又是一组召回-精度旋钮。
+
+**文本归一化（隐蔽但致命）**。全角/半角（"ＡＰＩ" vs "API"）、繁简体（"臺灣" vs "台湾"）、中英混排大小写，若不在**索引与查询两侧做同一套归一化**，就会出现"同一个词、两个字符串"的隐性 miss。ES 用 char filter / ICU 插件处理，自建管线则在摄取与查询入口统一收口。
+
+**Embedding 侧**。中文选型看 **C-MTEB**（MTEB 中文基准）而非英文榜——同一模型中英榜排名差异可能很大；开源强模型集中在 BGE 系（智源）、GTE（阿里）、Qwen3-Embedding、bce-embedding（有道）等；中英混合语料或跨语检索（中文 query 查英文文档）要选**多语对齐**模型（如 BGE-M3）。
+
+**追问怎么答**："为什么稠密检索受分词影响小？"——嵌入模型的 tokenizer 本身就是子词/字级切分，匹配发生在向量空间、不依赖显式词边界。因此中文 hybrid 里**稀疏路是更脆弱的一路**：分词与归一化质量要单独建 bad case 监控，别把"检索差"一律怪到 embedding 头上。
+
 ---
 
 #### 2.6 RAG vs 长上下文 vs 微调
@@ -292,7 +313,7 @@ Rerank 通常带来**最显著且最便宜**的端到端质量提升，是性价
 2. **评测幻觉**：Needle-in-a-Haystack（大海捞针）"通过"≠ 真能用——那只是**单跳、字面匹配**的任务。**RULER**（多跳/变量追踪/聚合）、**HELMET**（检索/推理/摘要系统化评测）、**NoLiMa**（去针化、消除表面线索）一致表明：模型的**有效长度远小于标称长度**，很多"长上下文能力"被针式测试系统性高估。2025 年 Chroma 等提出的 **context rot** 进一步刻画这一现象：随上下文增长，模型对远端信息的有效检索能力持续退化——名义窗口靠位置编码缩放（RoPE 的 YaRN/NTK 扩展）撑出来，但训练分布集中在短序列，长尾检索质量系统性变差。
 3. **成本与延迟**：每次请求都带全量文档，token 成本与首 token 延迟随长度线性涨。
 
-**Prompt caching / KV cache 改变了经济账。** Anthropic 提供**显式缓存断点**（`cache_control`，前缀 ≥1024 tokens，TTL 5 分钟/可选 1 小时），缓存命中读取约为常规输入价的 **1/10**，但**写入有溢价**（5 分钟 TTL 写入约 **1.25×**、1 小时 TTL 约 **2×** 常规输入价）——只有前缀被足够多次复用才净赚，TTL 选择直接取决于复用频率；OpenAI 对 ≥1024 tokens 的稳定前缀**自动缓存**、约半价（无写入溢价）；Gemini 提供显式 Context Caching。共性规律：**前缀越稳定、复用次数越多，长上下文越划算**。这直接催生了 CAG：
+**Prompt caching / KV cache 改变了经济账。** Anthropic 提供**显式缓存断点**（`cache_control`，前缀 ≥1024 tokens，TTL 5 分钟/可选 1 小时），缓存命中读取约为常规输入价的 **1/10**，但**写入有溢价**（5 分钟 TTL 写入约 **1.25×**、1 小时 TTL 约 **2×** 常规输入价）——只有前缀被足够多次复用才净赚，TTL 选择直接取决于复用频率；OpenAI 对 ≥1024 tokens 的稳定前缀**自动缓存**、无写入溢价，且命中折扣随代际一路加深：4o 代约为常规输入价的 **1/2** → GPT-4.1 代 **1/4** → GPT-5 代约 **1/10**（已与 Anthropic 命中价同一量级）；Gemini 提供显式 Context Caching。共性规律：**前缀越稳定、复用次数越多，长上下文越划算**。这直接催生了 CAG：
 
 **CAG（Cache-Augmented Generation，2024）。** 把整个知识库**一次性预载进长上下文模型并常驻 KV 缓存**，每次查询只追加 query，**完全跳过实时检索**。适用三前提：知识库**小到放得进上下文**、**准静态**（缓存能被海量查询摊销）、对每次查询的相关性过滤要求不高。优势是零检索延迟、无检索误差传导、架构极简；局限是装不下 TB 级语料、无法按查询去噪（照吃 lost-in-the-middle）、语料一变缓存即失效、按用户隔离时复用率低。**定位：CAG 是 RAG 在"小而静态"场景下的特化/互补，不是替代**（详见题 13）。
 
@@ -331,7 +352,19 @@ Rerank 通常带来**最显著且最便宜**的端到端质量提升，是性价
 
 **取舍**：GraphRAG 在"多样性/总览性"问题上显著优于 naive RAG，但**索引成本高出数个数量级**（海量 LLM 抽取与摘要调用）、对实体抽取质量敏感、语料更新需增量重建。**后续演进**：**LightRAG**（HKU）用实体+主题双层检索与增量更新降本；**KAG**（蚂蚁/OpenSPG）做 chunk 与 KG 互索引、逻辑式推理引导，在专业垂直域更强；**HippoRAG / HippoRAG 2** 借鉴神经科学海马体"模式补全"思路，在 OpenIE 图上用**个性化 PageRank** 做多跳联想检索，HippoRAG 2 进一步在线学习边权提升多跳效果。
 
+**LazyGraphRAG（Microsoft, 2024.11）——"GraphRAG 索引太贵"这个追问的最新答案。** 思路是把算力从索引期**搬回查询期**：索引期不再用 LLM 抽实体、也不预生成社区摘要，只做轻量的名词短语抽取、共现图构建与社区划分；查询期先用 **BM25 类相关性测试取种子块**，再**沿图迭代深化**（相关性评估 → 扩展到相邻社区 → 只对被选中的子集做 LLM 摘要），按查询预算逐步加深，同一套机制同时覆盖局部与全局问题。微软报告其**索引成本约为原 GraphRAG 的 0.1%**、与 naive 向量 RAG 同一量级，而答案质量持平甚至更优。面试价值：它是 2.3 节"Index-time vs Query-time 权衡"的教科书案例——社区摘要从"建索引时对全语料预付"改为"哪个查询用到哪个社区、就在那时摘要哪个"，天然契合语料高频更新的场景；被追问"GraphRAG 成本"时，答完 LightRAG 再补一句 LazyGraphRAG，层次感立现。
+
 **Agentic RAG。** 把 RAG 从"一次性 pipeline"升级为"Agent 循环"：检索是工具之一，Agent 可以**判断检索结果够不够 → 不够就改写 query 再检 / 换一个数据源 / 分解子问题多跳检索 / 调用计算器或 API 验证 / 必要时承认不知道**。它统一了 Adaptive/Self/Corrective RAG 的思想，是 2025-2026 的主流方向，并已**产品化**：Perplexity、OpenAI Deep Research、Gemini Deep Research 本质都是"agentic 多步搜索 + 阅读 + 综合"。2024 年底起的 **MCP（Model Context Protocol）** 进一步把检索能力标准化为可插拔的 server/工具——"语料库即服务"可被任意 Agent 挂载。代价是延迟、成本、不确定性上升，需要护栏：**最大迭代次数、token/时间预算、工具白名单、每步 trace 可回放、失败回退到单次 RAG**。
+
+#### Agentic search vs 向量索引：coding agent 为什么不建索引
+
+**考点**：2025 年前后的一个显著风向——"给 coding agent 做代码检索，要不要建向量索引？"Claude Code、Cline 等主流 coding agent 给出的答案是**不建**：弃用 embedding 索引，靠 **grep/glob + 多轮 agentic 探索**（搜索 → 读文件 → 顺着 import/引用继续搜）完成检索。
+
+**弃用向量索引的四个理由**：① **stale-indexing**——代码分钟级变更，"改完代码等重嵌"的索引永远落后于磁盘真相，grep 每次查的都是最新状态，零同步成本；② **权限与安全边界**——向量索引是代码的**二次拷贝**，chunk 级 ACL 难做、易泄漏，本地 grep 天然继承文件系统权限，代码不出域；③ **构建与维护成本**——增量重嵌 pipeline（监听变更 → 重切 → 重嵌 → 失效旧向量）本身就是一个需要运维的系统；④ **代码天然适合结构化检索**——命名规范、符号引用、目录层级让精确匹配信噪比极高，且 agentic loop 可**自我纠错**（第一轮没搜到就换关键词再搜），单次检索的召回压力被多轮探索摊薄。
+
+**向量检索何时仍然赢**：自然语言语料（文档、工单、对话记录——没有符号结构可 grep）；语义模糊查询（"哪里处理了限流"，措辞与代码可能毫无字面交集）；超大规模场景（千万行级 monorepo 上多轮 grep 延迟爆炸，需要索引先收敛候选）；以及运行环境没有文件系统访问权的产品形态。
+
+**结论口径（面试必备）**："检索方式跟**介质与任务**走——代码与强结构文本优先 agentic search（grep/AST/LSP），自然语言语料优先向量 + hybrid；**'RAG = 向量库'是 2023 年的过时等式**，如今 R 指'任意检索工具'，向量库只是选项之一。"这与第 2 章"Preloading vs Just-in-Time Retrieval"、第 13 章 C 层的 progressive disclosure / JIT 检索是同一个判断的三个侧面：上下文按需拉取，检索器按介质选型。
 
 ---
 
@@ -351,7 +384,7 @@ Rerank 通常带来**最显著且最便宜**的端到端质量提升，是性价
 
 要点：**Faithfulness 不需要标准答案**——它只检查"答案 ⊆ 检索上下文"，这正是"无参考评估"的关键，也是它能用于**在线监控**的原因。它把幻觉定义为"超出证据的陈述"。
 
-**更细粒度：RAGChecker（Amazon, 2025）。** 把评估下沉到 **claim（原子陈述）级**，分三组指标：Overall（Answer F1、Faithfulness、Claim Precision/Recall）、Retrieval（Context Relevance/Precision/Recall）、Generation（Claim Recall、Contextual Precision、Faithfulness、Answer Relevancy），并引入 **Noise Sensitivity（噪声敏感度）**——度量"答案被检索到的无关块带偏的程度"，这正是"检索到了但答错"的量化指标。诊断粒度比 RAGAS 更细，且带在线 dashboard，是 2025 年后的推荐补充。
+**更细粒度：RAGChecker（Amazon, 2024，NeurIPS 2024 D&B）。** 把评估下沉到 **claim（原子陈述）级**，分三组指标：Overall（Answer F1、Faithfulness、Claim Precision/Recall）、Retrieval（Context Relevance/Precision/Recall）、Generation（Claim Recall、Contextual Precision、Faithfulness、Answer Relevancy），并引入 **Noise Sensitivity（噪声敏感度）**——度量"答案被检索到的无关块带偏的程度"，这正是"检索到了但答错"的量化指标。诊断粒度比 RAGAS 更细，且带在线 dashboard，是 2025 年后的推荐补充。
 
 **引用质量（可溯源场景必测）：** **ALCE** 系指标度量 **citation precision**（引用的来源真的支持该陈述吗）与 **citation recall**（该引用的陈述都标来源了吗）。"答案对"与"答案对且出处对"是两件事。
 
@@ -380,6 +413,7 @@ Rerank 通常带来**最显著且最便宜**的端到端质量提升，是性价
 | Prompt caching 与 CAG 的边界 | ⭐⭐⭐ | 稳定前缀缓存命中后长上下文重新划算；CAG 只适合"小而静态"的 KB，不替代 RAG |
 | 记忆生命周期：写入/更新/冲突消解/遗忘 | ⭐⭐⭐ | 好记忆是决策系统不是数据库；ADD/UPDATE/DELETE/NOOP、时序有效性 |
 | Embedding 选型（MTEB）与指令前缀/对称性 | ⭐⭐ | 榜单只作 shortlist，必须自己数据复核；用错 query/passage 前缀掉点；MRL 可截断维度 |
+| 单向量 embedding 的理论上限（LIMIT） | ⭐⭐ | 固定维度可表示的 top-k 相关组合有数学上限（sign-rank）；hybrid/多向量/rerank 是理论必需 |
 | ANN 索引（HNSW vs IVF-PQ vs DiskANN） | ⭐⭐ | HNSW 快但吃内存（efSearch 是线上旋钮），IVF-PQ 省内存损召回，DiskANN 十亿级低内存 |
 | 向量库选型与预/后过滤 | ⭐⭐ | 先问 pgvector/现有 ES；高选择性过滤必须预过滤，ACL 同理 |
 | Faithfulness 的定义与无参考评估 | ⭐⭐ | 答案是否被 context 支持，无需 ground truth；高忠实 ≠ 答案对 |
@@ -645,11 +679,11 @@ Rerank 通常带来**最显著且最便宜**的端到端质量提升，是性价
    理解实体图谱 + Leiden 社区检测 + map-reduce 全局摘要的机制，以及它针对"宏观总览问题"的设计动机与索引成本取舍。
    https://arxiv.org/abs/2404.16130
 
-4. **RAGAS 官方文档 + RAGChecker（Amazon, 2025）**
+4. **RAGAS 官方文档 + RAGChecker（Amazon, NeurIPS 2024 D&B）**
    RAGAS 是 Faithfulness / Answer Relevancy / Context Precision / Context Recall 等指标的标准参考；RAGChecker 把评估细化到 claim 级并引入 Noise Sensitivity，是"如何定位 RAG 瓶颈"的现代工具。面试谈评估必引其一。
-   https://docs.ragas.io/ ；https://github.com/claimcheck/ragchecker
+   https://docs.ragas.io/ ；https://arxiv.org/abs/2408.08067 ；https://github.com/amazon-science/RAGChecker
 
-5. **Liu et al. —《Lost in the Middle》（TACL 2023）+ RULER（2024）+ NoLiMa（2025）+ HELMET（2024）**
+5. **Liu et al. —《Lost in the Middle》（TACL 2024）+ RULER（2024）+ NoLiMa（2025）+ HELMET（2024）**
    长上下文位置偏置的经典实证，及其后续系统化评测：一致表明"有效长度远小于标称长度、Needle 测试系统性高估"。回答"RAG vs 长上下文"时最有力的论据链。
    https://arxiv.org/abs/2307.03172 ；RULER: https://arxiv.org/abs/2404.06654
 
@@ -663,7 +697,7 @@ Rerank 通常带来**最显著且最便宜**的端到端质量提升，是性价
 
 8. **自适应检索三件套：FLARE（2023）/ Self-RAG（2023）/ CRAG（2024）**
    理解"让模型自己决定检不检、检索结果可不可信、错了怎么救"的演进脉络，是答 Agentic RAG 题的思想源头。
-   FLARE: https://arxiv.org/abs/2305.06983 ；Self-RAG: https://arxiv.org/abs/2310.05029 ；CRAG: https://arxiv.org/abs/2401.15884
+   FLARE: https://arxiv.org/abs/2305.06983 ；Self-RAG: https://arxiv.org/abs/2310.11511 ；CRAG: https://arxiv.org/abs/2401.15884
 
 9. **组合与替代范式：RAFT（检索增强微调, 2024）+ CAG（Chan et al., 缓存增强生成, WWW 2025）**
    一篇讲"微调如何服务于 RAG、降低噪声敏感度"，一篇讲"缓存如何让检索在小而静态场景下消失"。二者一起读，才能把"RAG / 长上下文 / 微调"三角讲出 2025 年的最新形态。

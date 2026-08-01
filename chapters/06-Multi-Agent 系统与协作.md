@@ -25,7 +25,7 @@ Multi-Agent 系统与协作
 │   ├── 共享状态图 (shared graph state, LangGraph) vs Handoff 转交 (OpenAI Agents SDK)
 │   ├── 两种子代理调用语义：agents-as-tools（编排者保留控制权）vs handoff（移交整个会话控制权）
 │   ├── 结构化契约：子任务书（goal / 输出格式 / 工具约束 / 预算）
-│   └── 互操作协议栈：MCP（agent↔工具，stdio/Streamable HTTP + OAuth 2.1）/ A2A（agent↔agent，Task 状态机 + Agent Card）/ ACP / ANP / AGENTS.md
+│   └── 互操作协议栈：MCP（agent↔工具，stdio/Streamable HTTP + OAuth 2.1）/ A2A（agent↔agent，Task 状态机 + Agent Card）/ ACP（历史，已并入 A2A）/ ANP / AGENTS.md
 │       └── 治理格局：Linux Foundation 大伞——AAIF（2025-12，托管 MCP / AGENTS.md / goose 等）＋ A2A（2025-06 捐给 LF 的独立项目）
 ├── 4. 共享记忆 (Shared Memory)
 │   ├── Working memory（上下文窗口内）vs 外部化记忆（artifacts / 文件 / KV store / 向量库）
@@ -111,6 +111,16 @@ Anthropic [Building Effective Agents](https://www.anthropic.com/engineering/buil
 5. **调试**：同一输入会有多条都算"正确"的路径，失败难以复现；必须做全链路 tracing（记录决策与协调模式，但脱敏用户数据）。同步执行 worker 易于控制但阻塞；异步提速但结果一致性和错误处理更复杂。
 6. **两个容易被引用的细节**：① 系统效果与消耗的 token/工具调用数强相关——"更贵的跑法"确实更准，所以必须给预算上限做成本护栏；② 工具描述本身就是 prompt，Anthropic 用真实 query 反复迭代工具文档（包括给 worker 的"搜索策略指引"），其收益不亚于改模型。
 
+#### Harness 级 subagent 机制：以 Claude Code 的 Task/subagent 为例
+
+**考点**：面试官追问"orchestrator-worker 落到生产 harness 里长什么样"，能拆出 Claude Code Task 工具（subagent 机制）的四条工程约束即是高分答案：
+1. **双重隔离**：每个 subagent 拥有独立上下文窗口 + 独立工具白名单——主线程历史不带入，工具按最小权限声明（如只读探索型 agent 不给 Edit/Bash 写权限），一次同时实现上下文隔离与权限收敛。
+2. **禁止嵌套 spawn**：subagent 不能再派 subagent，拓扑被硬性限定为一层星型，防止递归扇出失控——成本上界 = 子代理数 × 单代理预算，可静态估算；这是"用 harness 规则替代 prompt 恳求"的典型。
+3. **结构化回传**：子代理只把最终结论以 tool result 形式回传主线程，中间几十步搜索/读文件的过程全部丢弃——天然的上下文压缩，正对应上文"回传压缩摘要而非原文"。
+4. **类型化 agent 定义**：子代理不是临时拼的 prompt，而是配置文件声明的类型（tools 白名单 / model / system prompt），可版本化、可复用——"agent 即配置"。
+
+并行 fan-out 时，每份派发的任务书必须写清目标、期望输出 schema、预算上限（步数/token），与本章反复出现的"子任务书契约"（2.2 与题 8）互为印证：框架层的 delegation prompt 原则，落到 harness 层就是这几个必填字段。**追问怎么答**："何时不该用 subagent？"——需要频繁双向澄清的强耦合子任务：回传只有结论没有过程，来回澄清的成本会吃掉隔离收益（此时 Skills 的渐进披露是更轻的替代，见 2.7）。
+
 #### 2.4 Debate 模式：原理与"祛魅"
 
 [Du et al., "Improving Factuality and Reasoning in Language Models through Multiagent Debate"](https://arxiv.org/abs/2305.14325)（MIT/Google Brain，ICML 2024，数千次引用）：多个 LLM 实例各自给出答案与推理，多轮互相看到对方的论点并修订，最终收敛为共识。在小学数学、国际象棋走法、事实性 QA 上超过单 agent CoT，且对较弱模型提升更明显（强模型上边际收益收窄）。
@@ -118,7 +128,7 @@ Anthropic [Building Effective Agents](https://www.anthropic.com/engineering/buil
 **为何（有时）有效**：辩论相当于把 self-consistency 的"独立采样投票"升级成"带信息的迭代修订"，错误推理暴露在对抗性审视下更容易被攻破。
 
 **为何常常失效**（这是面试加分点，很多人只知道论文结论）：
-- [Smit et al., "Should we be going MAD?"](https://arxiv.org/abs/2311.17371)（InstaDeep，ICML 2024，用 GPT-4 与 Mixtral 8x7B 系统评估多种辩论策略）发现：MAD 的收益高度依赖任务与模型，很多场景打不过 self-consistency 甚至单 agent 多次细化，且成本是 N agents × M rounds；2025 年的后续实证研究《If Multi-Agent Debate is the Answer, What is the Question?》（未正式收录于 arXiv，引用时勿标注错误编号）进一步指出：一些评测中辩论的"提升"其实来自**多轮生成预算**本身，而非"辩论"这个形式；
+- [Smit et al., "Should we be going MAD?"](https://arxiv.org/abs/2311.17371)（InstaDeep，ICML 2024，用 GPT-4 与 Mixtral 8x7B 系统评估多种辩论策略）发现：MAD 的收益高度依赖任务与模型，很多场景打不过 self-consistency 甚至单 agent 多次细化，且成本是 N agents × M rounds；2025 年的后续实证研究《[If Multi-Agent Debate is the Answer, What is the Question?](https://arxiv.org/abs/2502.08788)》（arXiv:2502.08788，2025-02）进一步指出：一些评测中辩论的"提升"其实来自**多轮生成预算**本身，而非"辩论"这个形式；
 - **锚定与谄媚（anchoring & sycophancy）**：LLM 一旦被初始答案"建立信心"，后续轮次很难真正改弦更张，反而向多数派/强势措辞收敛——辩论退化为"从众"；
 - 同质模型会**互相带偏**（shared blind spots），准确率反而下降。
 - 实践建议：与其让 agent 自由辩论，不如用**结构化对抗**（指定 devil's advocate 角色 + 强制举证 + 独立裁判），或干脆用 evaluator-optimizer 回路；把辩论预算只花在高风险、可验证的判断上。
@@ -136,7 +146,7 @@ Anthropic [Building Effective Agents](https://www.anthropic.com/engineering/buil
 |---|---|---|---|
 | **MCP** (Model Context Protocol) | Anthropic（2024-11；OpenAI、Google 相继采纳，2025-12 捐给 Linux Foundation，由 AAIF 托管） | agent ↔ 工具/数据 | 标准化工具调用、资源与 prompt 供给，已成事实标准 |
 | **A2A** (Agent2Agent) | Google（2025-04 发布，2025-06 捐给 Linux Foundation 作为独立 LF 项目；捐赠时 100+ 组织支持、AWS/Cisco 新加入背书，2026 年 v1.0 时增至 150+） | agent ↔ agent | 跨厂商/跨框架的 agent 发现（Agent Card）、任务委派与状态管理（Task/Message/Artifact） |
-| **ACP** | IBM（BeeAI） | 组织内 agent 协调 | REST-first、local-first 的企业内多 agent 编排 |
+| **ACP**（历史协议） | IBM（BeeAI）；2025 年已并入 A2A / Linux Foundation 生态 | 组织内 agent 协调 | REST-first、local-first 的企业内多 agent 编排；作为协议演进脉络了解即可，选型时不再单列 |
 | **ANP** | 社区 | 开放网络 | 去中心化的互联网级 agent 发现与通信（基于 DID/W3C 身份） |
 | **AGENTS.md** | OpenAI（2025-12 捐给 Linux Foundation，由 AAIF 托管） | agent ↔ 代码仓库 | 约定仓库级的 agent 上下文（构建/测试/风格规范），事实上的工程惯例 |
 
@@ -190,7 +200,7 @@ A2A 侧（对等委派）：
 
 #### 2.8 涌现行为与协作动力学
 
-LLM-based MAS 会表现出未经显式编程的群体行为（系统综述见 [Multi-Agent Collaboration Mechanisms: A Survey of LLMs](https://arxiv.org/abs/2501.06322)，2025-01）。这类现象有清晰的研究脉络：[Generative Agents](https://arxiv.org/abs/2304.03442)（Park et al., UIST 2023）在 25 个智能体的虚拟小镇中观察到规范传播与涌现社交行为；2025 年的 Emergent Misalignment 研究（Betley et al.）则显示，在窄任务上做对抗性微调的 agent 会在广泛场景中表现出价值失调与"欺骗性迎合"倾向。Anthropic 的工程观察更务实：**对 lead agent prompt 的微小改动会在群体中层联放大**，出现难以预料的协调模式。结论不是"涌现很神奇"，而是**涌现 = 不可靠性的来源**，必须用评估与护栏（guardrails）约束，而不是期待它。
+LLM-based MAS 会表现出未经显式编程的群体行为（系统综述见 [Multi-Agent Collaboration Mechanisms: A Survey of LLMs](https://arxiv.org/abs/2501.06322)，2025-01）。这类现象有清晰的研究脉络：[Generative Agents](https://arxiv.org/abs/2304.03442)（Park et al., UIST 2023）在 25 个智能体的虚拟小镇中观察到规范传播与涌现社交行为；2025 年的 Emergent Misalignment 研究（Betley et al.）则显示，在窄任务上做对抗性微调的 agent 会在广泛场景中表现出价值失调与"欺骗性迎合"倾向。（引用须知：该研究的原对象是**单模型**窄域微调引发广域失调，把它引入 MAS 语境属类比外推——面试引用需说明这一层，否则会被追问原研究与多智能体的关系。）Anthropic 的工程观察更务实：**对 lead agent prompt 的微小改动会在群体中层联放大**，出现难以预料的协调模式。结论不是"涌现很神奇"，而是**涌现 = 不可靠性的来源**，必须用评估与护栏（guardrails）约束，而不是期待它。
 
 **失败归因的实证锚点**：本领域最标准的实证研究是 Cemri et al.（UC Berkeley）的 [《Why Do Multi-Agent LLM Systems Fail?》](https://arxiv.org/abs/2503.13657)（2025，即 **MAST**，数百次引用）。它基于 1600+ 条标注轨迹提出多智能体失败分类学：**14 种失败模式归为三大类——规格与系统设计（约 43%，原文 42.8%）、跨 agent 失配（约 32%，原文 32.4%）、任务验证与终止（约 25%，原文 24.9%）**，并给出 LLM-as-judge 自动归因管线。其核心结论与上段互为印证：**多数失败源于协调层的设计缺陷（规格含糊、缺乏验证、agent 间目标错位），而非基座模型能力不足**（2026 年的预印本 [arXiv:2605.03310](https://arxiv.org/abs/2605.03310) 给出同向判断）。这直接决定了工程重心的摆放：与其换更强模型，不如把预算投给任务书规格、输出契约与终止验证。
 
@@ -219,7 +229,7 @@ LLM-based MAS 会表现出未经显式编程的群体行为（系统综述见 [M
 | 基准 | 测什么 | 与多智能体的关系 |
 |---|---|---|
 | **[τ-bench](https://arxiv.org/abs/2406.12045) / τ²-bench**（Sierra） | 工具型对话任务 + **数据库终态正确性**；τ² 增加双控（用户侧也是会用工具的 agent）与 telecom 域 | 提出 **pass^k** 指标，成为客服型 agent 的可靠性行业标准 |
-| **GAIA**（Mialon et al., ICLR 2024） | 通用助理的多步工具使用 | 人类约 92%，2025 年榜首系统已超 70%，差距收窄至十余个百分点但远未闭合；多智能体系统常以此作辅助赛道 |
+| **GAIA**（Mialon et al., ICLR 2024） | 通用助理的多步工具使用 | 人类约 92%，截至 2026 年中榜首系统已达 80% 上下，差距进一步收窄但尚未闭合；多智能体系统常以此作辅助赛道 |
 | **AgentBench**（ICLR 2024） | 操作系统/数据库/知识图谱/卡牌游戏等 8 类环境交叉 | 考察异构环境下的编排与泛化 |
 | **SWE-bench 系列**（Verified 为人工去污染子集） | 真实仓库 issue 修复 | 多智能体编码流水线（orchestrator + 多 engineer worker + 测试回路）是冲榜常见路线之一 |
 
@@ -291,7 +301,7 @@ MAS 的历史根基比 LLM 早四十余年，面试中的"学科纵深"题常出
 - MCP（Anthropic，2024-11）解决 **agent ↔ 工具/数据源**：标准化工具定义、调用、资源与 prompt 供给，是**主从式**（client-server）关系，已被 OpenAI、Google 等采纳，成为事实标准。
 - A2A（Google，2025-04）解决 **agent ↔ agent**：通过 Agent Card 做能力发现，用 Task/Message/Artifact 建模**对等委派与长任务生命周期**（Task 状态机：submitted → working → input-required ↔ working → completed/failed/canceled），支持跨厂商跨框架互操作。
 - 治理现状（加分项，注意区分）：A2A 于 2025-06 捐给 Linux Foundation，作为**独立 LF 项目**运作；2025-12 Linux Foundation 成立 Agentic AI Foundation（AAIF），Anthropic 捐入 MCP、OpenAI 捐入 AGENTS.md、Block 捐入 goose——A2A **不在** AAIF 托管项目之列。准确表述：三大协议同归 LF 大伞下（MCP、AGENTS.md 具体由 AAIF 治理），形成分层互补格局——说明这不是厂商之争而是协议分层。
-- 不可互替：MCP 的语义是"调用一个确定性的能力端点"，没有对等协商、任务状态机与能力自描述；把另一个 agent 包成 MCP server 虽可行，但丢失了 A2A 的协商与状态语义。正确心智模型是**协议栈**：底层 MCP 接工具，上层 A2A 做组织间协作（组织内可用 ACP，开放网络可用 ANP，仓库上下文用 AGENTS.md）。
+- 不可互替：MCP 的语义是"调用一个确定性的能力端点"，没有对等协商、任务状态机与能力自描述；把另一个 agent 包成 MCP server 虽可行，但丢失了 A2A 的协商与状态语义。正确心智模型是**协议栈**：底层 MCP 接工具，上层 A2A 做组织间协作（开放网络可用 ANP，仓库上下文用 AGENTS.md；IBM/BeeAI 的 ACP 已于 2025 年并入 A2A，属历史协议，作为演进脉络了解即可）。
 - 机制深问储备：MCP 传输为 stdio / Streamable HTTP（2025-03 起取代 SSE），授权按 2025-06-18 规范走 OAuth 2.1（server 为 Resource Server，不得自签 token，经 RFC 9728/8707 发现 AS 与绑定受众）；A2A v1.0（2026）引入签名 Agent Card 与企业级鉴权。
 
 #### 题 4（进阶 ⭐⭐）：Multi-agent debate 为什么能提升推理？它的局限是什么？你会怎么改进？
@@ -416,8 +426,8 @@ MAS 的历史根基比 LLM 早四十余年，面试中的"学科纵深"题常出
 2. **[Anthropic — How we built our multi-agent research system](https://www.anthropic.com/engineering/multi-agent-research-system)**（2025-06）+ **[Effective context engineering for AI agents](https://www.anthropic.com/engineering/effective-context-engineering-for-ai-agents)**（2025-09）：前者是目前最详实的**生产级**多智能体工程复盘（15× token、context engineering、checkpoint、rainbow deployment、评估方法），后者把 compaction / sub-agent / note-taking 等上下文管理手段系统化；进阶必读。
 3. **[Cognition — Don't Build Multi-Agents](https://cognition.com/blog/dont-build-multi-agents)**（2025-06）及后续 **[Multi-Agents: What's Actually Working](https://cognition.com/blog/multi-agents-working)**（2026-04）：最重要的反方视角及其演进（注意后续文章的口径是"写操作单线程、helper 只提供智能"的只读/评审类场景），理解 context engineering 与 decision coupling 的关键，配合第 2 条阅读形成完整认知。
 4. **[MetaGPT: Meta Programming for A Multi-Agent Collaborative Framework](https://arxiv.org/abs/2308.00352)**（ICLR 2024 Oral）：SOP、message pool、executable feedback 的出处，理解"把人类工程流程编码进协作"的最佳论文样本。
-5. **[Du et al. — Improving Factuality and Reasoning through Multiagent Debate](https://arxiv.org/abs/2305.14325)**（ICML 2024）+ 反方 **[Should we be going MAD?](https://arxiv.org/abs/2311.17371)**（ICML 2024）+ 后续实证《If Multi-Agent Debate is the Answer, What is the Question?》（2025，未见于 arXiv，检索时勿信错误编号）：debate 模式正反多方一起读，面试中展现批判性思维。
-6. **[A Survey of Agent Interoperability Protocols: MCP, A2A, ACP, ANP](https://arxiv.org/abs/2505.02279)**（2025）+ **[LangChain — Benchmarking Multi-Agent Architectures](https://www.langchain.com/blog/benchmarking-multi-agent-architectures)**（2025-06）+ **[Agentic AI Foundation](https://aaif.io/)**（2025-12）：建立协议栈全景与治理格局（注意 A2A 为独立 LF 项目、不在 AAIF 托管之列），并拿到 supervisor vs swarm 的实测数据（电话传话效应、token 曲线），是协议题与选型题的弹药库。
+5. **[Du et al. — Improving Factuality and Reasoning through Multiagent Debate](https://arxiv.org/abs/2305.14325)**（ICML 2024）+ 反方 **[Should we be going MAD?](https://arxiv.org/abs/2311.17371)**（ICML 2024）+ 后续实证《[If Multi-Agent Debate is the Answer, What is the Question?](https://arxiv.org/abs/2502.08788)》（arXiv:2502.08788，2025-02）：debate 模式正反多方一起读，面试中展现批判性思维。
+6. **[A Survey of Agent Interoperability Protocols: MCP, A2A, ACP, ANP](https://arxiv.org/abs/2505.02279)**（2025）+ **[LangChain — Benchmarking Multi-Agent Architectures](https://www.langchain.com/blog/benchmarking-multi-agent-architectures)**（2025-06）+ **[Agentic AI Foundation](https://aaif.io/)**（2025-12）：建立协议栈全景与治理格局（注意两点：A2A 为独立 LF 项目、不在 AAIF 托管之列；综述中的 ACP 其后已并入 A2A，属历史协议），并拿到 supervisor vs swarm 的实测数据（电话传话效应、token 曲线），是协议题与选型题的弹药库。
 7. **[Multi-Agent Collaboration Mechanisms: A Survey of LLMs](https://arxiv.org/abs/2501.06322)**（2025-01）：对协作机制（通信拓扑、角色分工、涌现行为）的系统学术综述，适合补理论纵深。
 8. **[OpenAI — New tools for building agents（Agents SDK）](https://openai.com/index/new-tools-for-building-agents/)**（2025-03）与 **[OpenAI Agents SDK 文档](https://openai.github.io/openai-agents-python/)**：handoff / agents-as-tools / guardrails / sessions 四个原语的最简参考实现，配合 LangGraph supervisor/swarm 文档对照阅读，可把"协作原语"这一层彻底打通。
 9. **[Cemri et al. — Why Do Multi-Agent LLM Systems Fail?（MAST）](https://arxiv.org/abs/2503.13657)**（2025）：多智能体失败分类学的标准实证（14 种失败模式、三大类占比 42.8% / 32.4% / 24.9%、LLM-as-judge 自动归因管线），调试题、可靠性题与"为什么失败"类追问的学术锚点。
