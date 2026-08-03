@@ -7247,6 +7247,8 @@ Agent 相比普通 LLM 应用新增了四块攻击面：**工具（能改变世�
 - **Silver & Sutton《Welcome to the Era of Experience》**（2025.4）：宣言式立场——高质量人类数据渐趋耗尽，**agent 与环境交互产生的"经验流"将超越人类数据成为主导数据源**，RL 回归主线。为 agentic RL 与自我进化提供叙事框架，谈"训练数据从哪来"时的标准引用；
 - **NVIDIA《Small Language Models are the Future of Agentic AI》**（2025.6，[arXiv:2506.02153](https://arxiv.org/abs/2506.02153)）：agent 子任务**窄而重复**，SLM 足够胜任且成本/延迟优势达数量级，LLM 只留给规划与兜底——**异构 agent 系统**（大模型编排 + 小模型执行）的经济学论证，讨论成本优化与模型选型时引用。
 
+#### 2.13 推理模型与 Test-time Scaling：Agent 的能力底座
+
 **范式跃迁。** 2024.9 的 o1 与 2025.1 的 DeepSeek-R1 把"推理"从提示技巧变成**可训练的潜思维链**，并证明一条新扩展律：在固定模型参数下，**投入更多推理时计算（test-time compute）可以稳定换取性能提升**（Snell et al. 2024，[arXiv:2408.03314](https://arxiv.org/abs/2408.03314)，给出 compute-optimal 分配：难题上"多想"比换更大的模型更划算）。此后 o3/o4-mini、R1 系列、以及所有 2025–2026 旗舰（GPT-5、Gemini 3、Claude 4.x）都把 reasoning 内化为默认模式，并以 **effort/thinking budget 旋钮**暴露给上层。
 
 **为什么是 agent 的底座。** ① 工具调用本质是"在不确定环境中做多步决策"，推理模型的计划、自纠错与指令遵循能力直接转化为 agent 成功率——2025 年 coding/GUI 基准的每一次大幅跳点几乎都由底座换代驱动；② 显式 thought 被**隐藏化**（hidden CoT）：带来更长的自主轨迹（Kimi K2 Thinking 的 200–300 次连续工具调用），但也让**可观测性变差**——审计者看不到推理，只能依赖行为 trace 与结果评测（这是 2026 年 agent 监控的现实约束）；③ **s1**（2025.1，[arXiv:2501.19393](https://arxiv.org/abs/2501.19393)）用约 1000 条样本 + "budget forcing"（强制延长思考）即显著提升推理能力，说明 test-time 行为可被廉价引导。
@@ -7729,8 +7731,6 @@ Agent 相比普通 LLM 应用新增了四块攻击面：**工具（能改变世�
     https://arxiv.org/list/cs.CL/recent ；https://www.swebench.com ；https://www.taubench.com
 
 **本章小结。** 这一章的所有内容可以收敛成四条主线：**循环**（ReAct 奠基、reasoning model 内化、harness 竞赛）、**训练**（RLHF → RLVR → agentic RL，奖励设计与失败模式是深水区）、**记忆与上下文**（写入/读取时计算、compaction、代码即记忆）、**治理与安全**（协议标准化解决互操作、安全只能靠限制爆炸半径）。面试的高分答案不在于堆论文名，而在于对每条主线都能给出**条件化判断**（什么情况下多 agent/长上下文/过程奖励才划算）与**可溯源的数字与出处**（本章速查表即为此备）。
-
-
 ---
 
 

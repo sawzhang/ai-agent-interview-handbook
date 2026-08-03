@@ -11749,7 +11749,7 @@ root.querySelectorAll('.hv-tab').forEach(function(tab){tab.addEventListener('cli
 </section>
 <section id="ch14" class="chapter"><div class="ch-label">第 14 章 / 共 14 章</div><h1 class="ch-title">应用形态专题：GUI·浏览器、语音与端侧 Agent</h1><details class="minitoc"><summary>📌 本章导航（6 节）</summary><ul><li><a href="#ch14-s1">一、知识图谱</a></li><li><a href="#ch14-s2">二、核心概念精讲</a></li><li><a href="#ch14-s3">三、面试高频考点</a></li><li><a href="#ch14-s4">四、经典面试题与参考答案</a></li><li><a href="#ch14-s5">五、易错点·反直觉点</a></li><li><a href="#ch14-s6">六、推荐资源</a></li></ul></details>
 <p>前 13 章沿&quot;技术栈&quot;横向展开：模型、上下文、工具、记忆、多智能体、评估、安全、部署、harness。本章（2026 修订新增）换一个&quot;纵切&quot;视角，聚焦三个已经长成一级知识域、并各自分化出独立岗位方向的<strong>应用形态</strong>：GUI/浏览器 Agent、语音 Agent、端侧 Agent。三者的共同点是把 Agent 从&quot;文本进文本出&quot;的舒适区推向真实物理与产品约束——连续动作空间与有损观察（GUI）、毫秒级实时交互（语音）、内存带宽与平台权限（端侧）——因此每个形态都催生了自己的表征方案、延迟工程、评测基准与安全边界。2025 下半年浏览器原生产品潮（Atlas / Comet / Claude for Chrome）、语音客服的规模化商用与 Apple Intelligence 的端云分层，标志着这三条线在 2026 年的面试中已从&quot;加分项&quot;变成&quot;专场题&quot;。本章内容与 1–13 章大量互指：评测方法呼应第 8 章、注入防护呼应第 9 章、推理性能呼应第 10 章、SLM 路线呼应第 11 章——读的时候请把它当作前面技术栈在三个具体形态上的&quot;落地检验&quot;。</p>
-<h2 id="ch14-s1">一、知识图谱</h2>
+<h3 id="ch14-s1">一、知识图谱</h3>
 <pre><code>应用形态专题
 ├── 1. GUI / 浏览器 Agent
 │   ├── 执行模型：screenshot→推理→action 闭环（等待确认 / 循环检测 / 步数预算）
@@ -11772,54 +11772,158 @@ root.querySelectorAll('.hv-tab').forEach(function(tab){tab.addEventListener('cli
     ├── 推理栈：llama.cpp / MLX / ExecuTorch / MNN / ONNX Runtime；NPU（ANE / Hexagon）
     ├── 内存带宽墙：decode 是 memory-bound；4-bit 量化默认；KV cache 与系统争 RAM
     ├── 端云协同：Apple Intelligence 分层 + Private Cloud Compute；路由与第 10 章模型级联同构
-    └── 权限通道：Android Accessibility vs Apple App Intents vs 纯视觉；权限与生态比算力更硬</code></pre>
-<h2 id="ch14-s2">二、核心概念精讲</h2>
-<h3>2.1 GUI Agent 的执行模型：screenshot→推理→action 闭环</h3>
+    └── 权限通道：Android Accessibility vs Apple App Intents vs 纯视觉；权限与生态比算力更硬
+</code></pre>
+<hr />
+<h3 id="ch14-s2">二、核心概念精讲</h3>
+<h4>2.1 GUI Agent 的执行模型：screenshot→推理→action 闭环</h4>
 <p>GUI Agent 的基本执行模型是一个闭环：每一步截取当前屏幕（或读取页面结构），模型推理出下一个原子动作——click(x,y)、type(text)、scroll、按键、拖拽——执行后重新观察，直到任务完成或触达步数/成本上限。与代码 Agent 的本质区别在于：动作作用于<strong>环境状态</strong>而非文本缓冲区，错一步不可轻易回滚；观察还是有损的（截图看不到隐藏状态与异步加载）。因此工程上必须显式处理三件事：动作后的<strong>等待与状态确认</strong>（页面加载完没有、点击是否生效）、<strong>循环检测</strong>（同一动作反复失败时跳出）、<strong>步数与预算控制</strong>。</p>
-<h3>2.2 输入表征三路线与 Set-of-Marks</h3>
+<h4>2.2 输入表征三路线与 Set-of-Marks</h4>
 <ol>
 <li><strong>纯视觉截图</strong>：只喂截图，模型直接输出屏幕坐标。通用性最强——桌面原生应用、Canvas、跨平台界面通吃，Claude computer-use 与 UI-TARS 均属此线；代价是定位完全依赖模型视觉能力，分辨率与 DPI 缩放都会引入误差。</li>
 <li><strong>DOM / accessibility tree</strong>：把网页 DOM 或系统无障碍树序列化给模型，动作以元素句柄下发（click(node_id)）。定位精确、可 headless、便于程序化校验；但只覆盖结构可得的界面——Canvas/WebGL、跨域 iframe、多数桌面应用无从下手；真实页面 DOM 动辄数万 token，必须裁剪，裁剪又丢信息；且渲染结果与 DOM 可能不一致（元素被遮挡、CSS 隐藏）。</li>
 <li><strong>混合 + Set-of-Marks（SoM）</strong>：用 AX tree/DOM 枚举可交互元素，在截图上叠加编号框，模型输出&quot;点击 [23]&quot;。本质是把 grounding 从<strong>坐标回归降维成编号分类</strong>，大幅降低定位错误；代价是标注管线本身会漏标/错标，密集界面上编号互相遮挡，动态刷新还会导致编号漂移（需每步重标注）。</li>
 </ol>
-<h3>2.3 Grounding 与评测体系：第一大失败来源，及 OSWorld 为何远低于 SWE-bench</h3>
+<h4>2.3 Grounding 与评测体系：第一大失败来源，及 OSWorld 为何远低于 SWE-bench</h4>
 <p><strong>Grounding</strong> 指把语义意图（&quot;点击提交按钮&quot;）映射到具体坐标/元素，是 GUI Agent 相对纯文本 Agent 的核心新增能力，也是<strong>实测中最主要的失败模式</strong>：规划正确但点偏、点中相邻元素、在专业软件里找不到图标。<strong>ScreenSpot</strong> 系列专测此能力；<strong>ScreenSpot-Pro</strong> 用高分辨率专业软件（IDE、CAD、办公套件）截图，初代通用多模态模型得分极低（普遍不足 20%，部分接近个位数），暴露了通用 VLM 视觉预训练与 UI 定位之间的显著 gap——这正是 OS-Atlas、ShowUI、UI-TARS 等专门做 GUI grounding 数据合成与预训练的动机。</p>
 <p>评测分两层：grounding 专项（ScreenSpot 系）与端到端综合。综合线上 <strong>OSWorld</strong>（真实 Ubuntu 桌面、369 个跨应用任务、程序化验收脚本判终态）是事实标准，其修订版 OSWorld-Verified 上前沿模型约 60%，人类约 72%；Web 侧有 WebArena / VisualWebArena（自托管可复现站点）与 WebVoyager（真实网站）；移动端 AndroidWorld。</p>
 <p><strong>高频追问：为什么 OSWorld 长期远低于同期 SWE-bench？</strong> 要点：① 动作空间连续且细粒度（坐标点击 vs 文本 patch），单步容错低；② grounding 误差随步数<strong>乘法累积</strong>——30 步任务即便单步 97% 正确，整体成功率也只剩约四成；③ 反馈稀疏：代码 Agent 每步都有编译器/测试这种<strong>廉价、高频、可靠的验证器</strong>，GUI Agent 只能再截一张图自我判断，验证本身就会出错；④ 部分可观察且状态难重置，错一步可能进入不可恢复分支。这道题本质考&quot;验证器质量决定 Agent 能力上限&quot;的判断（呼应第 8、13 章）。</p>
-<h3>2.4 模型产品主线、浏览器宿主化与移动端谱系</h3>
+<h4>2.4 模型产品主线、浏览器宿主化与移动端谱系</h4>
 <p><strong>主线时间轴</strong>：<strong>Claude computer-use</strong>（2024.10）——首个 API 化的通用 computer-use 能力，纯视觉+坐标输出，发布时 OSWorld 得分仅约 15%，标志意义大于即战力；<strong>OpenAI CUA / Operator</strong>（2025.1）——CUA 模型+托管浏览器产品，2025.7 并入 <strong>ChatGPT Agent</strong>（Operator 的操作能力 + Deep Research 的调研能力 + 终端，Agent 在虚拟机内自选工具）；<strong>UI-TARS</strong>（字节，2025 年初）——原生 GUI Agent 模型路线代表，不靠外挂框架，把感知、grounding、System-2 推理与纠错轨迹端到端训进模型；<strong>OS-Atlas / ShowUI / SeeClick</strong> 学术线聚焦开源 grounding 数据与轻量 GUI 专用模型。</p>
 <p><strong>2025H2：浏览器成为 Agent 宿主。</strong> <strong>ChatGPT Atlas</strong>（OpenAI 自研浏览器，2025.10）、<strong>Perplexity Comet</strong>、<strong>Claude for Chrome</strong>（扩展形态）、<strong>Gemini in Chrome</strong> 相继落地。格局意义：浏览器天然持有登录态、Cookie、支付信息与页面结构，Agent 寄生其中即可复用用户身份，免掉&quot;托管虚拟机+重新登录&quot;的摩擦，人还可随时接管——浏览器从&quot;被操控的对象&quot;升级为&quot;Agent 的运行时/宿主&quot;，入口之争从搜索框转移到浏览器本体。代价是 Agent 被直接推入用户真实凭证环境，攻击面同步放大。</p>
 <p><strong>移动端谱系</strong>：AppAgent（2023 底，LLM 自探索学习 App 操作）→ <strong>Mobile-Agent</strong>（阿里，多模态纯视觉定位）→ <strong>AutoGLM</strong>（智谱，2024.10，Phone Use 国内落地代表）。通道上：安卓走 <strong>Accessibility API</strong>（读控件树+代发事件，免 root）或 <strong>ADB</strong>（注入坐标事件，需调试授权）；iOS 系统封闭，基本只能厂商合作或云真机。移动端特有难点：大量自绘控件导致控件树质量参差、跨 App 跳转的上下文切换、系统权限弹窗打断。</p>
 <p><strong>安全要点</strong>：GUI Agent 天然凑齐 lethal trifecta 三要素——读网页=接触不可信内容，登录态=私有数据，操作浏览器=对外行动能力；页面内容注入（隐藏文字、评论区指令）是主攻击面。标准缓解四件套：<strong>隔离浏览器实例/独立 profile</strong>、<strong>凭证保险箱</strong>（密码本地填充，模型不见明文）、<strong>终态/不可逆动作人工确认</strong>（下单、发送、删除）、<strong>域名白名单</strong>。机制展开见第 9 章提示注入专题，此处不重复。</p>
-<h3>2.5 语音 Agent 两条技术路线：级联 vs 端到端</h3>
+<h4>2.5 语音 Agent 两条技术路线：级联 vs 端到端</h4>
 <p><strong>级联式（Cascaded）：ASR → LLM → TTS。</strong> 三个独立模型串成流水线：语音识别转文本、LLM 生成回复文本、语音合成播出。优点是<strong>每一环节可独立选型与替换</strong>；可控性强：文本中间态便于加 guardrail、敏感词过滤、日志审计，且能<strong>直接复用文本 Agent 的全部工具与提示词生态</strong>。代价有二：<strong>延迟逐环节叠加</strong>（每级都有自己的排队与首包时间），以及<strong>中间文本是有损压缩</strong>——语速、迟疑、哽咽、反讽、口音等副语言（paralinguistic）信息在转写时全部丢失：用户带着哭腔说的&quot;我没事&quot;和平静说的&quot;我没事&quot;，LLM 看到的是同一个字符串。</p>
 <p><strong>端到端（Speech-to-Speech）：</strong> 模型原生消费与产出音频 token，代表是 OpenAI Realtime API（WebSocket/WebRTC 两种接入）与 Google Gemini Live API。优点：延迟显著更低（省去两次模态转换）、保留并能输出语气情绪、对话节奏接近真人。弱点：<strong>可控性弱</strong>（没有文本中间态可拦截，越权的话说出去就是说出去了）、复杂工具调用与 policy following 能力普遍弱于同代文本模型、调试与评估工具链不成熟。</p>
 <p><strong>2026 年的工程共识：级联为主、端到端上量中。</strong> 可靠性敏感的 B 端场景（客服、外呼、催收）几乎全是级联；端到端在陪伴、口语陪练等自然度敏感、容错高的 C 端场景快速上量。面试标准答案是&quot;按场景选路线&quot;，不是二选一站队。</p>
-<h3>2.6 延迟工程：与人类 200ms 的轮转期望赛跑</h3>
+<h4>2.6 延迟工程：与人类 200ms 的轮转期望赛跑</h4>
 <p>人类对话的轮转（turn-taking）间隔期望在 <strong>200–300ms</strong> 量级，沉默超过 1 秒就会引发&quot;喂？还在吗&quot;。语音 Agent 的 voice-to-voice 延迟要拆成四段做预算：</p>
-<table><thead><tr><th>环节</th><th>典型量级</th><th>说明</th></tr></thead><tbody><tr><td>VAD 判停</td><td>200–700ms</td><td>静音等待阈值本身就是延迟：等得越久越确定用户说完了</td></tr><tr><td>ASR 尾包</td><td>100–300ms</td><td>流式识别收尾、产出最终转写</td></tr><tr><td>LLM TTFT</td><td>200–800ms</td><td>首 token 时间，随模型规模与上下文长度变化</td></tr><tr><td>TTS 首音频块</td><td>100–300ms</td><td>首句合成出第一块可播放音频</td></tr></tbody></table>
+<table>
+<thead>
+<tr>
+<th>环节</th>
+<th>典型量级</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>VAD 判停</td>
+<td>200–700ms</td>
+<td>静音等待阈值本身就是延迟：等得越久越确定用户说完了</td>
+</tr>
+<tr>
+<td>ASR 尾包</td>
+<td>100–300ms</td>
+<td>流式识别收尾、产出最终转写</td>
+</tr>
+<tr>
+<td>LLM TTFT</td>
+<td>200–800ms</td>
+<td>首 token 时间，随模型规模与上下文长度变化</td>
+</tr>
+<tr>
+<td>TTS 首音频块</td>
+<td>100–300ms</td>
+<td>首句合成出第一块可播放音频</td>
+</tr>
+</tbody>
+</table>
 <p>四段相加，级联式做到 <strong>1 秒内算优秀，1.5 秒以上明显卡顿</strong>（数字为量级参考）。核心优化是<strong>流式三级并行</strong>：① 流式 ASR 持续吐 partial transcript，不等说完；② LLM 拿 partial 就<strong>提前推理</strong>（投机执行）——判停确认后转写没变则直接复用，变了则丢弃重推；③ LLM 流式输出按标点<strong>分句送 TTS</strong>，首句一成型就开始合成播放，后续句子流水线跟上。三级并行把&quot;串行相加&quot;变成&quot;关键路径最长者&quot;，是延迟工程第一考点。第二考点是<strong>工具调用垫话（filler）</strong>：查订单要 2–3 秒 API 往返，冷场是致命的——判停后立即播一句&quot;好的，我帮您查一下&quot;（预制音频或小模型快速生成），把工具延迟藏进垫话与自然停顿里。</p>
-<h3>2.7 交互难点：判停、打断与全双工</h3>
+<h4>2.7 交互难点：判停、打断与全双工</h4>
 <p><strong>Turn detection（判停）是语音 Agent 第一难题。</strong> 能量级 VAD（如 Silero）只回答&quot;有没有人在说话&quot;，用&quot;静音超过 X ms&quot;判停：X 小了抢话（用户只是停顿思考），X 大了拖延迟。<strong>语义级判停</strong>用轻量模型看转写内容判断&quot;这句话在语义上完整了吗&quot;（&quot;我想查一下我的……&quot;显然没完），据此<strong>动态调整静音等待</strong>——语义完整则缩短、不完整则延长。LiveKit、Pipecat 等框架均已内置语义判停模型。</p>
 <p><strong>Barge-in（用户打断）是三连动作</strong>：① 立即停 TTS 并<strong>冲掉客户端音频缓冲</strong>（不冲缓冲，已下发的音频会继续播）；② 取消进行中的 LLM 生成流；③ <strong>状态回滚</strong>——对话历史必须截断到用户<strong>实际听到</strong>的位置，否则 Agent 以为整段话已送达，后续对话建立在用户没听到的内容上。第三步最易被忽略，靠&quot;已播放时长 ↔ 文本位置&quot;对齐截断（OpenAI Realtime API 为此提供 truncate 语义）。另需区分真打断与 backchannel（&quot;嗯&quot;&quot;好的&quot;）——短促、低能量、转写为语气词的不应触发打断。</p>
 <p><strong>全双工（full-duplex）是终局形态</strong>：模型同时听与说、能发附和声、被打断即时接话，代表是 Kyutai 的 Moshi 线（双音频流 + &quot;内心独白&quot;文本流，理论延迟低至 200ms 量级）。但能力现实骨感：<strong>τ³-bench（见第 8 章）显示同任务语音成绩仅约文本的 30–45%</strong>——模态叠加 + 实时交互是当前明确的能力洼地，&quot;上语音会让 Agent 显著变笨&quot;是可直接引用的定量弹药。</p>
 <p><strong>框架与生态速览</strong>：开源编排层两大主流是 <strong>Pipecat</strong>（pipeline 抽象、供应商插件最全）与 <strong>LiveKit Agents</strong>（WebRTC 基础设施出身，自带边缘网络与语义判停）；托管层 <strong>Vapi / Retell AI</strong> 类平台把编排、电话接入、供应商聚合打包成 API，快速上线但深度定制受限。电话场景一句话：<strong>PSTN 是 8kHz 窄带音频（G.711），ASR 准确率显著低于 16kHz 宽带</strong>，接入通常走 Twilio Media Streams（WebSocket 双向音频流）。</p>
-<h3>2.8 端侧 Agent：三重红利与一个根本约束</h3>
+<h4>2.8 端侧 Agent：三重红利与一个根本约束</h4>
 <p>端侧 Agent 指模型推理与决策主要发生在用户设备（手机、PC、车机、可穿戴）本地的 Agent 形态。价值主张可概括为三重红利：<strong>隐私</strong>——屏幕内容、输入记录、相册、健康数据等最敏感的个人上下文不出设备，天然规避数据合规与传输风险，这也是唯一&quot;云端做不到、端侧才有&quot;的能力；<strong>延迟与可用性</strong>——没有网络往返，首响应由本地 prefill 决定，弱网/离线场景（车载、出行、隐私敏感行业内网）依然可用；<strong>成本</strong>——算力来自用户设备，服务方的边际推理成本趋近于零，这对日活千万级的助手类产品是数量级的成本结构差异。</p>
 <p>但所有红利都建立在一个根本约束之上：<strong>能力差距</strong>。端侧可跑的模型与云端旗舰相差约两个数量级参数量，复杂推理、长程规划、开放域知识都明显不及。因此端侧 Agent 的设计核心不是&quot;把云端搬下来&quot;，而是<strong>在能力受限的前提下重新划分任务边界</strong>——这决定了后面所有架构选择。</p>
-<h3>2.9 端侧推理栈与内存带宽墙</h3>
+<h4>2.9 端侧推理栈与内存带宽墙</h4>
 <p>主流端侧推理框架：<strong>llama.cpp</strong>（GGUF 格式，CPU/GPU 通吃、生态最广）、<strong>Apple MLX</strong>（面向 Apple Silicon 统一内存架构）、<strong>ExecuTorch</strong>（PyTorch 官方移动端方案）、<strong>MNN</strong>（阿里，国内移动端广泛落地）、<strong>ONNX Runtime</strong>（跨平台通用）。硬件加速单元是 NPU——Apple ANE、高通 Hexagon 等。</p>
 <p>面试题眼在于：<strong>端侧 LLM 的瓶颈通常不是算力而是内存带宽</strong>。decode 阶段每生成一个 token 都要把全部权重从内存读一遍（memory-bound，与第 10 章 Prefill/Decode 分析同理），而手机 LPDDR 带宽只有数十 GB/s 量级，与数据中心 GPU 的数 TB/s 相差百倍——NPU 标称的几十 TOPS 峰值算力主要惠及 compute-bound 的 prefill 和视觉任务，救不了 decode。由此推出两个默认工程形态：<strong>4-bit 量化是端侧默认</strong>（3B 模型 4-bit 约 1.5–2GB，权重变小既省内存也等比减少每 token 的读带宽，直接提升生成速度）；<strong>KV cache 与权重、操作系统、其他 App 争抢同一块 RAM</strong> 是移动端特有矛盾——手机内存通常 8–16GB 且无 swap 余地，长上下文的 KV cache 很快挤爆预算，所以端侧普遍上下文短、并配合 KV 量化 / 滑动窗口注意力等手段压缩。</p>
-<h3>2.10 端云协同：Apple Intelligence 分层与路由同构</h3>
+<h4>2.10 端云协同：Apple Intelligence 分层与路由同构</h4>
 <p>端侧主力是 <strong>3B 上下的小模型</strong>：Qwen 系列小尺寸、微软 Phi-mini、Google Gemma 端侧系等，通常针对指令跟随与函数调用强化，牺牲开放域知识换取窄任务可用性。</p>
 <p>端云协同的标杆设计是 <strong>Apple Intelligence 的分层架构</strong>：约 3B 的端侧模型处理大多数请求；超出端侧能力的任务升级到 <strong>Private Cloud Compute（PCC）</strong>——运行在 Apple 自研芯片服务器上的云端大模型，其关键不是&quot;更大&quot;，而是把端侧的隐私承诺延伸到云端：无状态计算、不留存用户数据、软件镜像可供安全研究者审计验证；系统<strong>按任务复杂度自动路由</strong>端/云。PCC 回答了&quot;升云是否等于放弃隐私&quot;这一质疑，是讨论端云协同时的必引案例。</p>
 <p>端云协同的一般模式：<strong>简单意图端侧秒回，复杂任务升云</strong>——路由信号包括任务复杂度、隐私敏感度、网络状态与电量。这与第 10 章的模型路由/级联（cascade routing）完全同构，只是路由边界从&quot;便宜模型 vs 贵模型&quot;变成&quot;设备 vs 云&quot;，且多了隐私这一路由维度。它也是第 11 章 NVIDIA《Small Language Models are the Future of Agentic AI》立场文的自然落地：agent 子任务窄而重复，SLM 承担执行、LLM 只留规划兜底——端云分层就是该异构架构的物理实现。</p>
-<h3>2.11 手机 GUI Agent 的权限通道：Accessibility vs App Intents vs 纯视觉</h3>
+<h4>2.11 手机 GUI Agent 的权限通道：Accessibility vs App Intents vs 纯视觉</h4>
 <p>手机 GUI Agent 有一条云端没有的独特通道：<strong>系统级权限</strong>。Android 的 Accessibility（无障碍服务）可以读取屏幕控件树并注入点击/输入，是&quot;看屏操作&quot;类 agent 的主流实现；Apple 的 <strong>App Intents</strong> 则是声明式方案——App 向系统注册结构化动作，agent 通过语义调用而非模拟点击完成任务，更可靠也更受控。相比纯视觉方案（截屏 + 坐标点击），系统通道拿到的是结构化状态，但依赖平台开放程度与 App 生态配合——<strong>权限与生态是端侧 GUI agent 比算力更硬的约束</strong>：能力上限由 OS 厂商与 App 是否暴露接口决定，这一点与 2.2 节的表征三路线在移动端交汇。</p>
-<h2 id="ch14-s3">三、面试高频考点</h2>
-<table><thead><tr><th>考点</th><th>高频度</th><th>一句话题眼</th></tr></thead><tbody><tr><td>GUI 输入表征三路线（截图 vs DOM vs SoM）</td><td>⭐⭐⭐</td><td>通用性 vs 精确性；SoM 把坐标回归降维成编号分类</td></tr><tr><td>Grounding 为何是第一大失败来源</td><td>⭐⭐⭐</td><td>语义→坐标映射；ScreenSpot-Pro 暴露专业软件 gap</td></tr><tr><td>OSWorld 为何远低于 SWE-bench</td><td>⭐⭐⭐</td><td>连续动作空间／误差乘法累积／无廉价验证器／反馈稀疏</td></tr><tr><td>computer-use 发展脉络与浏览器宿主化</td><td>⭐⭐</td><td>2024.10 Claude → 2025.1 Operator → 2025.7 ChatGPT Agent；Atlas/Comet 复用登录态、攻击面放大</td></tr><tr><td>级联 vs 端到端语音路线选型</td><td>⭐⭐⭐</td><td>可控性/工具生态 vs 延迟/自然度，按场景选而非站队</td></tr><tr><td>voice-to-voice 延迟预算与流式三级并行</td><td>⭐⭐⭐</td><td>四段预算对标人类 200–300ms；partial ASR→投机推理→TTS 分句，串行加法变关键路径</td></tr><tr><td>barge-in 三连与语义判停</td><td>⭐⭐⭐</td><td>停播冲缓冲、断生成、历史截断到实听位置；&quot;说完了吗&quot;是语义问题不是音量问题</td></tr><tr><td>τ³-bench 语音能力洼地</td><td>⭐⭐</td><td>语音成绩约文本 30–45%（第 8 章），模态叠加+实时交互是短板</td></tr><tr><td>端侧三重红利与能力差距约束</td><td>⭐⭐⭐</td><td>&quot;什么场景值得做端侧&quot;的标准框架</td></tr><tr><td>端侧 decode 内存带宽墙与 4-bit 量化</td><td>⭐⭐⭐</td><td>memory-bound，NPU TOPS 救不了 decode；量化双重收益</td></tr><tr><td>端云路由与 Apple PCC</td><td>⭐⭐</td><td>与第 10 章模型级联同构，多了隐私/网络/电量维度；升云不等于弃隐私</td></tr><tr><td>Accessibility / App Intents / 纯视觉；GUI 安全四件套</td><td>⭐⭐</td><td>系统通道 vs 模拟点击；隔离实例/凭证保险箱/终态确认/域白名单（第 9 章）</td></tr></tbody></table>
-<h2 id="ch14-s4">四、经典面试题与参考答案</h2>
-<h3>题 1（GUI·架构选型 ⭐⭐⭐）：做一个 Web 自动化 Agent，DOM 方案和纯视觉方案怎么选？如果做混合架构，你会怎么设计？</h3>
+<hr />
+<h3 id="ch14-s3">三、面试高频考点</h3>
+<table>
+<thead>
+<tr>
+<th>考点</th>
+<th>高频度</th>
+<th>一句话题眼</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>GUI 输入表征三路线（截图 vs DOM vs SoM）</td>
+<td>⭐⭐⭐</td>
+<td>通用性 vs 精确性；SoM 把坐标回归降维成编号分类</td>
+</tr>
+<tr>
+<td>Grounding 为何是第一大失败来源</td>
+<td>⭐⭐⭐</td>
+<td>语义→坐标映射；ScreenSpot-Pro 暴露专业软件 gap</td>
+</tr>
+<tr>
+<td>OSWorld 为何远低于 SWE-bench</td>
+<td>⭐⭐⭐</td>
+<td>连续动作空间／误差乘法累积／无廉价验证器／反馈稀疏</td>
+</tr>
+<tr>
+<td>computer-use 发展脉络与浏览器宿主化</td>
+<td>⭐⭐</td>
+<td>2024.10 Claude → 2025.1 Operator → 2025.7 ChatGPT Agent；Atlas/Comet 复用登录态、攻击面放大</td>
+</tr>
+<tr>
+<td>级联 vs 端到端语音路线选型</td>
+<td>⭐⭐⭐</td>
+<td>可控性/工具生态 vs 延迟/自然度，按场景选而非站队</td>
+</tr>
+<tr>
+<td>voice-to-voice 延迟预算与流式三级并行</td>
+<td>⭐⭐⭐</td>
+<td>四段预算对标人类 200–300ms；partial ASR→投机推理→TTS 分句，串行加法变关键路径</td>
+</tr>
+<tr>
+<td>barge-in 三连与语义判停</td>
+<td>⭐⭐⭐</td>
+<td>停播冲缓冲、断生成、历史截断到实听位置；&quot;说完了吗&quot;是语义问题不是音量问题</td>
+</tr>
+<tr>
+<td>τ³-bench 语音能力洼地</td>
+<td>⭐⭐</td>
+<td>语音成绩约文本 30–45%（第 8 章），模态叠加+实时交互是短板</td>
+</tr>
+<tr>
+<td>端侧三重红利与能力差距约束</td>
+<td>⭐⭐⭐</td>
+<td>&quot;什么场景值得做端侧&quot;的标准框架</td>
+</tr>
+<tr>
+<td>端侧 decode 内存带宽墙与 4-bit 量化</td>
+<td>⭐⭐⭐</td>
+<td>memory-bound，NPU TOPS 救不了 decode；量化双重收益</td>
+</tr>
+<tr>
+<td>端云路由与 Apple PCC</td>
+<td>⭐⭐</td>
+<td>与第 10 章模型级联同构，多了隐私/网络/电量维度；升云不等于弃隐私</td>
+</tr>
+<tr>
+<td>Accessibility / App Intents / 纯视觉；GUI 安全四件套</td>
+<td>⭐⭐</td>
+<td>系统通道 vs 模拟点击；隔离实例/凭证保险箱/终态确认/域白名单（第 9 章）</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h3 id="ch14-s4">四、经典面试题与参考答案</h3>
+<h4>题 1（GUI·架构选型 ⭐⭐⭐）：做一个 Web 自动化 Agent，DOM 方案和纯视觉方案怎么选？如果做混合架构，你会怎么设计？</h4>
 <p>参考答案要点：</p>
 <ul>
 <li>先给选型维度：目标环境（只做 Web→DOM 可行；要覆盖桌面/跨应用→必须有视觉）、定位精度要求、页面是否反爬/DOM 混淆、是否需要 headless、token 成本。</li>
@@ -11828,14 +11932,14 @@ root.querySelectorAll('.hv-tab').forEach(function(tab){tab.addEventListener('cli
 <li>混合设计（分层作答是加分点）：<strong>感知层</strong>用 AX tree 枚举可交互元素并在截图上叠 SoM 编号；<strong>动作层</strong>三级回退：元素句柄 → SoM 编号 → 原始坐标（覆盖 Canvas 等不可枚举区域）；<strong>验证层</strong>双通道：DOM/URL 断言 + 截图视觉复核，两者矛盾时以渲染结果为准。</li>
 <li>追问弹药：SoM 的失效场景（密集表格、编号遮挡、动态刷新需每步重标注）；为什么验证层必须独立于动作层（同源误差会互相掩盖）。</li>
 </ul>
-<h3>题 2（GUI·机制推理 ⭐⭐⭐）：为什么说&quot;grounding 误差累积 + 缺少廉价验证器&quot;决定了 GUI Agent 的成功率天花板？工程上如何补验证器？</h3>
+<h4>题 2（GUI·机制推理 ⭐⭐⭐）：为什么说&quot;grounding 误差累积 + 缺少廉价验证器&quot;决定了 GUI Agent 的成功率天花板？工程上如何补验证器？</h4>
 <p>参考答案要点：</p>
 <ul>
 <li>数学直觉：成功率≈单步正确率^步数，30 步任务单步 97% 也只剩约 40%，长任务对单步精度极度敏感；而 GUI 没有编译器/单测这种每步可跑、近零成本、判定可靠的验证器，误检会让 Agent 在错误分支上继续消耗预算。</li>
 <li>工程补法（给出谱系）：① DOM/URL/文件系统断言等程序化检查；② 旁路核对——操作完成后用只读 API 查询终态（如下单后查订单接口），不信任界面自报；③ 视觉 judge 模型做截图复核（成本高，用在关键节点）；④ 不可逆动作前人工确认。</li>
 <li>结构性缓解：把长任务切成短的、各自带验收条件的子目标（milestone 化），让误差在段内清零而非全程累积——OSWorld 用终态验收脚本而非过程匹配来判分，工程上应模仿同一思想（与第 8 章终态评估、第 13 章验证器分层一脉相承）。</li>
 </ul>
-<h3>题 3（语音·基础→进阶 ⭐⭐⭐）：级联式语音 Agent 的延迟是怎么叠加起来的？给出至少三个把 voice-to-voice 延迟压进 1 秒的手段。</h3>
+<h4>题 3（语音·基础→进阶 ⭐⭐⭐）：级联式语音 Agent 的延迟是怎么叠加起来的？给出至少三个把 voice-to-voice 延迟压进 1 秒的手段。</h4>
 <p>参考答案要点：</p>
 <ul>
 <li>先拆预算：VAD 判停（200–700ms，静音等待本身是延迟）+ ASR 尾包（100–300ms）+ LLM TTFT（200–800ms）+ TTS 首音频块（100–300ms），四段串行相加，另有网络与音频缓冲开销。</li>
@@ -11844,7 +11948,7 @@ root.querySelectorAll('.hv-tab').forEach(function(tab){tab.addEventListener('cli
 <li>手段三：<strong>工具调用垫话</strong>把 2–3 秒的 API 往返藏进&quot;我帮您查一下&quot;里；TTFT 侧可用 prompt 前缀缓存、就近部署/自托管推理压首包。</li>
 <li>加分：传输层选 WebRTC（UDP、抗抖动）优于裸 WebSocket；报延迟要报 p95 而非均值，打断响应时间单独立 SLO。</li>
 </ul>
-<h3>题 4（语音·系统设计 ⭐⭐⭐）：设计一个电话渠道的语音客服坐席 Agent（查订单、改地址、退款申请），要求给出延迟预算、打断处理、低置信度确认、静音兜底、转人工与合规方案。</h3>
+<h4>题 4（语音·系统设计 ⭐⭐⭐）：设计一个电话渠道的语音客服坐席 Agent（查订单、改地址、退款申请），要求给出延迟预算、打断处理、低置信度确认、静音兜底、转人工与合规方案。</h4>
 <p>参考答案要点：</p>
 <p><strong>（1）路线与架构选型</strong></p>
 <ul>
@@ -11852,7 +11956,37 @@ root.querySelectorAll('.hv-tab').forEach(function(tab){tab.addEventListener('cli
 <li>链路：Twilio Media Streams（8kHz G.711，WebSocket 双向音频）→ 流式 ASR（配电话窄带模型 + 业务热词表）→ LLM（function calling 接工单/订单系统）→ 流式 TTS 分句回传。编排用 Pipecat 或 LiveKit Agents，会话状态外置以支持断线重连。</li>
 </ul>
 <p><strong>（2）延迟预算表（voice-to-voice p95 目标 ≤ 1.2s，量级参考）</strong></p>
-<table><thead><tr><th>环节</th><th>预算</th><th>保障手段</th></tr></thead><tbody><tr><td>VAD/判停</td><td>≤ 500ms</td><td>语义判停动态阈值：语义完整 300ms、不完整放宽到 800ms</td></tr><tr><td>ASR 尾包</td><td>≤ 200ms</td><td>流式识别 + partial 提前送下游</td></tr><tr><td>LLM TTFT</td><td>≤ 400ms</td><td>前缀缓存、精简系统提示、partial 投机推理</td></tr><tr><td>TTS 首块</td><td>≤ 200ms</td><td>分句合成、常用话术预合成缓存</td></tr></tbody></table>
+<table>
+<thead>
+<tr>
+<th>环节</th>
+<th>预算</th>
+<th>保障手段</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>VAD/判停</td>
+<td>≤ 500ms</td>
+<td>语义判停动态阈值：语义完整 300ms、不完整放宽到 800ms</td>
+</tr>
+<tr>
+<td>ASR 尾包</td>
+<td>≤ 200ms</td>
+<td>流式识别 + partial 提前送下游</td>
+</tr>
+<tr>
+<td>LLM TTFT</td>
+<td>≤ 400ms</td>
+<td>前缀缓存、精简系统提示、partial 投机推理</td>
+</tr>
+<tr>
+<td>TTS 首块</td>
+<td>≤ 200ms</td>
+<td>分句合成、常用话术预合成缓存</td>
+</tr>
+</tbody>
+</table>
 <ul>
 <li>工具调用不占本预算：判停后先出垫话，工具异步跑；超 3 秒追加进度播报（&quot;还在查，请稍等&quot;）。垫话用多条预制音频轮换避免机械感，且垫话本身可被打断。</li>
 </ul>
@@ -11885,20 +12019,21 @@ root.querySelectorAll('.hv-tab').forEach(function(tab){tab.addEventListener('cli
 <ul>
 <li>任务完成率按<strong>后端 DB 终态</strong>判定而非嘴上说了什么（τ-bench 思路，呼应第 8 章）；SLO 上报 voice-to-voice p95、打断响应时间、误打断率、转人工率、单通成本；坏例排查靠&quot;录音 + 转写 + Agent trace&quot;三方对齐回放；上线走影子模式 → 小流量灰度。</li>
 </ul>
-<h3>题 5（端侧·开放题 ⭐⭐⭐）：为什么端侧 Agent 难做？什么场景值得做？</h3>
+<h4>题 5（端侧·开放题 ⭐⭐⭐）：为什么端侧 Agent 难做？什么场景值得做？</h4>
 <p>参考答案要点：</p>
 <ul>
 <li>先立框架：三重约束 vs 三重红利。<strong>约束</strong>：(a) 算力——设备内存与带宽限制模型在 3B 量级 + 4-bit 量化，与云端旗舰有约两个数量级参数差距，复杂规划与长任务能力不足；(b) 权限——agent 要操作设备必须走系统通道（Accessibility/App Intents），受平台管控，能力上限由 OS 厂商决定；(c) 生态——App 是否暴露结构化接口、跨 App 任务链路是否打通，非单一厂商可控。<strong>红利</strong>：隐私（数据不出设备，云端无法替代）、延迟/离线可用、边际成本为零。</li>
 <li>值得做的场景 = 红利显著且约束可容忍：任务窄而高频（输入法建议、通知摘要、语音指令解析——正合第 11 章 NVIDIA SLM 立场文&quot;窄而重复的子任务交给 SLM&quot;）；数据高度敏感（屏幕/健康/输入内容）；离线刚需（车载）；调用量巨大到 API 成本不可承受。</li>
 <li>加分收尾：现实最优解不是纯端侧而是<strong>端云分层</strong>——端侧秒回简单意图、复杂任务升云（与第 10 章模型路由同构），并举 Apple Intelligence + PCC 说明升云仍可保隐私。</li>
 </ul>
-<h3>题 6（端侧·机制推理 ⭐⭐⭐）：手机 SoC 宣称有几十 TOPS 的 NPU，为什么端侧 LLM 的生成速度依然慢？如何优化？</h3>
+<h4>题 6（端侧·机制推理 ⭐⭐⭐）：手机 SoC 宣称有几十 TOPS 的 NPU，为什么端侧 LLM 的生成速度依然慢？如何优化？</h4>
 <p>参考答案要点：</p>
 <ul>
 <li>机制：decode 每 token 需读取全部权重，算术强度极低，是 memory-bound；瓶颈是 LPDDR 数十 GB/s 量级的带宽而非 NPU 算力。粗略估算：生成速度上限 ≈ 内存带宽 ÷ 权重字节数，与 TOPS 无关。NPU 高算力主要加速 compute-bound 的 prefill（缩短首响应）与多模态编码。</li>
 <li>优化方向即&quot;减少每 token 读的字节数或摊薄读取&quot;：更低比特量化（4-bit 为默认，权重变小直接线性提升 decode 上限）；KV cache 量化与滑动窗口控制内存占用；投机解码（小 draft 模型起草、一次验证多 token，摊薄权重读取次数）；以及架构层面选更小模型 + 端云路由，而不是硬扛大模型。</li>
 </ul>
-<h2 id="ch14-s5">五、易错点·反直觉点</h2>
+<hr />
+<h3 id="ch14-s5">五、易错点·反直觉点</h3>
 <ol>
 <li><strong>把&quot;DOM 方案省 token&quot;当优点</strong>：真实页面 DOM 常达数万 token，往往比一张截图更贵；正确表述是&quot;定位精确、可程序化校验，但需要激进裁剪且裁剪丢信息&quot;。</li>
 <li><strong>认为 SoM 已彻底解决 grounding</strong>：SoM 只覆盖结构可枚举的元素，Canvas、自绘控件、桌面应用仍需回退坐标回归；标注管线的漏标率就是方案上限，动态页面还有编号漂移问题。</li>
@@ -11910,7 +12045,8 @@ root.querySelectorAll('.hv-tab').forEach(function(tab){tab.addEventListener('cli
 <li><strong>只算权重、不算 KV cache 的内存账</strong>：手机 RAM 由系统、前台 App、模型权重、KV cache 共享，长上下文的 KV cache 增长很快让&quot;模型装得下&quot;变成&quot;对话跑不动&quot;——端侧内存预算必须按&quot;权重 + KV + 系统余量&quot;整体核算。</li>
 <li><strong>把&quot;升云&quot;简单等同于&quot;放弃隐私&quot;</strong>：Apple PCC 证明端云协同可以带可验证的隐私保证（无状态、可审计）；反过来也不能把 PCC 说成普通云 API。答题时应把隐私作为路由的连续维度而非端/云二分。</li>
 </ol>
-<h2 id="ch14-s6">六、推荐资源</h2>
+<hr />
+<h3 id="ch14-s6">六、推荐资源</h3>
 <ol>
 <li><strong><a href="https://arxiv.org/abs/2404.07972">OSWorld: Benchmarking Multimodal Agents for Open-Ended Tasks in Real Computer Environments</a></strong>（2024）：GUI Agent 端到端评测的事实标准——真实 Ubuntu 桌面、程序化终态验收；理解&quot;验证器决定天花板&quot;与 OSWorld vs SWE-bench 差距归因的一手材料。</li>
 <li><strong><a href="https://arxiv.org/abs/2501.12326">UI-TARS: Pioneering Automated GUI Interaction with Native Agents</a></strong>（字节，2025）：原生 GUI Agent 模型路线的代表论文，把感知、grounding、System-2 推理与纠错轨迹端到端训进模型，读它可打通&quot;外挂框架 vs 原生模型&quot;之争。</li>

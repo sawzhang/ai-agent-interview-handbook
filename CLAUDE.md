@@ -32,7 +32,17 @@ python3 labs/lab09_real_llm_react.py     # 真实 tool-use ReAct
 
 1. **`chapters/NN-章名.md`** — 按章拆分的 Markdown（00-开篇导读 + 01~14 章），精读用的规范来源。
 2. **`AI-Agent面试学习手册.md`** — 单文件全书，是 chapters/ 的拼接（章标题格式 `# 第 N 章 · 标题`），供全文检索/导入笔记软件。
-3. **`index.html` 的章节 HTML** — 手工维护的单文件学习网站（约 2.3MB，全部 CSS/JS 内联、无外部依赖）。每章是 `<section id="chN" class="chapter">`，含 `minitoc` 本章导航，小节锚点为 `#chN-sM`。
+3. **`index.html` 的章节 HTML** — 单文件学习网站（约 2.3MB，全部 CSS/JS 内联、无外部依赖）。每章是 `<section id="chN" class="chapter">`，含 `minitoc` 本章导航，小节锚点为 `#chN-sM`。**不要手工同步**，用：
+
+```bash
+python3 build_chapter_html.py --check          # 全部章节比对内容，不一致则 exit 1
+python3 build_chapter_html.py --write ch4      # 用 markdown 重新生成第 4 章 HTML
+python3 build_chapter_html.py --diff ch4       # 只看差异，不写文件
+python3 build_chapter_html.py --check --strict # 逐字节口径（默认只比去标签后的文本）
+python3 build_chapter_html.py --lint           # 体检：找出标准 markdown 下不渲染的粗体
+```
+
+`--check` 默认比**内容**而非字节：`index.html` 的既有 HTML 出自另一个渲染器，在列表续行、内联空白等处与本脚本有稳定的风格差异，逐字节比对会被这些无害差异淹没，反而盖住真正的失同步（第 11 章的 `#### 2.13` 标题就曾只存在于 HTML，靠内容口径才查出来）。每章 `<section>` 开头的 ch-label / h1 / minitoc 是手工维护的，脚本不碰。**第 13 章含只存在于网站的交互式分层图（`<div id="hviz">`），已在脚本里登记为跳过，不可 `--write` 覆盖。**
 4. **`index.html` 内联脚本里的搜索索引** — 最后一个 `<script>` 块开头的 `const SECTIONS=[{"id":"ch1","title":...,"text":...}]`，是每章内容的**小写纯文本副本**（预构建索引）。只改章节 HTML 而不更新对应 SECTIONS 条目，站内搜索会返回过期结果。**不要手改**，改完章节 HTML 后跑：
 
 ```bash
@@ -44,7 +54,7 @@ python3 build_search_index.py --check   # 索引过期则 exit 1（可做提交�
 
 ### 操作提示
 
-- `index.html` 超过 2MB，**不要整读**；用 grep 定位 `id="chN"` 或小节锚点后做局部编辑。
+- `index.html` 超过 2MB，**不要整读**；查看用 grep 定位 `id="chN"` 或小节锚点，**修改一律走 `build_chapter_html.py --write chN`**，不要手工编辑章节 HTML。
 - 每章固定 6 模块结构（第 11 章为 7 节）：知识图谱 → 核心概念精讲 → 面试高频考点（⭐分级）→ 经典面试题与参考答案 → 易错点·反直觉点 → 推荐资源。新增章节/小节须沿用此结构。
 - 站点特性依赖现有 DOM 约定：侧边栏导航、搜索、暗黑主题（`[data-theme="dark"]` + localStorage）、打印分页（`.chapter{page-break-before:always}`）。改 HTML 结构时保持 class/id 约定不变。
 
@@ -62,4 +72,4 @@ python3 build_search_index.py --check   # 索引过期则 exit 1（可做提交�
 
 ## 许可
 
-见 `LICENSE`：文字内容 CC BY-NC-SA 4.0，代码（`labs/*.py`、`serve.py`、`build_search_index.py`）MIT。新增内容默认沿用对应许可。
+见 `LICENSE`：文字内容 CC BY-NC-SA 4.0，代码（`labs/*.py`、`serve.py`、`build_search_index.py`、`build_chapter_html.py`）MIT。新增内容默认沿用对应许可。
