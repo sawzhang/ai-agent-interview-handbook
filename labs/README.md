@@ -1,6 +1,6 @@
 # 🧪 AI Agent 动手实验（Labs）
 
-> 8 个**可直接运行**的实验，对应核心知识域。**纯 Python 标准库 + Mock LLM，无需安装任何依赖、无需 API key**。
+> 10 个**可直接运行**的实验，对应核心知识域。**纯 Python 标准库 + Mock LLM，无需安装任何依赖、无需 API key**。
 > 每个实验都内置 assert 自检，运行成功会打印 `✅ 自检通过`（已全部独立实测通过）。
 
 ## 运行方式
@@ -24,6 +24,7 @@ for f in lab*.py; do python3 "$f"; done      # 或一次全跑
 | 07 | `lab07_multi_agent.py` | 第6章 Multi-Agent 系统 | orchestrator「分解→按依赖分派→聚合」三段式编排、带角色的 worker 与共享黑板的信息流 |
 | 08 | `lab08_cache_routing.py` | 第10章 工程化与生产部署 | 词袋向量+余弦相似度的语义缓存，与关键词/长度启发式的大小模型路由，实测成本下降 70%+ 的权衡 |
 | 09 | `lab09_real_llm_react.py` | 第3/5/10章 综合 | **接入真实大模型**跑原生 tool-use ReAct 循环（`get_weather`→`calculator` 自主调用）；无 Key 时自动降级为同构 Mock，两种模式共用同一循环代码 |
+| 10 | `lab10_adaptive_rag.py` | 第4章 Memory 与 RAG | 拒答驱动的**几何级数扩容**（1→2→4→8）：把"自适应 top-K 比固定 K 便宜"算成数字（上下文省 53%），并用一个"过度自信"的 Mock 复现**校准失效导致机制静默退化**的陷阱 |
 
 ## 🔌 接入真实 LLM（阿里云百炼 Token Plan）
 

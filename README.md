@@ -1,7 +1,7 @@
 # 📘 AI Agent 面试深度学习手册
 
 > 面向资深工程师 / 面试候选人的 **AI Agent 完整知识体系 + 备考作战手册**。
-> 12 大知识域 + Harness 元框架 + 应用形态专题 · 56 万字 · 结合 2024–2026 最新资料 · 含 9 个可运行动手实验 · 经多智能体对抗性评审与修订。
+> 12 大知识域 + Harness 元框架 + 应用形态专题 · 56 万字 · 结合 2024–2026 最新资料 · 含 10 个可运行动手实验 · 经多智能体对抗性评审与修订。
 >
 > **内容基准日：2026-08** —— 技术与法规陈述均以此为时间基准，引用前请自行核实原始出处。
 
@@ -18,12 +18,12 @@ agent-interview/
 ├── chapters/                      📂 按章拆分的 Markdown（15 个文件，便于精读）
 │   ├── 00-开篇导读.md               （知识全景图 / 面试考察地图 / 4 周学习路线 / 答题框架）
 │   └── 01 ~ 14 章 …
-├── labs/                          🧪 动手实验（9 个，纯标准库可运行）
+├── labs/                          🧪 动手实验（10 个，纯标准库可运行）
 │   ├── README.md
 │   ├── llm_client.py              （阿里云百炼真实 LLM 客户端，零依赖）
-│   └── lab01 ~ lab09 …
+│   └── lab01 ~ lab10 …
 └── flashcards/                    🎴 抽认卡
-    ├── anki_cards.txt             （181 张，制表符分隔，可直接导入 Anki）
+    ├── anki_cards.txt             （186 张，制表符分隔，可直接导入 Anki）
     └── qa_review.md               （Q&A 复习册）
 ```
 
@@ -54,10 +54,11 @@ agent-interview/
 
 ## 🧪 动手实验（labs/）
 
-9 个**纯标准库、零依赖、可直接运行**的实验，内置 assert 自检：
+10 个**纯标准库、零依赖、可直接运行**的实验，内置 assert 自检：
 
 ReAct 循环 · Function Calling 调度器 · RAG 全链路 · Memory 系统 · LLM-as-Judge 评估 ·
-Prompt Injection 攻防 · 多智能体编排 · 语义缓存与模型路由 · **真实 LLM tool-use ReAct（接入阿里云百炼）**。
+Prompt Injection 攻防 · 多智能体编排 · 语义缓存与模型路由 · **真实 LLM tool-use ReAct（接入阿里云百炼）** ·
+自适应 RAG 的几何级数扩容与成本账。
 
 ```bash
 cd labs
