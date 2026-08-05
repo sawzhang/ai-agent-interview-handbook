@@ -50,7 +50,7 @@ python3 build_search_index.py          # 从章节 HTML 重建 SECTIONS
 python3 build_search_index.py --check   # 索引过期则 exit 1（可做提交前检查）
 ```
 
-派生内容视改动范围联动更新：`考前速记表.md`（浓缩考点）、`模拟面试追问链.md`（10 条追问链）、`flashcards/`（anki_cards.txt 为制表符分隔的 Anki Basic 卡片，格式 `[章节] 问题<TAB>答案`，答案内含 HTML 标签与实体）。
+派生内容视改动范围联动更新：`考前速记表.md`（浓缩考点）、`模拟面试追问链.md`（11 个主题、34 轮追问）、`flashcards/`（anki_cards.txt 为制表符分隔的 Anki Basic 卡片，格式 `[章节] 问题<TAB>答案`，答案内含 HTML 标签与实体）。
 
 ### 操作提示
 

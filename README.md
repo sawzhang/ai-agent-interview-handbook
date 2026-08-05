@@ -23,7 +23,7 @@ agent-interview/
 │   ├── llm_client.py              （阿里云百炼真实 LLM 客户端，零依赖）
 │   └── lab01 ~ lab10 …
 └── flashcards/                    🎴 抽认卡
-    ├── anki_cards.txt             （186 张，制表符分隔，可直接导入 Anki）
+    ├── anki_cards.txt             （187 张，制表符分隔，可直接导入 Anki）
     └── qa_review.md               （Q&A 复习册）
 ```
 
