@@ -34,6 +34,11 @@ ch0 与 ch14 的现有 HTML 不符合上述约定：标题层级整体高一级�
 `--write ch14` 可将其规范化（会改变这一章的渲染层级，属有意为之的修复）。
 """
 
+# macOS 自带的 python3 是 3.9，不认 PEP 604 的 `str | None` 注解。CLAUDE.md 与
+# README 里的命令都写 `python3 build_chapter_html.py`，没有这一行，只装了系统
+# Python 的机器上克隆下来就跑不了同步脚本（TypeError: unsupported operand |）。
+from __future__ import annotations
+
 import argparse
 import pathlib
 import re

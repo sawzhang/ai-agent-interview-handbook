@@ -67,11 +67,13 @@ EMBED_DIM = 256   # 哈希向量维度：真实系统常见 768 / 1536 维
 TOP_K = 2         # 最终送入 LLM 的片段数
 CANDIDATES = 5    # 粗排召回、交给精排器重排的候选数
 
-# 中文单字没有空格分隔，这里把停用字直接列成集合
+# 中文单字没有空格分隔，停用"字"逐字成集合即可；英文停用"词"必须单独列表，
+# 不能跟在同一个字符串字面量后面——相邻字面量会先拼成一个长串，set() 再把它
+# 拆成单字符，"the"/"is"/"of" 一个都进不了集合（英文过滤会静默失效）。
 STOPWORDS = set(
     "的了是在和与及或者个什它这那有不为中而且但被把将于从到也就"
-    "又能会以还很 me i a an the is are of to in on for and or"
-)
+    "又能会以还很"
+) | {"me", "i", "a", "an", "the", "is", "are", "of", "to", "in", "on", "for", "and", "or"}
 
 # ------------------------------------------------------------------------
 # 内置小知识库：doc-2 是主问题的答案文档，doc-5 用于分块对比实验
@@ -149,9 +151,11 @@ def chunk_text(text: str, chunk_size: int, overlap: int) -> List[str]:
         chunks.append(text[i:i + chunk_size])
         i += step
     # 收尾技巧：最后一块如果太短（不超过 overlap），就并入前一块。
-    # 否则会产生只有几个字的"碎片块"——余弦相似度对短文本有天然偏好
-    # （向量模长小，命中两三个词就能拿到高分），碎片块会挤掉真正
-    # 信息丰富的块。这也是生产中常设"最小块长"的原因。
+    # 否则会产生只有几个字的"碎片块"——余弦相似度对短文本有天然偏好，碎片块
+    # 会挤掉真正信息丰富的块。注意成因不是"模长小"：余弦已经除以两个模长，
+    # 模长恰好被归一化掉了。真实机制是碎片块 token 少，一旦命中查询词，向量
+    # 方向就几乎由这个词决定、不被其余无关词稀释，于是夹角小、得分高。
+    # 这也是生产中常设"最小块长"的原因。
     if len(chunks) >= 2 and len(chunks[-1]) <= overlap:
         start = (len(chunks) - 2) * step     # 倒数第二块的起点
         chunks = chunks[:-2] + [text[start:n]]
@@ -434,6 +438,15 @@ def main() -> None:
     overlap_ok = (len(doc2_chunks) >= 2 and
                   doc2_chunks[1].text[:15] == doc2_chunks[0].text[-15:])
     check("相邻 chunk 之间确实存在 15 字重叠", overlap_ok)
+
+    # —— 停用词过滤（中英各测一边）——
+    # 这条断言是有来历的：英文停用词曾经写在中文串后面靠字面量拼接，set() 把
+    # 整串拆成了单字符，"the"/"is" 一个都没进集合，英文过滤静默失效多时——
+    # 演示全是中文才没被发现。测中文过不了的东西，永远发现不了这类分叉。
+    zh_ok = all(w not in tokenize("这是一个的了") for w in ("的", "了", "是"))
+    en_ok = all(w not in tokenize("the model is a part of it") for w in ("the", "is", "of"))
+    check("中文停用字被过滤", zh_ok)
+    check("英文停用词被过滤（不是被拆成单字符）", en_ok)
 
     # —— 分块大小对比 ——
     small_label, good_label = configs[0][0], configs[1][0]

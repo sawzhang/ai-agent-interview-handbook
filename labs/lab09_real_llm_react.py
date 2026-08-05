@@ -87,10 +87,12 @@ def tool_get_weather(city):
         return {"city": city, **_WEATHER_DB[city]}
     return {"city": city, "condition": "未知", "temperature_c": 25}
 
-# 安全计算器：只允许数字与 + - * / ( ) 与空白，AST 白名单求值
+# 安全计算器：AST 白名单求值，放行数字与 + - * / % ** 及括号（与 lab01 同构）。
+# 幂另设上限——白名单只挡代码注入，`9 ** 9 ** 9` 合法却能把进程算死（DoS）。
 _BIN = {ast.Add: operator.add, ast.Sub: operator.sub, ast.Mult: operator.mul,
         ast.Div: operator.truediv, ast.Pow: operator.pow, ast.Mod: operator.mod}
 _UNARY = {ast.UAdd: operator.pos, ast.USub: operator.neg}
+_MAX_EXPONENT = 64
 
 def _safe_eval(node):
     if isinstance(node, ast.Expression):
@@ -98,7 +100,10 @@ def _safe_eval(node):
     if isinstance(node, ast.Constant) and isinstance(node.value, (int, float)):
         return node.value
     if isinstance(node, ast.BinOp) and type(node.op) in _BIN:
-        return _BIN[type(node.op)](_safe_eval(node.left), _safe_eval(node.right))
+        left, right = _safe_eval(node.left), _safe_eval(node.right)
+        if isinstance(node.op, ast.Pow) and abs(right) > _MAX_EXPONENT:
+            raise ValueError(f"指数过大（|{right}| > {_MAX_EXPONENT}），已拒绝以免算力耗尽")
+        return _BIN[type(node.op)](left, right)
     if isinstance(node, ast.UnaryOp) and type(node.op) in _UNARY:
         return _UNARY[type(node.op)](_safe_eval(node.operand))
     raise ValueError(f"不允许的表达式节点: {ast.dump(node)}")
@@ -184,9 +189,19 @@ def run_agent(llm, question, max_turns=6, verbose=True):
                     print(f"   ⚠️ [轮{turn}] {name} 出错: {e}")
         messages.append({"role": "user", "content": results})
 
-    # 超过 max_turns：取最后一段文本兜底
-    last = messages[-1]["content"] if messages else []
-    tail = "".join(b.get("text", "") for b in last if isinstance(b, dict) and b.get("type") == "text")
+    # 超过 max_turns：取模型最后说过的话兜底。
+    # 注意不能取 messages[-1]——循环最后追加的是承载 tool_result 的 user 消息，
+    # 里面没有 text block，取它等于恒返回下面那句默认串。要倒着找最近一条
+    # assistant 消息。
+    tail = ""
+    for msg in reversed(messages):
+        if msg.get("role") != "assistant":
+            continue
+        content = msg.get("content") or []
+        tail = "".join(b.get("text", "") for b in content
+                       if isinstance(b, dict) and b.get("type") == "text")
+        if tail.strip():
+            break
     return tail.strip() or "(达到最大轮数未收敛)", tool_calls
 
 

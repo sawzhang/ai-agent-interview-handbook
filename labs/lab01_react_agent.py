@@ -116,6 +116,11 @@ _BIN_OPS = {
 }
 _UNARY_OPS = {ast.UAdd: operator.pos, ast.USub: operator.neg}
 
+# 幂运算要单独设上限：AST 白名单只挡代码注入，挡不住资源耗尽。
+# `9 ** 9 ** 9` 语法完全合法、白名单全通过，但会让进程算到天荒地老——
+# 这是工具沙箱的第二类风险（DoS），面试里能主动提到是加分项。
+_MAX_EXPONENT = 64
+
 
 def _safe_eval_node(node: ast.AST):
     """递归求值 AST 节点，只允许常量与白名单运算符。"""
@@ -124,6 +129,8 @@ def _safe_eval_node(node: ast.AST):
     if isinstance(node, ast.BinOp) and type(node.op) in _BIN_OPS:
         left = _safe_eval_node(node.left)
         right = _safe_eval_node(node.right)
+        if isinstance(node.op, ast.Pow) and abs(right) > _MAX_EXPONENT:
+            raise ValueError(f"指数过大（|{right}| > {_MAX_EXPONENT}），已拒绝以免算力耗尽")
         return _BIN_OPS[type(node.op)](left, right)
     if isinstance(node, ast.UnaryOp) and type(node.op) in _UNARY_OPS:
         return _UNARY_OPS[type(node.op)](_safe_eval_node(node.operand))
