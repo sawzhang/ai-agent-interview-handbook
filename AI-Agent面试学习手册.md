@@ -5761,6 +5761,9 @@ defaultTest:
 9. **Airbnb Engineering —《Eval-Driven Development: Lessons from Evaluating GenAI at Scale》（Girme, Miller, Zhao, Yang, Kelly，2026-07）**
    把评估当**开发范式与组织制度**来写的一线案例：错误分析先于指标、evaluator 集小而锐、专家分歧未解决前不许自动化，以及从约 100 条人工通读到线上按比例抽样的规模阶梯。与资源 1 的 Anthropic 那篇互补——那篇偏 grader 与 harness 的工程细节，这篇偏流程与组织。注意其达标线报的是 judge-人一致率（高 80%–90%），与本章 κ 口径不可互换（见 2.15）。
    https://medium.com/airbnb-engineering/eval-driven-development-lessons-from-evaluating-genai-at-scale-e817e5ae5788
+10. **本仓库 Evals 特辑（`evals-special/`）——本章的深度卷**
+   16 章知识体系（指标体系/三层评分/judge 校准/轨迹与仿真评估/统计学基础/EDD/RCA 闭环/在线飞轮/Benchmark 争议）+ 11 个纯标准库实验（judge 偏差量化与校准、轨迹 LCS 对齐与假阳性捕获、模拟器+fixtures、RCA 五步流水线、EDD 门禁闭环、Bradley-Terry 竞技场）+ 2024–2026 前沿论文调研（10 份报告，233 个已核实 arxiv ID）+ Airbnb/DoorDash/阿里/腾讯四大工业实践精读。想把本章任何一节"讲透彻 + 动手验证"，去那里。
+   入口：`evals-special/README.md`
 
 
 ---

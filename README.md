@@ -25,6 +25,12 @@ agent-interview/
 └── flashcards/                    🎴 抽认卡
     ├── anki_cards.txt             （187 张，制表符分隔，可直接导入 Anki）
     └── qa_review.md               （Q&A 复习册）
+
+evals-special/                     📗 Evals 知识体系特辑（主手册第 8 章的深度卷）
+├── chapters/                      16 章（E00-E15，6 模块结构，指标/judge/轨迹/仿真/统计/EDD/RCA）
+├── labs/                          11 个纯标准库实验（judge 校准/轨迹评估/模拟器/RCA 闭环…全部自检通过）
+├── _research/                     2024-2026 前沿论文调研（10 份报告，233 个已核实 arxiv ID）
+└── papers/                        论文调研导读
 ```
 
 ## 🚀 快速开始

@@ -5,7 +5,8 @@
 ## 一、文字内容 —— CC BY-NC-SA 4.0
 
 适用范围：`chapters/`、`AI-Agent面试学习手册.md`、`考前速记表.md`、
-`模拟面试追问链.md`、`flashcards/`、`README.md`，以及 `index.html` 中的章节正文。
+`模拟面试追问链.md`、`flashcards/`、`README.md`、`evals-special/` 的文字内容
+（`chapters/`、`_research/`、`papers/`、各 `README.md`），以及 `index.html` 中的章节正文。
 
 采用 **Creative Commons 署名-非商业性使用-相同方式共享 4.0 国际许可协议
 （CC BY-NC-SA 4.0）**：
@@ -20,8 +21,8 @@ Legal code: https://creativecommons.org/licenses/by-nc-sa/4.0/legalcode
 
 ## 二、代码 —— MIT License
 
-适用范围：`labs/*.py`、`serve.py`、`build_search_index.py`，
-以及 `index.html` 中的 CSS/JavaScript 实现。
+适用范围：`labs/*.py`、`serve.py`、`build_search_index.py`、`build_chapter_html.py`、
+`evals-special/labs/*.py`，以及 `index.html` 中的 CSS/JavaScript 实现。
 
 ```
 MIT License

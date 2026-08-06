@@ -51,6 +51,10 @@ python3 llm_client.py               # 客户端连通性自检
 > **绝不硬编码**。请勿把 Key 贴进聊天、代码或版本库；若已泄露请立即在百炼控制台**重置**。
 > 建议在 `labs/` 放一个 `.gitignore` 忽略 `.env`。
 
+## 📗 延伸阅读：Evals 特辑实验
+
+想要**体系化深挖评估**，见 `evals-special/labs/`——11 个同风格的纯标准库实验（指标体系、judge 偏差与校准、轨迹评估、会话模拟器+fixtures、RCA 流水线、EDD 闭环、Bradley-Terry 竞技场），配套 16 章知识体系与 2024-2026 前沿论文调研。入口：`evals-special/README.md`。
+
 ## 学习建议
 
 - 先读每个文件顶部的 docstring（目的 / 核心概念 / 思考题），再对照代码逐行理解。
