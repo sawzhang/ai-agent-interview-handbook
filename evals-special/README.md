@@ -12,6 +12,7 @@
 ```
 evals-special/
 ├── README.md                 📍 你在这里
+├── CHECKLIST-Agent评测体系建设.md ✅ 可直接套用的建设清单（Phase 0-10 + 30/90 天路线图）
 ├── chapters/                 📂 16 章知识体系（E00-E15，固定 6 模块结构）
 ├── labs/                     🧪 11 个纯标准库实验（零依赖、assert 自检、确定性可复现）
 ├── _research/                🔬 调研报告（00 工业实践精读 + 01~10 前沿论文调研）
@@ -47,7 +48,7 @@ evals-special/
 | 02 | `eval_lab02_golden_dataset.py` | golden set 四类来源、入库标准、能力集→回归集"毕业"机制 |
 | 03 | `eval_lab03_programmatic_scorers.py` | 规则评分器家族、粗筛→精判分层流水线与成本节省 |
 | 04 | `eval_lab04_judge_bias.py` | 位置/冗长/自我偏好偏差量化 + swap、投票、长度纠偏缓解 |
-| 05 | `eval_lab05_judge_calibration.py` | 校准闭环：一致率、Cohen's κ、分歧分析、rubric 迭代（78%→88% 复现） |
+| 05 | `eval_lab05_judge_calibration.py` | 校准闭环：一致率、Cohen's κ、分歧分析、rubric 迭代（一致率 0.80→0.95、κ 0.571→0.895 复现） |
 | 06 | `eval_lab06_trajectory_eval.py` | step/trajectory/session 三层评估、LCS 对齐、假阳性（结果对路径错）捕获 |
 | 07 | `eval_lab07_simulator_fixtures.py` | 会话模拟器 + fixtures：环境不受控时"分数测量的是噪声" |
 | 08 | `eval_lab08_statistics_ci.py` | Wilson/bootstrap CI、样本量公式、配对显著性与"N=100 不可判、N=2000 可判" |
@@ -81,7 +82,7 @@ for f in eval_lab*.py; do python3 "$f"; done   # 一次全跑，全部 ✅ 自�
 ## 🚀 学习路线
 
 - **面试冲刺（2h）**：E02 → E05 → E07 → E09 → E15 的面试题区 + 各章「易错点」。
-- **从零搭建评测体系（工程师）**：E01 → E03 → E04 → E05 → E06 → E10 → E11 → E12，配 labs 01→10 顺序动手。
+- **从零搭建评测体系（工程师）**：E01 → E03 → E04 → E05 → E06 → E10 → E11 → E12，配 labs 01→10 顺序动手；落地行动项直接对照 `CHECKLIST-Agent评测体系建设.md`（Phase 0-10 + 30/90 天路线图）。
 - **研究跟进**：E14（全景）→ `_research/` 感兴趣方向的报告原文。
 
 ## ✅ 质量保证流程
